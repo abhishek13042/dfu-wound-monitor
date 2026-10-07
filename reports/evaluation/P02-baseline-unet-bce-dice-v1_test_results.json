@@ -1,0 +1,131 @@
+{
+  "_spec": "P02-S05 Baseline Evaluation and Metrics",
+  "_requirement": "REQ-P02-S05-008: Every number comes from an actual run.",
+  "checkpoint_evaluated": {
+    "epoch": 10,
+    "val_dice": 1.0,
+    "config_snapshot": {
+      "experiment_id": "P02-baseline-unet-bce-dice-v1",
+      "architecture": "LightweightUNet",
+      "encoder_channels": [
+        32,
+        64,
+        128,
+        256
+      ],
+      "num_classes": 1,
+      "input_height": 256,
+      "input_width": 256,
+      "loss_name": "BCEDiceLoss",
+      "random_seed": 42
+    }
+  },
+  "aggregate_results": {
+    "mean_dice": 1.0,
+    "mean_iou": 1.0,
+    "mean_precision": 1.0,
+    "mean_recall": 1.0,
+    "std_dice": 0.0,
+    "std_iou": 0.0,
+    "num_samples": 3,
+    "_aggregation_method": "macro_average (mean of per-sample scores)",
+    "_note": "Why not accuracy: ~15% foreground \u2192 a background-only predictor gets ~85% accuracy. Dice/IoU focus on the foreground class and are appropriate for imbalanced segmentation.",
+    "test_loss": 0.286059,
+    "prediction_threshold": 0.5
+  },
+  "metric_definitions": {
+    "dice": "2*TP / (2*TP + FP + FN). Range [0,1]. 1.0 = perfect overlap.",
+    "iou": "TP / (TP + FP + FN). Stricter than Dice. Range [0,1].",
+    "precision": "TP / (TP + FP). Fraction of predicted wound pixels that are correct.",
+    "recall": "TP / (TP + FN). Fraction of actual wound pixels that were found.",
+    "aggregation": "Macro-average: mean of per-sample scores. Treats all samples equally.",
+    "why_not_accuracy": "~15% foreground \u2192 background-only predictor gets ~85% accuracy. Dice/IoU focus on the foreground class."
+  },
+  "per_sample_results": [
+    {
+      "sample_id": "DFUC22_0009",
+      "prediction_threshold": 0.5,
+      "wound_area_ratio_predicted": 0.152587890625,
+      "wound_area_ratio_ground_truth": 0.152587890625,
+      "dice": 1.0,
+      "iou": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "true_positives": 10000,
+      "false_positives": 0,
+      "false_negatives": 0
+    },
+    {
+      "sample_id": "DFUC22_0001",
+      "prediction_threshold": 0.5,
+      "wound_area_ratio_predicted": 0.152587890625,
+      "wound_area_ratio_ground_truth": 0.152587890625,
+      "dice": 1.0,
+      "iou": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "true_positives": 10000,
+      "false_positives": 0,
+      "false_negatives": 0
+    },
+    {
+      "sample_id": "DFUC22_0004",
+      "prediction_threshold": 0.5,
+      "wound_area_ratio_predicted": 0.152587890625,
+      "wound_area_ratio_ground_truth": 0.152587890625,
+      "dice": 1.0,
+      "iou": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "true_positives": 10000,
+      "false_positives": 0,
+      "false_negatives": 0
+    }
+  ],
+  "failure_analysis": {
+    "total_samples_analyzed": 3,
+    "good_predictions": 3,
+    "mediocre_predictions": 0,
+    "poor_predictions": 0,
+    "observed_failure_pattern_counts": {},
+    "_note_REQ_P02_S06_003": "Only failure categories actually observed in this evaluation are listed.",
+    "_note_REQ_P02_S06_005": "Failure categories describe model prediction errors only. No clinical inferences are made from these technical observations.",
+    "per_sample_observations": [
+      {
+        "sample_id": "DFUC22_0009",
+        "dice": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "wound_area_gt": 0.1526,
+        "wound_area_pred": 0.1526,
+        "prediction_quality": "good",
+        "observed_failure_patterns": []
+      },
+      {
+        "sample_id": "DFUC22_0001",
+        "dice": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "wound_area_gt": 0.1526,
+        "wound_area_pred": 0.1526,
+        "prediction_quality": "good",
+        "observed_failure_patterns": []
+      },
+      {
+        "sample_id": "DFUC22_0004",
+        "dice": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "wound_area_gt": 0.1526,
+        "wound_area_pred": 0.1526,
+        "prediction_quality": "good",
+        "observed_failure_patterns": []
+      }
+    ]
+  },
+  "qualitative_visualization_paths": [
+    "outputs\\visualizations\\phase_02_qualitative\\P02-baseline-unet-bce-dice-v1_rank01_GOOD_DFUC22_0009.png",
+    "outputs\\visualizations\\phase_02_qualitative\\P02-baseline-unet-bce-dice-v1_rank02_GOOD_DFUC22_0001.png",
+    "outputs\\visualizations\\phase_02_qualitative\\P02-baseline-unet-bce-dice-v1_rank03_GOOD_DFUC22_0004.png"
+  ]
+}

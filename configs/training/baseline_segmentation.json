@@ -1,0 +1,89 @@
+{
+  "_comment": "Phase 02 Baseline Segmentation Training Configuration",
+  "_spec": "P02-S04 REQ-P02-S04-001",
+  "_decision_record": "reports/experiments/phase_02_baseline_decision_record.md",
+
+  "experiment_id": "P02-baseline-unet-bce-dice-v1",
+  "experiment_description": "Phase 02 lightweight UNet baseline, random init, BCE+Dice loss, no pretrained weights.",
+
+  "data": {
+    "manifest_path": "data/manifests/dataset_manifest.json",
+    "dataset_name": "DFUC2022",
+    "annotation_type": "wound_segmentation",
+    "manifest_version": "1.0.0"
+  },
+
+  "preprocessing": {
+    "input_height": 256,
+    "input_width": 256,
+    "normalize_mean": [0.485, 0.456, 0.406],
+    "normalize_std": [0.229, 0.224, 0.225],
+    "mask_threshold": 128,
+    "_normalize_note": "ImageNet statistics used as a conventional starting point even without pretrained weights."
+  },
+
+  "augmentation": {
+    "train_horizontal_flip_prob": 0.5,
+    "train_vertical_flip_prob": 0.0,
+    "_note": "Train-only augmentations. Val/test use no augmentation. Transforms are applied consistently to image and mask."
+  },
+
+  "model": {
+    "architecture": "LightweightUNet",
+    "num_classes": 1,
+    "encoder_channels": [32, 64, 128, 256],
+    "pretrained_weights": null,
+    "pretrained_source": null,
+    "freeze_encoder": false,
+    "_rationale": "Random initialization. Pretrained weights deferred to Phase 03 for clean improvement attribution."
+  },
+
+  "loss": {
+    "name": "BCEDiceLoss",
+    "bce_weight": 0.5,
+    "dice_weight": 0.5,
+    "_rationale": "Combined BCE+Dice handles foreground/background imbalance (~15% foreground). Dice is differentiable and directly related to the primary evaluation metric."
+  },
+
+  "training": {
+    "random_seed": 42,
+    "num_epochs": 20,
+    "batch_size": 2,
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "_optimizer_rationale": "Adam is chosen for its adaptive learning rate — reliable default for small medical datasets without extensive tuning.",
+    "_batch_size_note": "Batch size 2 selected for CPU memory constraints. Larger batches would require GPU.",
+    "_epoch_note": "20 epochs is sufficient to observe convergence trends on 14 training samples. Overfitting expected and documented."
+  },
+
+  "checkpointing": {
+    "checkpoint_dir": "models/checkpoints",
+    "checkpoint_selection_metric": "val_dice",
+    "checkpoint_selection_mode": "max",
+    "save_best_only": true,
+    "checkpoint_filename_template": "P02-baseline-unet-bce-dice-v1_best_val_dice.pth",
+    "_resume_note": "Resume not implemented for this baseline — training is short enough that full rerun from scratch is practical."
+  },
+
+  "evaluation": {
+    "primary_metric": "dice",
+    "report_metrics": ["dice", "iou", "precision", "recall"],
+    "per_sample_results": true,
+    "prediction_threshold": 0.5,
+    "_aggregation": "Macro-average across test samples (mean of per-sample scores)."
+  },
+
+  "device": {
+    "preferred": "cuda",
+    "fallback": "cpu",
+    "_note": "Will use CUDA if available, CPU otherwise. Training validated on CPU."
+  },
+
+  "output": {
+    "log_file": "reports/experiments/P02-baseline-unet-bce-dice-v1_training_log.json",
+    "evaluation_results_file": "reports/evaluation/P02-baseline-unet-bce-dice-v1_test_results.json",
+    "qualitative_output_dir": "outputs/visualizations/phase_02_qualitative",
+    "experiment_record_file": "reports/experiments/P02-baseline-unet-bce-dice-v1_experiment_record.json"
+  }
+}

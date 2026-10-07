@@ -1,0 +1,9 @@
+# DFU-WoundMonitor - Core Dependencies
+# Note: Specific versions will be introduced per Phase Specification requirements.
+
+# Core build and code quality (baseline)
+setuptools>=61.0
+pytest>=7.0.0
+ruff>=0.1.0
+black>=23.0.0
+mypy>=1.0.0

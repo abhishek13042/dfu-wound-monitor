@@ -1,0 +1,519 @@
+{
+  "dataset_name": "DFUC2022",
+  "total_samples": 20,
+  "valid_samples": 20,
+  "invalid_samples": 0,
+  "issue_summary": {
+    "unreadable_image": 0,
+    "malformed_annotation": 0,
+    "invalid_bbox": 0,
+    "out_of_bounds_bbox": 0,
+    "invalid_mask": 0,
+    "empty_mask": 0,
+    "missing_annotation": 0,
+    "unusual_dimensions": 0,
+    "duplicate": 0
+  },
+  "sample_results": [
+    {
+      "sample_id": "DFUC22_0001",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0002",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0003",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0004",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0005",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0006",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0007",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0008",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0009",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0010",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0011",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0012",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0013",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0014",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0015",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0016",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0017",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0018",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0019",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    },
+    {
+      "sample_id": "DFUC22_0020",
+      "dataset_name": "DFUC2022",
+      "is_valid": true,
+      "issue_category": null,
+      "image_metadata": {
+        "width": 512,
+        "height": 512,
+        "channels": 3,
+        "format": "PNG",
+        "mode": "RGB",
+        "file_size_bytes": 1906
+      },
+      "mask_metadata": {
+        "mask_width": 512,
+        "mask_height": 512,
+        "unique_values": [
+          0,
+          255
+        ],
+        "foreground_pixels": 40000,
+        "total_pixels": 262144,
+        "wound_area_ratio": 0.152588
+      }
+    }
+  ]
+}

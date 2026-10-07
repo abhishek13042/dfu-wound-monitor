@@ -1,0 +1,89 @@
+{
+  "registered_datasets_count": 4,
+  "datasets": {
+    "dfuc2020": {
+      "metadata": {
+        "dataset_id": "dfuc2020",
+        "name": "DFUC2020: Diabetic Foot Ulcer Detection Challenge Dataset",
+        "source_url": "https://dfu2020.grand-challenge.org/",
+        "publication_doi": "10.1016/j.media.2021.102041",
+        "license": "CC BY-NC 4.0",
+        "access_type": "registered",
+        "primary_task": "detection",
+        "verified": true,
+        "verified_image_count": 4000,
+        "notes": "Bounding box annotations for DFU localization."
+      },
+      "integrity": {
+        "dataset_id": "dfuc2020",
+        "directory_exists": false,
+        "path": "data\\raw\\dfuc2020",
+        "contains_raw_files": false,
+        "read_only_policy_enforced": true
+      }
+    },
+    "dfuc2021": {
+      "metadata": {
+        "dataset_id": "dfuc2021",
+        "name": "DFUC2021: Diabetic Foot Ulcer Infection and Ischemia Challenge",
+        "source_url": "https://dfu2021.grand-challenge.org/",
+        "publication_doi": "10.1109/TMI.2022.3168875",
+        "license": "CC BY-NC 4.0",
+        "access_type": "registered",
+        "primary_task": "classification",
+        "verified": true,
+        "verified_image_count": 15684,
+        "notes": "Infection and ischemia multi-class labels."
+      },
+      "integrity": {
+        "dataset_id": "dfuc2021",
+        "directory_exists": false,
+        "path": "data\\raw\\dfuc2021",
+        "contains_raw_files": false,
+        "read_only_policy_enforced": true
+      }
+    },
+    "dfuc2022": {
+      "metadata": {
+        "dataset_id": "dfuc2022",
+        "name": "DFUC2022: Diabetic Foot Ulcer Segmentation Challenge Dataset",
+        "source_url": "https://dfu2022.grand-challenge.org/",
+        "publication_doi": "10.1038/s41597-023-02100-3",
+        "license": "CC BY-NC 4.0",
+        "access_type": "registered",
+        "primary_task": "segmentation",
+        "verified": true,
+        "verified_image_count": 4000,
+        "notes": "Pixel-level binary segmentation masks."
+      },
+      "integrity": {
+        "dataset_id": "dfuc2022",
+        "directory_exists": false,
+        "path": "data\\raw\\dfuc2022",
+        "contains_raw_files": false,
+        "read_only_policy_enforced": true
+      }
+    },
+    "dfu_tissuesegnet": {
+      "metadata": {
+        "dataset_id": "dfu_tissuesegnet",
+        "name": "DFUTissueSegNet: Foot Ulcer Tissue Segmentation Dataset",
+        "source_url": "https://github.com/tissue-seg/dfu-tissue",
+        "publication_doi": "10.1109/JBHI.2020.3015482",
+        "license": "Research Use Only",
+        "access_type": "open",
+        "primary_task": "tissue_analysis",
+        "verified": true,
+        "verified_image_count": 600,
+        "notes": "Multi-class tissue masks (granulation, slough, necrosis)."
+      },
+      "integrity": {
+        "dataset_id": "dfu_tissuesegnet",
+        "directory_exists": false,
+        "path": "data\\raw\\dfu_tissuesegnet",
+        "contains_raw_files": false,
+        "read_only_policy_enforced": true
+      }
+    }
+  }
+}

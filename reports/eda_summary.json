@@ -1,0 +1,31 @@
+{
+  "total_samples": 20,
+  "split_counts": {
+    "train": 14,
+    "val": 3,
+    "test": 3
+  },
+  "canonical_label_counts": {
+    "wound_tissue": 20
+  },
+  "issue_counts": {},
+  "width_stats": {
+    "mean": 512.0,
+    "min": 512.0,
+    "max": 512.0,
+    "median": 512.0
+  },
+  "height_stats": {
+    "mean": 512.0,
+    "min": 512.0,
+    "max": 512.0,
+    "median": 512.0
+  },
+  "aspect_ratio_stats": {
+    "mean": 1.0,
+    "min": 1.0,
+    "max": 1.0,
+    "median": 1.0
+  },
+  "wound_area_ratio_stats": null
+}
