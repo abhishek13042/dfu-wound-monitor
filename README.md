@@ -87,6 +87,17 @@ Pipeline: upload → decode/validate → quality gate (reject with reason codes)
 segmentation → measurement (pixel, or mm when `pixels_per_mm` is given) →
 stored record and artifacts → examination comparison and trends.
 
+### Docker / Hugging Face Spaces demo
+
+```bash
+docker build -f docker/production/Dockerfile -t dfu-woundmonitor .
+docker run --rm -p 7860:7860 -v "$PWD/models:/home/user/app/models" dfu-woundmonitor
+python scripts/deployment/build_hf_space.py      # assembles dist/hf_space/ for a Docker Space
+```
+
+The checkpoint is fetched at container start from a Hugging Face model repo (`DFU_CHECKPOINT_REPO`)
+and is used only if its SHA-256 matches the pinned value. Publishing steps: [docs/deployment/HUGGINGFACE.md](docs/deployment/HUGGINGFACE.md).
+
 ---
 
 ## Development Method: Spec-Driven Development (SDD)

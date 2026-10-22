@@ -1,12 +1,9 @@
 # Containerization & Deployment
 
-This directory contains container definitions, Compose files, and build configurations.
+- `production/Dockerfile`: CPU inference service and dashboard (python:3.12-slim, CPU torch, uid 1000, port 7860).
+- `production/entrypoint.sh`: fetches and hash-verifies the checkpoint, then starts uvicorn.
+- `production/space_README.md`: the Hugging Face Docker Space card.
+- `development/`: not used yet. Local development runs uvicorn directly (see the root README).
 
-## Directory Layout
-
-- `development/`: Local development environment definitions, volume mounts, and dev toolchains.
-- `production/`: Multi-stage production Dockerfiles, runtime hardening, and container orchestration files.
-
-## Status
-
-Deployment and containerization configs will be formally implemented in Phase 11 (Deployment & Optimization).
+Build: `docker build -f docker/production/Dockerfile -t dfu-woundmonitor .` (context = repo root).
+Publishing guide: `docs/deployment/HUGGINGFACE.md`.

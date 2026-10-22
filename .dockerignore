@@ -1,0 +1,17 @@
+# Build context = repo root.  Only src, configs, scripts/deployment, docker/production
+# and requirements.txt are copied; everything heavy or private stays out.
+.git
+.venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+data
+models
+runtime
+reports
+notebooks
+tests
+dist
+*.pth
+*.pt
+.env
