@@ -33,5 +33,6 @@ The dashboard is at `/dashboard/`, the interactive API schema at `/docs`, and re
 This demo stores uploads in temporary storage that is wiped whenever the Space restarts. Do not upload
 identifiable patient images.
 
-The model was trained only on FUSeg2021, and it drops in accuracy on other image sources. See the project repository
+The model was trained only on FUSeg2021. On an external dataset (LowerLimb V3), pooled Dice falls to 0.26, so treat
+results on other image sources with caution. See the project repository
 for the full validation report, limitations and source code.

@@ -34,8 +34,10 @@ Post-processing was frozen on internal validation **before** the held-out test w
 | End-to-end service rerun (P06) | 191 | 0.922 | 0.841 (max per-image difference vs. Phase 02: 0.0003) |
 
 Of the 191 test images, 156 are well segmented. The rest are 8 missed wounds, 10 under-segmented,
-6 over-segmented, 6 with low overlap and 3 false positives on empty images. External LowerLimb images show a
-measurable drop in accuracy. The full validation report is in the project repository at
+6 over-segmented, 6 with low overlap and 3 false positives on empty images. On external LowerLimb V3 images (n = 148),
+pooled Dice is **0.26**: the model marks little that is not labelled (precision 0.90) but misses most of the labelled area (recall 0.15). On the
+LowerLimb masks drawn in the FUSeg style, Dice is 0.82 (n = 16); on the coarser native masks it is 0.20 (n = 132), so annotation protocol
+probably explains much of the gap. That is a hypothesis, and generalisation is not established. The full validation report is in the project repository at
 `reports/final/phase_06_validation_report.md`.
 
 ## Limitations

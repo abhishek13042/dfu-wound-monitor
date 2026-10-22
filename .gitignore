@@ -122,3 +122,6 @@ runtime/
 # model weights anywhere in the tree (pinned by SHA-256 in configs; not stored in git)
 *.pth
 *.pt
+
+# P06 example sheets contain dataset images (redistribution terms not recorded)
+reports/figures/p06/local/

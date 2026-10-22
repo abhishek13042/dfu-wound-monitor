@@ -1,8 +1,8 @@
 {
   "release": "DFU-WoundMonitor research prototype",
-  "generated_utc": "2026-10-22T10:23:55+00:00",
+  "generated_utc": "2026-10-22T10:59:35+00:00",
   "git": {
-    "commit": "158dced4eb1048abe86672b01301364442ce8030",
+    "commit": "d177ada34f00a5976e3a67a70643f8ac6b63eb4b",
     "dirty": true
   },
   "versions": {
@@ -34,11 +34,11 @@
     "reports/experiments/spec_02_03_report.md": "d7468b88020148e93a4a23ea820c7226eda9f5ef86e7b6d6caa33c2232989044",
     "reports/experiments/spec-02-03/cpu_verification/heldout_test_evaluation.json": "4ec3ded3352a95e65cf4a9130fbfa8f5f89ef096a10957c3626536ba40d3a15b",
     "reports/quality/quality_gate_calibration.json": "1a5e47a9b4f566b023febfe6fe11bfdcb1cc864916afc7611f35d54e1b531a2b",
-    "reports/final/p06_validation_fuseg2021_test.json": null,
-    "reports/final/p06_validation_lowerlimb_external.json": null,
-    "reports/final/p06_benchmark.json": null,
-    "reports/final/phase_06_validation_report.md": null,
-    "docs/release/RELEASE.md": "d2e92c9fc21af6f11beaa86ff3830d5b39df8c9c41a68e74171f30f251a384ee"
+    "reports/final/p06_validation_fuseg2021_test.json": "b933183accca8fff9b9678a14f9a94912d7fc485bda92b2800ef78c00968eb56",
+    "reports/final/p06_validation_lowerlimb_external.json": "b8b3f0301542622c5391a68a1e0ca8032f01a77781271a60857b5c65dae898a8",
+    "reports/final/p06_benchmark.json": "7baacee8405ad1eddda8e780ed9b09d7ada0bb1478587ef54396917108e9c4e8",
+    "reports/final/phase_06_validation_report.md": "da9be03cece006d28c6c18693dfb73c0aa7e68d6274ec6e02bff31f3d5089fdb",
+    "docs/release/RELEASE.md": "d6fec4ed77d6391cb78d49f042a55e20a29c2ac6804daa7a32c2ec08dc842f10"
   },
   "build_environment": {
     "python": "3.14.0",

@@ -17,8 +17,10 @@
 
 **Historical data:** The earlier synthetic demonstration remains preserved and clearly separated from real-data evidence.
 **Known gaps:**
+- External generalisation is not established. On LowerLimb V3, pooled Dice is 0.26, against 0.92 in-domain. Much of the drop appears to come from a
+  different annotation protocol, but that is a hypothesis (see [the P06 report](reports/final/phase_06_validation_report.md)).
 - A fresh-machine install has not been exercised (REQ-P06-S03-001 is PARTIAL).
-- There is no stated latency requirement, so no optimisation has been applied.
+- There is no stated latency requirement, so no optimisation has been applied. Measured: about 5.8 s per image on a 2-core CPU; 97% of that is segmentation.
 - Real longitudinal patient series are not available. Trends were exercised with constructed examination sequences only.
 
 ---

@@ -1,0 +1,145 @@
+{
+  "report": "P06 LowerLimb annotation-form check",
+  "validation_source": "reports/final/p06_validation_lowerlimb_external.json",
+  "mask_forms_in_full_dataset": {
+    "native_331": 2364,
+    "resized_224": 322
+  },
+  "groups": {
+    "native_331": {
+      "n": 132,
+      "dice": {
+        "n": 132,
+        "mean": 0.1953,
+        "median": 0.0738
+      },
+      "precision_nonempty_pred": {
+        "n": 81,
+        "mean": 0.8897,
+        "median": 0.9839
+      },
+      "recall": {
+        "n": 132,
+        "mean": 0.1521,
+        "median": 0.0388
+      },
+      "gt_area_fraction": {
+        "n": 132,
+        "mean": 0.1049,
+        "median": 0.0767
+      },
+      "probability_probe": [
+        {
+          "sample_id": "0037",
+          "dice": 0.22995,
+          "missed_px": 1192,
+          "mean_probability_in_missed_region": 0.0042,
+          "share_of_missed_above_0.2": 0.0092
+        },
+        {
+          "sample_id": "0506",
+          "dice": 0.0,
+          "missed_px": 11131,
+          "mean_probability_in_missed_region": 0.0,
+          "share_of_missed_above_0.2": 0.0
+        },
+        {
+          "sample_id": "0920",
+          "dice": 0.867164,
+          "missed_px": 2120,
+          "mean_probability_in_missed_region": 0.0674,
+          "share_of_missed_above_0.2": 0.1524
+        },
+        {
+          "sample_id": "1389",
+          "dice": 0.0,
+          "missed_px": 3898,
+          "mean_probability_in_missed_region": 0.0461,
+          "share_of_missed_above_0.2": 0.166
+        },
+        {
+          "sample_id": "1893",
+          "dice": 0.274021,
+          "missed_px": 5357,
+          "mean_probability_in_missed_region": 0.0171,
+          "share_of_missed_above_0.2": 0.048
+        },
+        {
+          "sample_id": "2290",
+          "dice": 0.0,
+          "missed_px": 3225,
+          "mean_probability_in_missed_region": 0.0326,
+          "share_of_missed_above_0.2": 0.0375
+        }
+      ]
+    },
+    "resized_224": {
+      "n": 16,
+      "dice": {
+        "n": 16,
+        "mean": 0.816,
+        "median": 0.8876
+      },
+      "precision_nonempty_pred": {
+        "n": 16,
+        "mean": 0.8386,
+        "median": 0.904
+      },
+      "recall": {
+        "n": 16,
+        "mean": 0.85,
+        "median": 0.9426
+      },
+      "gt_area_fraction": {
+        "n": 16,
+        "mean": 0.0422,
+        "median": 0.0299
+      },
+      "probability_probe": [
+        {
+          "sample_id": "0001",
+          "dice": 0.488241,
+          "missed_px": 1537,
+          "mean_probability_in_missed_region": 0.1312,
+          "share_of_missed_above_0.2": 0.4593
+        },
+        {
+          "sample_id": "0109",
+          "dice": 0.920122,
+          "missed_px": 298,
+          "mean_probability_in_missed_region": 0.0428,
+          "share_of_missed_above_0.2": 0.0973
+        },
+        {
+          "sample_id": "0307",
+          "dice": 0.978474,
+          "missed_px": 100,
+          "mean_probability_in_missed_region": 0.1371,
+          "share_of_missed_above_0.2": 0.34
+        },
+        {
+          "sample_id": "0848",
+          "dice": 0.902611,
+          "missed_px": 43,
+          "mean_probability_in_missed_region": 0.0575,
+          "share_of_missed_above_0.2": 0.1163
+        },
+        {
+          "sample_id": "1028",
+          "dice": 0.814846,
+          "missed_px": 6,
+          "mean_probability_in_missed_region": 0.3062,
+          "share_of_missed_above_0.2": 0.8333
+        },
+        {
+          "sample_id": "1334",
+          "dice": 0.951422,
+          "missed_px": 33,
+          "mean_probability_in_missed_region": 0.0718,
+          "share_of_missed_above_0.2": 0.1818
+        }
+      ]
+    }
+  },
+  "threshold": 0.4
+}

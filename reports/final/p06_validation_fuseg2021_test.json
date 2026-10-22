@@ -1,0 +1,6339 @@
+{
+  "report": "P06-S01 end-to-end validation",
+  "generated_utc": "2026-10-22T10:32:44+00:00",
+  "command": "python scripts/evaluation/run_phase_06_validation.py --split test --tag fuseg2021_test",
+  "provenance": {
+    "manifest": "data/manifests/fuseg2021_heldout_manifest.json",
+    "manifest_sha256": "0da87d1cb15fda6aaec380977f0e6be1e74b409685d6c488759fea97efa7f510",
+    "manifest_version": "fuseg2021-heldout-v1",
+    "dataset": "FUSeg2021",
+    "dataset_version": "FUSeg2021-official-source-commit-42a272d",
+    "split": "test",
+    "split_policy": "SPEC-02-03 held-out policy: official validation is the held-out test split; internal validation is a seeded, near-duplicate-group-aware subset of official train",
+    "sample_selection": "all samples in split",
+    "model": {
+      "model_version": "spec-02-03-resnet34-unet-512-v1",
+      "experiment_id": "P02-SPEC-02-03-fuseg2021-resnet34-unet-512-v1",
+      "architecture": "ResNetUNet/resnet34",
+      "checkpoint_path": "D:\\Project_12D\\models\\checkpoints\\spec-02-03\\resnet34_unet_512_best.pth",
+      "checkpoint_sha256": "26aca52e401f23b5781d2596d74c1fd7fa86a6af0ab9fb3db9fa17dcffb5cf04",
+      "checksum_verified": true,
+      "checkpoint_epoch": 71,
+      "checkpoint_val_dice": 0.8791840773517803,
+      "inference_config": "D:\\Project_12D\\configs\\inference\\spec_02_03_inference.json",
+      "inference_config_version": "p03-s01-v1",
+      "inference_config_sha256": "12de1d332413b86779f81e3b8e02a3403f01aa420e11e86101ca1c440ba0cb0d",
+      "training_config": "D:\\Project_12D\\configs\\training\\segmentation_resnet34_unet_512.json",
+      "training_config_sha256": "d37ac08c0babcc403a86c920ee4a643d04e7c6449b2c0ea843879a6ff4e4cb35",
+      "preprocessing": {
+        "source": "configs\\training\\segmentation_resnet34_unet_512.json",
+        "input_height": 512,
+        "input_width": 512,
+        "resize": "bilinear",
+        "normalize_mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "normalize_std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "postprocessing": {
+        "threshold": 0.4,
+        "min_component_area": 128,
+        "tta": true
+      },
+      "device": "cpu",
+      "determinism_policy": "Same checkpoint, config, input bytes, device type and thread count give a bit-identical binary mask and probability map. Across devices or thread counts, probabilities agree to about 1e-5 and binary masks can differ only at pixels within that distance of the threshold.",
+      "engine_version": "p03-s01-1.0"
+    },
+    "hardware": {
+      "platform": "Windows-11-10.0.26200-SP0",
+      "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+      "python": "3.14.0"
+    }
+  },
+  "category_rules": {
+    "QUALITY_REJECTED": "the quality gate rejected the image; no segmentation was produced",
+    "CORRECT_EMPTY": "ground truth empty and prediction empty",
+    "FALSE_POSITIVE_ON_EMPTY": "ground truth empty but the model segmented a region",
+    "MISSED_WOUND": "ground truth non-empty but the prediction is empty",
+    "LOW_OVERLAP": "both non-empty and Dice < 0.5",
+    "UNDER_SEGMENTATION": "0.5 <= Dice < 0.8 and predicted area < ground-truth area",
+    "OVER_SEGMENTATION": "0.5 <= Dice < 0.8 and predicted area >= ground-truth area",
+    "GOOD": "Dice >= 0.8"
+  },
+  "flag_rules": {
+    "SMALL_WOUND": "ground-truth area < 0.5% of the image",
+    "FRAGMENTED_PREDICTION": "more predicted components than ground-truth components",
+    "TOUCHES_BORDER": "predicted region touches the image border"
+  },
+  "integrity": {
+    "checksum_failures": []
+  },
+  "summary": {
+    "samples": 191,
+    "quality": {
+      "accepted": 191,
+      "rejected": 0,
+      "acceptance_rate": 1.0,
+      "reason_counts": {}
+    },
+    "segmentation_on_accepted": {
+      "macro_dice": {
+        "n": 191,
+        "mean": 0.8414154607329842,
+        "std": 0.24348655369291686,
+        "min": 0.0,
+        "p10": 0.677498,
+        "p25": 0.871103,
+        "median": 0.931934,
+        "p75": 0.9602189999999999,
+        "p90": 0.976642,
+        "max": 1.0
+      },
+      "macro_dice_nonempty_gt": {
+        "n": 186,
+        "mean": 0.8532814677419355,
+        "std": 0.22147042582442267,
+        "min": 0.0,
+        "p10": 0.7023305,
+        "p25": 0.87332575,
+        "median": 0.9321245,
+        "p75": 0.95947675,
+        "p90": 0.9761745,
+        "max": 0.990116
+      },
+      "macro_iou": {
+        "n": 191,
+        "mean": 0.7778421989528795,
+        "std": 0.24929161409238706,
+        "min": 0.0,
+        "p10": 0.512284,
+        "p25": 0.7716415000000001,
+        "median": 0.872543,
+        "p75": 0.9234825,
+        "p90": 0.954351,
+        "max": 1.0
+      },
+      "pooled_dice": 0.9222258405535084,
+      "pooled_iou": 0.8556763329964531,
+      "dice_histogram": {
+        "[0,0.1)": 11,
+        "[0.1,0.2)": 1,
+        "[0.2,0.3)": 1,
+        "[0.3,0.4)": 2,
+        "[0.4,0.5)": 2,
+        "[0.5,0.6)": 1,
+        "[0.6,0.7)": 4,
+        "[0.7,0.8)": 11,
+        "[0.8,0.9)": 31,
+        "[0.9,1)": 127
+      },
+      "dice_by_gt_size_tercile": {
+        "small": {
+          "gt_area_px_range": [
+            0,
+            1032
+          ],
+          "n": 62,
+          "mean": 0.7437639193548387,
+          "std": 0.3271342466032176,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.7717452499999999,
+          "median": 0.907439,
+          "p75": 0.9378345,
+          "p90": 0.9532342,
+          "max": 0.967619
+        },
+        "medium": {
+          "gt_area_px_range": [
+            1032,
+            2948
+          ],
+          "n": 62,
+          "mean": 0.8819175967741935,
+          "std": 0.12254572636373261,
+          "min": 0.192405,
+          "p10": 0.7163822000000001,
+          "p25": 0.870757,
+          "median": 0.9211564999999999,
+          "p75": 0.9450615,
+          "p90": 0.9700299,
+          "max": 0.979905
+        },
+        "large": {
+          "gt_area_px_range": [
+            2948,
+            null
+          ],
+          "n": 62,
+          "mean": 0.9341628870967744,
+          "std": 0.07587656361722124,
+          "min": 0.57072,
+          "p10": 0.8761825999999999,
+          "p25": 0.930039,
+          "median": 0.9574065,
+          "p75": 0.97636525,
+          "p90": 0.9806018000000001,
+          "max": 0.990116
+        }
+      }
+    },
+    "measurement_error_where_both_nonempty": {
+      "n": 178,
+      "area_relative_error": {
+        "n": 178,
+        "mean": 0.1359511741573034,
+        "std": 0.7321362333098329,
+        "min": -0.605062,
+        "p10": -0.1739544,
+        "p25": -0.052206,
+        "median": 0.017946499999999997,
+        "p75": 0.11473,
+        "p90": 0.2626984,
+        "max": 7.675676
+      },
+      "area_absolute_relative_error": {
+        "n": 178,
+        "mean": 0.23693053370786515,
+        "std": 0.7059533327896156,
+        "min": 0.001636,
+        "p10": 0.0113501,
+        "p25": 0.02987625,
+        "median": 0.07634250000000001,
+        "p75": 0.20371899999999998,
+        "p90": 0.39863420000000005,
+        "max": 7.675676
+      },
+      "area_relative_error_histogram": {
+        "[-1,-0.5)": 2,
+        "[-0.5,-0.25)": 7,
+        "[-0.25,-0.1)": 18,
+        "[-0.1,0)": 48,
+        "[0,0.1)": 54,
+        "[0.1,0.25)": 28,
+        "[0.25,0.5)": 10,
+        "[0.5,1)": 6,
+        "[1,10)": 5
+      },
+      "max_feret_relative_error": {
+        "n": 178,
+        "mean": 0.03452763483146067,
+        "std": 0.40817065716200535,
+        "min": -0.8691,
+        "p10": -0.2398302,
+        "p25": -0.040589,
+        "median": 0.0,
+        "p75": 0.03962225,
+        "p90": 0.17790180000000008,
+        "max": 2.643554
+      },
+      "perimeter_relative_error": {
+        "n": 178,
+        "mean": -0.031219499999999997,
+        "std": 0.27451590584997443,
+        "min": -0.694166,
+        "p10": -0.26615690000000003,
+        "p25": -0.10397200000000001,
+        "median": -0.046832,
+        "p75": -0.0031565,
+        "p90": 0.11514930000000004,
+        "max": 1.509439
+      },
+      "area_pearson_r": 0.9869874530950237
+    },
+    "failure_categories": {
+      "QUALITY_REJECTED": 0,
+      "CORRECT_EMPTY": 2,
+      "FALSE_POSITIVE_ON_EMPTY": 3,
+      "MISSED_WOUND": 8,
+      "LOW_OVERLAP": 6,
+      "UNDER_SEGMENTATION": 10,
+      "OVER_SEGMENTATION": 6,
+      "GOOD": 156
+    },
+    "flags": {
+      "SMALL_WOUND": 73,
+      "FRAGMENTED_PREDICTION": 11,
+      "TOUCHES_BORDER": 0
+    },
+    "latency_s": {
+      "n": 191,
+      "mean": 8.848232984293192,
+      "std": 5.88059695022591,
+      "min": 3.6065,
+      "p10": 4.3397,
+      "p25": 4.97255,
+      "median": 6.3047,
+      "p75": 11.264,
+      "p90": 16.8651,
+      "max": 30.7551
+    }
+  },
+  "phase_02_cross_check": {
+    "reference": "reports/experiments/spec-02-03/cpu_verification/heldout_test_evaluation.json",
+    "compared": 191,
+    "max_abs_dice_difference": 0.00028901362037658807,
+    "samples_differing_by_more_than_0.01": 0
+  },
+  "repeatability": {
+    "policy": "Same checkpoint, config, input bytes, device type and thread count give a bit-identical binary mask and probability map. Across devices or thread counts, probabilities agree to about 1e-5 and binary masks can differ only at pixels within that distance of the threshold.",
+    "checked": 5,
+    "identical": 5,
+    "samples": [
+      {
+        "sample_id": "0001",
+        "identical": true
+      },
+      {
+        "sample_id": "0002",
+        "identical": true
+      },
+      {
+        "sample_id": "0003",
+        "identical": true
+      },
+      {
+        "sample_id": "0004",
+        "identical": true
+      },
+      {
+        "sample_id": "0005",
+        "identical": true
+      }
+    ]
+  },
+  "figures": [
+    "reports/figures/p06/fuseg2021_test_dice_and_area.png"
+  ],
+  "per_sample": [
+    {
+      "sample_id": "0001",
+      "status": "COMPLETED",
+      "seconds": 12.5055,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 684,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.933622,
+        "iou": 0.875507,
+        "precision": 0.921652,
+        "recall": 0.945906,
+        "tp": 647,
+        "fp": 55,
+        "fn": 37
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 702,
+        "components": 1,
+        "mask_sha256": "951d552ac8189a2f77212204a72a970e010dae0d4328e11f004c772ccbd0c7b6"
+      },
+      "measurement_error": {
+        "area_rel": 0.026316,
+        "perimeter_rel": -0.053172,
+        "max_feret_rel": -0.063459
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0002",
+      "status": "COMPLETED",
+      "seconds": 4.195,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3010,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.926692,
+        "iou": 0.863398,
+        "precision": 0.923178,
+        "recall": 0.930233,
+        "tp": 2800,
+        "fp": 233,
+        "fn": 210
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3033,
+        "components": 1,
+        "mask_sha256": "1b3958424bf743ffeb26f2ec2d41d09c5130162434a240c5812cf423da8a6dcf"
+      },
+      "measurement_error": {
+        "area_rel": 0.007641,
+        "perimeter_rel": -0.069723,
+        "max_feret_rel": -0.078034
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0003",
+      "status": "COMPLETED",
+      "seconds": 4.867,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 4982,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.957866,
+        "iou": 0.919139,
+        "precision": 0.923593,
+        "recall": 0.994781,
+        "tp": 4956,
+        "fp": 410,
+        "fn": 26
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 5366,
+        "components": 1,
+        "mask_sha256": "eabb08d09ec7aff89e8a6cc7f0a7c5a121d804173f6eed9e9e8febb64ccd1751"
+      },
+      "measurement_error": {
+        "area_rel": 0.077077,
+        "perimeter_rel": -0.014127,
+        "max_feret_rel": 0.010433
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0004",
+      "status": "COMPLETED",
+      "seconds": 3.7656,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 565,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.872494,
+        "iou": 0.773826,
+        "precision": 0.797654,
+        "recall": 0.962832,
+        "tp": 544,
+        "fp": 138,
+        "fn": 21
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 682,
+        "components": 1,
+        "mask_sha256": "88ed3ffcf8d638cd316f9a0d133c180422332156520135855ac0e573dd2bea1e"
+      },
+      "measurement_error": {
+        "area_rel": 0.20708,
+        "perimeter_rel": -0.022422,
+        "max_feret_rel": 0.085932
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0005",
+      "status": "COMPLETED",
+      "seconds": 4.6863,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1754,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.887203,
+        "iou": 0.797273,
+        "precision": 0.797273,
+        "recall": 1.0,
+        "tp": 1754,
+        "fp": 446,
+        "fn": 0
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2200,
+        "components": 1,
+        "mask_sha256": "960269e029c861fd8edc13f11e929b2276c9436fbc9bd0b3968bed6710936b68"
+      },
+      "measurement_error": {
+        "area_rel": 0.254276,
+        "perimeter_rel": 0.052732,
+        "max_feret_rel": 0.020508
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0006",
+      "status": "COMPLETED",
+      "seconds": 6.1867,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1920,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.941049,
+        "iou": 0.888661,
+        "precision": 0.983532,
+        "recall": 0.902083,
+        "tp": 1732,
+        "fp": 29,
+        "fn": 188
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1761,
+        "components": 1,
+        "mask_sha256": "1f088f65688b5d34e9d1f5a12544788c90116b391088de6b6377262c4c7439f0"
+      },
+      "measurement_error": {
+        "area_rel": -0.082812,
+        "perimeter_rel": -0.062001,
+        "max_feret_rel": -0.034843
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0007",
+      "status": "COMPLETED",
+      "seconds": 10.9094,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 5375,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.724258,
+        "iou": 0.567715,
+        "precision": 0.577515,
+        "recall": 0.970977,
+        "tp": 5219,
+        "fp": 3818,
+        "fn": 156
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION"
+      ],
+      "pred": {
+        "area_px": 9037,
+        "components": 2,
+        "mask_sha256": "9560151850ff4596f1a71514e3febbb28ec88caaf7298c87054c7d58919dfd92"
+      },
+      "measurement_error": {
+        "area_rel": 0.681302,
+        "perimeter_rel": 0.576059,
+        "max_feret_rel": 0.356506
+      },
+      "category": "OVER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0008",
+      "status": "COMPLETED",
+      "seconds": 25.683,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2308,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.917296,
+        "iou": 0.847227,
+        "precision": 0.847539,
+        "recall": 0.999567,
+        "tp": 2307,
+        "fp": 415,
+        "fn": 1
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2722,
+        "components": 1,
+        "mask_sha256": "e676959e476a75ec79fcbf684c189b1d578094ec30e8181162f7a78388d8df16"
+      },
+      "measurement_error": {
+        "area_rel": 0.179376,
+        "perimeter_rel": 0.095899,
+        "max_feret_rel": 0.01913
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0009",
+      "status": "COMPLETED",
+      "seconds": 4.756,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 10995,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.914556,
+        "iou": 0.842564,
+        "precision": 0.84727,
+        "recall": 0.993452,
+        "tp": 10923,
+        "fp": 1969,
+        "fn": 72
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 12892,
+        "components": 1,
+        "mask_sha256": "5a7a3e092fd127622181d8ff5a0a4fc45010f96b5a5802e41289fd42367e445f"
+      },
+      "measurement_error": {
+        "area_rel": 0.172533,
+        "perimeter_rel": 0.061848,
+        "max_feret_rel": 0.085703
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0010",
+      "status": "COMPLETED",
+      "seconds": 3.863,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 11281,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.92968,
+        "iou": 0.868599,
+        "precision": 0.916897,
+        "recall": 0.942824,
+        "tp": 10636,
+        "fp": 964,
+        "fn": 645
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 11600,
+        "components": 1,
+        "mask_sha256": "42d3e6d71b3f2689d5180159f5296fd3f9d36d7b69ba406fef5d3b8efd645eeb"
+      },
+      "measurement_error": {
+        "area_rel": 0.028278,
+        "perimeter_rel": -0.126278,
+        "max_feret_rel": 0.002045
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0025",
+      "status": "COMPLETED",
+      "seconds": 5.2699,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1062,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.9439,
+        "iou": 0.893761,
+        "precision": 0.89527,
+        "recall": 0.998117,
+        "tp": 1060,
+        "fp": 124,
+        "fn": 2
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1184,
+        "components": 1,
+        "mask_sha256": "8651c368595c7ba25b17630679ed30879634e28ba388020b97a5d4f21baca85e"
+      },
+      "measurement_error": {
+        "area_rel": 0.114878,
+        "perimeter_rel": -0.004016,
+        "max_feret_rel": 0.032323
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0030",
+      "status": "COMPLETED",
+      "seconds": 5.1321,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 4699,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.979321,
+        "iou": 0.959479,
+        "precision": 0.971124,
+        "recall": 0.987657,
+        "tp": 4641,
+        "fp": 138,
+        "fn": 58
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 4779,
+        "components": 1,
+        "mask_sha256": "ce24426e94bce5e12d905cdda2477cb9d4b064e7bc249291427403623977a968"
+      },
+      "measurement_error": {
+        "area_rel": 0.017025,
+        "perimeter_rel": -0.017157,
+        "max_feret_rel": 0.005868
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0033",
+      "status": "COMPLETED",
+      "seconds": 12.1461,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1880,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.932315,
+        "iou": 0.873212,
+        "precision": 0.923318,
+        "recall": 0.941489,
+        "tp": 1770,
+        "fp": 147,
+        "fn": 110
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1917,
+        "components": 1,
+        "mask_sha256": "aff6c25a2d58de9db51ab65c3964bfe56e8751ff0c9418307e17e3f8c4838d83"
+      },
+      "measurement_error": {
+        "area_rel": 0.019681,
+        "perimeter_rel": -0.026327,
+        "max_feret_rel": 0.03363
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0046",
+      "status": "COMPLETED",
+      "seconds": 23.718,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2859,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.920937,
+        "iou": 0.85346,
+        "precision": 0.927305,
+        "recall": 0.914655,
+        "tp": 2615,
+        "fp": 205,
+        "fn": 244
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2820,
+        "components": 2,
+        "mask_sha256": "080d4e2c049dba7a00fbec63c71ed211951cfde142733099b216286a5a401d14"
+      },
+      "measurement_error": {
+        "area_rel": -0.013641,
+        "perimeter_rel": -0.087127,
+        "max_feret_rel": -0.028599
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0047",
+      "status": "COMPLETED",
+      "seconds": 22.031,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 738,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.927904,
+        "iou": 0.865504,
+        "precision": 0.914474,
+        "recall": 0.941734,
+        "tp": 695,
+        "fp": 65,
+        "fn": 43
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 760,
+        "components": 1,
+        "mask_sha256": "3945e1e00e4609069b481c3abafcc2c070a41aa7d41d050ab9312dba2d8ebd80"
+      },
+      "measurement_error": {
+        "area_rel": 0.02981,
+        "perimeter_rel": -0.256765,
+        "max_feret_rel": -0.014245
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0057",
+      "status": "COMPLETED",
+      "seconds": 11.8329,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 719,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.948555,
+        "iou": 0.902145,
+        "precision": 0.961429,
+        "recall": 0.936022,
+        "tp": 673,
+        "fp": 27,
+        "fn": 46
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 700,
+        "components": 1,
+        "mask_sha256": "34e58f08f73ed512e668d5feb3d6fc7e51773721d6e3d2ce9b0f86f1591abe49"
+      },
+      "measurement_error": {
+        "area_rel": -0.026426,
+        "perimeter_rel": 0.003417,
+        "max_feret_rel": 0.038852
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0058",
+      "status": "COMPLETED",
+      "seconds": 12.1001,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3193,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.938325,
+        "iou": 0.883815,
+        "precision": 0.990944,
+        "recall": 0.891012,
+        "tp": 2845,
+        "fp": 26,
+        "fn": 348
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2871,
+        "components": 1,
+        "mask_sha256": "e2cff09c10e7edacb67cdd1561e133bed354e957acb9a0f7c10522a6f73b7aeb"
+      },
+      "measurement_error": {
+        "area_rel": -0.100846,
+        "perimeter_rel": -0.040362,
+        "max_feret_rel": 0.009043
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0062",
+      "status": "COMPLETED",
+      "seconds": 8.6841,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1118,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.973218,
+        "iou": 0.947834,
+        "precision": 0.988018,
+        "recall": 0.958855,
+        "tp": 1072,
+        "fp": 13,
+        "fn": 46
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1085,
+        "components": 1,
+        "mask_sha256": "92c3719f33422084682bc54d2b9b8538ffe3779a5c829e6e840dc8801e2efdaa"
+      },
+      "measurement_error": {
+        "area_rel": -0.029517,
+        "perimeter_rel": -0.044897,
+        "max_feret_rel": -0.016608
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0068",
+      "status": "COMPLETED",
+      "seconds": 5.8428,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 400,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.924433,
+        "iou": 0.859485,
+        "precision": 0.931472,
+        "recall": 0.9175,
+        "tp": 367,
+        "fp": 27,
+        "fn": 33
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 394,
+        "components": 1,
+        "mask_sha256": "10c3ef3a3c18c2f42f0b75a6bfb119d3b6280746315d64d691aedd437c298de8"
+      },
+      "measurement_error": {
+        "area_rel": -0.015,
+        "perimeter_rel": -0.204908,
+        "max_feret_rel": -0.199723
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0078",
+      "status": "COMPLETED",
+      "seconds": 3.9674,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2054,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.941316,
+        "iou": 0.889137,
+        "precision": 0.915746,
+        "recall": 0.968354,
+        "tp": 1989,
+        "fp": 183,
+        "fn": 65
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2172,
+        "components": 1,
+        "mask_sha256": "8aa5ca32395273f77ec3cf1e7cf26d6a00096ffe44b5464e27afcffb4814e697"
+      },
+      "measurement_error": {
+        "area_rel": 0.057449,
+        "perimeter_rel": -0.00287,
+        "max_feret_rel": -0.016654
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0079",
+      "status": "COMPLETED",
+      "seconds": 4.9495,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 43,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.363636,
+        "iou": 0.222222,
+        "precision": 0.223404,
+        "recall": 0.976744,
+        "tp": 42,
+        "fp": 146,
+        "fn": 1
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 188,
+        "components": 1,
+        "mask_sha256": "c8788d68aefd0376e51b3a424bd399641ba47876f6c64313939f2665585f5924"
+      },
+      "measurement_error": {
+        "area_rel": 3.372093,
+        "perimeter_rel": 0.955982,
+        "max_feret_rel": 0.363958
+      },
+      "category": "LOW_OVERLAP"
+    },
+    {
+      "sample_id": "0082",
+      "status": "COMPLETED",
+      "seconds": 3.8621,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1263,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.904288,
+        "iou": 0.825296,
+        "precision": 0.998088,
+        "recall": 0.826603,
+        "tp": 1044,
+        "fp": 2,
+        "fn": 219
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1046,
+        "components": 1,
+        "mask_sha256": "99f94643002dbbb62f8d0da5608c527f1151270e4ced1e52efd5faaa1e03db0a"
+      },
+      "measurement_error": {
+        "area_rel": -0.171813,
+        "perimeter_rel": -0.194902,
+        "max_feret_rel": -0.080969
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0085",
+      "status": "COMPLETED",
+      "seconds": 4.0916,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 705,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.846964,
+        "iou": 0.734551,
+        "precision": 0.986792,
+        "recall": 0.741844,
+        "tp": 523,
+        "fp": 7,
+        "fn": 182
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 530,
+        "components": 1,
+        "mask_sha256": "e0754487da9e2eb5918c92ddb537e383bb075430ac486b9b52f699503d9bea4d"
+      },
+      "measurement_error": {
+        "area_rel": -0.248227,
+        "perimeter_rel": -0.3436,
+        "max_feret_rel": -0.322342
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0089",
+      "status": "COMPLETED",
+      "seconds": 3.8496,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2577,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.936801,
+        "iou": 0.881116,
+        "precision": 0.983362,
+        "recall": 0.894451,
+        "tp": 2305,
+        "fp": 39,
+        "fn": 272
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2344,
+        "components": 1,
+        "mask_sha256": "fb4fc64371a3d674ac52d433d39e3adb1b5be22000a6a99f3eea5511c59e6427"
+      },
+      "measurement_error": {
+        "area_rel": -0.090415,
+        "perimeter_rel": -0.265592,
+        "max_feret_rel": -0.526235
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0107",
+      "status": "COMPLETED",
+      "seconds": 5.2686,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 814,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.953732,
+        "iou": 0.911557,
+        "precision": 0.957869,
+        "recall": 0.949631,
+        "tp": 773,
+        "fp": 34,
+        "fn": 41
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 807,
+        "components": 1,
+        "mask_sha256": "6ea19d816f8513e4b1cc5ced2821fde6c3c0c5ae33d1eaa04bcd353ac1ac759f"
+      },
+      "measurement_error": {
+        "area_rel": -0.0086,
+        "perimeter_rel": -0.065879,
+        "max_feret_rel": -0.004283
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0108",
+      "status": "COMPLETED",
+      "seconds": 22.3038,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 4094,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.940041,
+        "iou": 0.886866,
+        "precision": 0.993203,
+        "recall": 0.892281,
+        "tp": 3653,
+        "fp": 25,
+        "fn": 441
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3678,
+        "components": 1,
+        "mask_sha256": "fe512b255ac57f4cd35c8389e96006debd2b6c53712c01ef7fbd83457d1994b2"
+      },
+      "measurement_error": {
+        "area_rel": -0.101612,
+        "perimeter_rel": -0.075538,
+        "max_feret_rel": -0.028854
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0122",
+      "status": "COMPLETED",
+      "seconds": 18.1866,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1525,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.880734,
+        "iou": 0.786885,
+        "precision": 1.0,
+        "recall": 0.786885,
+        "tp": 1200,
+        "fp": 0,
+        "fn": 325
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1200,
+        "components": 1,
+        "mask_sha256": "76db2bccd1170e9dfa219e4f3eb592e35adac919d65a002b659c592d3046e31f"
+      },
+      "measurement_error": {
+        "area_rel": -0.213115,
+        "perimeter_rel": -0.165966,
+        "max_feret_rel": -0.174166
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0124",
+      "status": "COMPLETED",
+      "seconds": 4.201,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1976,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.940654,
+        "iou": 0.887957,
+        "precision": 0.972958,
+        "recall": 0.910425,
+        "tp": 1799,
+        "fp": 50,
+        "fn": 177
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1849,
+        "components": 1,
+        "mask_sha256": "4c2b8822d1a995675732f44534d144c103d80350bb17116a3b94cd2988a0fd79"
+      },
+      "measurement_error": {
+        "area_rel": -0.064271,
+        "perimeter_rel": -0.104217,
+        "max_feret_rel": -0.01957
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0126",
+      "status": "COMPLETED",
+      "seconds": 4.1323,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 963,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.96315,
+        "iou": 0.928919,
+        "precision": 0.937132,
+        "recall": 0.990654,
+        "tp": 954,
+        "fp": 64,
+        "fn": 9
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1018,
+        "components": 1,
+        "mask_sha256": "33e6e035614dd72e424a74ddc3b76b17c87bbd4bc12a4161005630cacfd90fba"
+      },
+      "measurement_error": {
+        "area_rel": 0.057113,
+        "perimeter_rel": 0.036499,
+        "max_feret_rel": 0.111149
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0128",
+      "status": "COMPLETED",
+      "seconds": 6.3047,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 0,
+        "components": 0
+      },
+      "metrics": {
+        "dice": 1.0,
+        "iou": 1.0,
+        "precision": null,
+        "recall": null,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 0,
+        "components": 0,
+        "mask_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+      },
+      "category": "CORRECT_EMPTY"
+    },
+    {
+      "sample_id": "0133",
+      "status": "COMPLETED",
+      "seconds": 8.6967,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3089,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.966235,
+        "iou": 0.934676,
+        "precision": 0.942444,
+        "recall": 0.991259,
+        "tp": 3062,
+        "fp": 187,
+        "fn": 27
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3249,
+        "components": 1,
+        "mask_sha256": "b609667e416ecf63e42ea651a1dbedba1134db1fe1cb6b5022a5fb7e308444a4"
+      },
+      "measurement_error": {
+        "area_rel": 0.051797,
+        "perimeter_rel": -0.031062,
+        "max_feret_rel": -0.013576
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0134",
+      "status": "COMPLETED",
+      "seconds": 4.2161,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1992,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.919444,
+        "iou": 0.8509,
+        "precision": 0.853093,
+        "recall": 0.996988,
+        "tp": 1986,
+        "fp": 342,
+        "fn": 6
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2328,
+        "components": 1,
+        "mask_sha256": "791e1a2f1ab0cad79e0e287a48d51ffe8e6e9294e4cdb07b7b991dc3a13490c0"
+      },
+      "measurement_error": {
+        "area_rel": 0.168675,
+        "perimeter_rel": 0.063192,
+        "max_feret_rel": 0.062479
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0136",
+      "status": "COMPLETED",
+      "seconds": 6.6666,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 5976,
+        "components": 5
+      },
+      "metrics": {
+        "dice": 0.921835,
+        "iou": 0.855003,
+        "precision": 0.917177,
+        "recall": 0.926539,
+        "tp": 5537,
+        "fp": 500,
+        "fn": 439
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 6037,
+        "components": 1,
+        "mask_sha256": "6f41ee47e07092cf1fe18502e80ebfff676601eca036e06580d1f1d6d47ccc52"
+      },
+      "measurement_error": {
+        "area_rel": 0.010207,
+        "perimeter_rel": -0.335028,
+        "max_feret_rel": -0.51775
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0143",
+      "status": "COMPLETED",
+      "seconds": 4.9638,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 360,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.927727,
+        "iou": 0.865196,
+        "precision": 0.880299,
+        "recall": 0.980556,
+        "tp": 353,
+        "fp": 48,
+        "fn": 7
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 401,
+        "components": 1,
+        "mask_sha256": "956110ed8d8a1465ee04f95e91af26e7382fcba63f9946589c85bab298249dcf"
+      },
+      "measurement_error": {
+        "area_rel": 0.113889,
+        "perimeter_rel": 0.015548,
+        "max_feret_rel": 0.071255
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0146",
+      "status": "COMPLETED",
+      "seconds": 29.0162,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 152,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.934641,
+        "iou": 0.877301,
+        "precision": 0.928571,
+        "recall": 0.940789,
+        "tp": 143,
+        "fp": 11,
+        "fn": 9
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 154,
+        "components": 1,
+        "mask_sha256": "a037538e5beae62d0fc2e96f14c4dbe82f2a96a345dc62ac6cff4170840cb3e0"
+      },
+      "measurement_error": {
+        "area_rel": 0.013158,
+        "perimeter_rel": -0.012791,
+        "max_feret_rel": 0.016751
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0164",
+      "status": "COMPLETED",
+      "seconds": 28.2207,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1578,
+        "components": 3
+      },
+      "metrics": {
+        "dice": 0.804165,
+        "iou": 0.672472,
+        "precision": 0.855611,
+        "recall": 0.758555,
+        "tp": 1197,
+        "fp": 202,
+        "fn": 381
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1399,
+        "components": 2,
+        "mask_sha256": "21ff97b52b8e7088b0e84ab802b0794734d82cb7a0fa69e324bcea03410da8a2"
+      },
+      "measurement_error": {
+        "area_rel": -0.113435,
+        "perimeter_rel": -0.255132,
+        "max_feret_rel": -0.007199
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0177",
+      "status": "COMPLETED",
+      "seconds": 15.8554,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 523,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.899628,
+        "iou": 0.817568,
+        "precision": 0.875226,
+        "recall": 0.92543,
+        "tp": 484,
+        "fp": 69,
+        "fn": 39
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 553,
+        "components": 1,
+        "mask_sha256": "d907c5b6aa51318e52a1910844f7c4dab5afeddb7b6df056df4d43dd44c78265"
+      },
+      "measurement_error": {
+        "area_rel": 0.057361,
+        "perimeter_rel": -0.015243,
+        "max_feret_rel": -0.063895
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0180",
+      "status": "COMPLETED",
+      "seconds": 21.8758,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3979,
+        "components": 3
+      },
+      "metrics": {
+        "dice": 0.846933,
+        "iou": 0.734505,
+        "precision": 0.760192,
+        "recall": 0.956019,
+        "tp": 3804,
+        "fp": 1200,
+        "fn": 175
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION"
+      ],
+      "pred": {
+        "area_px": 5004,
+        "components": 4,
+        "mask_sha256": "b565b5a0e28fa3a7722012749365cf104e98ee510d54bb483364869c30f80548"
+      },
+      "measurement_error": {
+        "area_rel": 0.257602,
+        "perimeter_rel": 0.16597,
+        "max_feret_rel": 0.240645
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0190",
+      "status": "COMPLETED",
+      "seconds": 9.0287,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1683,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.880537,
+        "iou": 0.786571,
+        "precision": 0.803134,
+        "recall": 0.97445,
+        "tp": 1640,
+        "fp": 402,
+        "fn": 43
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2042,
+        "components": 1,
+        "mask_sha256": "10f3050ecec2197453f8caa5e00624d445a0cf915c812d9a3644877f651984b1"
+      },
+      "measurement_error": {
+        "area_rel": 0.21331,
+        "perimeter_rel": -0.211501,
+        "max_feret_rel": -0.080345
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0192",
+      "status": "COMPLETED",
+      "seconds": 7.2206,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3400,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.73269,
+        "iou": 0.578146,
+        "precision": 0.863183,
+        "recall": 0.636471,
+        "tp": 2164,
+        "fp": 343,
+        "fn": 1236
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2507,
+        "components": 2,
+        "mask_sha256": "1e445319b9a03b04bbab1f02a3c0914d1fe0a61532e82d77024fee1ebf549b84"
+      },
+      "measurement_error": {
+        "area_rel": -0.262647,
+        "perimeter_rel": -0.411327,
+        "max_feret_rel": -0.240372
+      },
+      "category": "UNDER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0203",
+      "status": "COMPLETED",
+      "seconds": 5.3198,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 7347,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.98006,
+        "iou": 0.960899,
+        "precision": 0.976747,
+        "recall": 0.983395,
+        "tp": 7225,
+        "fp": 172,
+        "fn": 122
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 7397,
+        "components": 2,
+        "mask_sha256": "8d61b59205bc527073481a81fcbaa40be49277511c4223d79cc3a64d8067385f"
+      },
+      "measurement_error": {
+        "area_rel": 0.006805,
+        "perimeter_rel": -0.0473,
+        "max_feret_rel": -0.001862
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0208",
+      "status": "COMPLETED",
+      "seconds": 6.5347,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2756,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.934687,
+        "iou": 0.877382,
+        "precision": 0.989858,
+        "recall": 0.885341,
+        "tp": 2440,
+        "fp": 25,
+        "fn": 316
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2465,
+        "components": 1,
+        "mask_sha256": "caa64ad2450ef8a9235a5c9647567678fdb4a7e9203d422eb7a08114cb37f5cd"
+      },
+      "measurement_error": {
+        "area_rel": -0.105588,
+        "perimeter_rel": -0.134961,
+        "max_feret_rel": -0.091181
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0211",
+      "status": "COMPLETED",
+      "seconds": 7.0818,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3910,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.955015,
+        "iou": 0.913903,
+        "precision": 0.919309,
+        "recall": 0.993606,
+        "tp": 3885,
+        "fp": 341,
+        "fn": 25
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 4226,
+        "components": 1,
+        "mask_sha256": "de3dbc63e4d9aee1ce3d4bc5f78d6af014c7fd6c81295004e8f9c4ef9bd6aa7d"
+      },
+      "measurement_error": {
+        "area_rel": 0.080818,
+        "perimeter_rel": -0.020913,
+        "max_feret_rel": 0.00759
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0213",
+      "status": "COMPLETED",
+      "seconds": 5.2553,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2269,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.977866,
+        "iou": 0.956691,
+        "precision": 0.982214,
+        "recall": 0.973557,
+        "tp": 2209,
+        "fp": 40,
+        "fn": 60
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2249,
+        "components": 1,
+        "mask_sha256": "1bf15d54293d2ddb23c0a443bb441e8eff3e321695dd71441b267056759a562d"
+      },
+      "measurement_error": {
+        "area_rel": -0.008814,
+        "perimeter_rel": -0.106562,
+        "max_feret_rel": -0.001725
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0217",
+      "status": "COMPLETED",
+      "seconds": 9.4364,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2058,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.957597,
+        "iou": 0.918644,
+        "precision": 0.996324,
+        "recall": 0.921769,
+        "tp": 1897,
+        "fp": 7,
+        "fn": 161
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1904,
+        "components": 1,
+        "mask_sha256": "bcbd91a69739545a0dfe22871cbcdd86113d6f46272234b1abd4a3e2601c7535"
+      },
+      "measurement_error": {
+        "area_rel": -0.07483,
+        "perimeter_rel": -0.097737,
+        "max_feret_rel": -0.04139
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0235",
+      "status": "COMPLETED",
+      "seconds": 5.7053,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 898,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.947187,
+        "iou": 0.899673,
+        "precision": 0.977488,
+        "recall": 0.918708,
+        "tp": 825,
+        "fp": 19,
+        "fn": 73
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 844,
+        "components": 1,
+        "mask_sha256": "a6410ca659aed01fa627dfd463d34cc65a917bbe1395cb27fefde8c3fd513db1"
+      },
+      "measurement_error": {
+        "area_rel": -0.060134,
+        "perimeter_rel": -0.102022,
+        "max_feret_rel": -0.042125
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0245",
+      "status": "COMPLETED",
+      "seconds": 7.7464,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 74,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.206704,
+        "iou": 0.115265,
+        "precision": 0.115265,
+        "recall": 1.0,
+        "tp": 74,
+        "fp": 568,
+        "fn": 0
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 642,
+        "components": 1,
+        "mask_sha256": "df0c0e080f7947029f64db4101457def330b53112455d0902d963244e54b1ff3"
+      },
+      "measurement_error": {
+        "area_rel": 7.675676,
+        "perimeter_rel": 1.509439,
+        "max_feret_rel": 1.177683
+      },
+      "category": "LOW_OVERLAP"
+    },
+    {
+      "sample_id": "0251",
+      "status": "COMPLETED",
+      "seconds": 7.349,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 192,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.827586,
+        "iou": 0.705882,
+        "precision": 0.705882,
+        "recall": 1.0,
+        "tp": 192,
+        "fp": 80,
+        "fn": 0
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 272,
+        "components": 1,
+        "mask_sha256": "6c9e819a64438c68f19544afe472ae0aa2e48b8b186cd8c8eff6aff20fe8a448"
+      },
+      "measurement_error": {
+        "area_rel": 0.416667,
+        "perimeter_rel": 0.106138,
+        "max_feret_rel": 0.109489
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0259",
+      "status": "COMPLETED",
+      "seconds": 5.5822,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2769,
+        "components": 3
+      },
+      "metrics": {
+        "dice": 0.715736,
+        "iou": 0.557312,
+        "precision": 0.991054,
+        "recall": 0.56013,
+        "tp": 1551,
+        "fp": 14,
+        "fn": 1218
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1565,
+        "components": 3,
+        "mask_sha256": "97bf9efccd0f9f68c317748cf19ca0a8c846c8fda1c2b7fd07fca92b60758ea7"
+      },
+      "measurement_error": {
+        "area_rel": -0.434814,
+        "perimeter_rel": -0.277168,
+        "max_feret_rel": -0.030487
+      },
+      "category": "UNDER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0262",
+      "status": "COMPLETED",
+      "seconds": 7.4278,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 853,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.887846,
+        "iou": 0.798311,
+        "precision": 0.799812,
+        "recall": 0.997655,
+        "tp": 851,
+        "fp": 213,
+        "fn": 2
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1064,
+        "components": 1,
+        "mask_sha256": "f7c737eb15d0e023f218494f8848e9df6f15699ac5938e442ea6d7e58174d72a"
+      },
+      "measurement_error": {
+        "area_rel": 0.247362,
+        "perimeter_rel": 0.006671,
+        "max_feret_rel": 0.076487
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0276",
+      "status": "COMPLETED",
+      "seconds": 7.3808,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1146,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.848555,
+        "iou": 0.736948,
+        "precision": 0.759834,
+        "recall": 0.960733,
+        "tp": 1101,
+        "fp": 348,
+        "fn": 45
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1449,
+        "components": 1,
+        "mask_sha256": "458e2993578b8daa571968f8ecdd3dc574c4f1f8d0fd8111df7f60c5fc4edfc0"
+      },
+      "measurement_error": {
+        "area_rel": 0.264398,
+        "perimeter_rel": 0.141687,
+        "max_feret_rel": 0.176127
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0278",
+      "status": "COMPLETED",
+      "seconds": 8.3593,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 558,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.942078,
+        "iou": 0.890499,
+        "precision": 0.897727,
+        "recall": 0.991039,
+        "tp": 553,
+        "fp": 63,
+        "fn": 5
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 616,
+        "components": 1,
+        "mask_sha256": "ff8447c3fd46f24a74800153e65a6245231a0452c6a8abef20567fc094fda734"
+      },
+      "measurement_error": {
+        "area_rel": 0.103943,
+        "perimeter_rel": 0.014512,
+        "max_feret_rel": 0.040537
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0289",
+      "status": "COMPLETED",
+      "seconds": 30.7551,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1025,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.967619,
+        "iou": 0.937269,
+        "precision": 0.945116,
+        "recall": 0.99122,
+        "tp": 1016,
+        "fp": 59,
+        "fn": 9
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1075,
+        "components": 1,
+        "mask_sha256": "e2fc18400c6a0413ccff84f51ce5e68955d90560e9e6569f4f7e9cbeb8945681"
+      },
+      "measurement_error": {
+        "area_rel": 0.04878,
+        "perimeter_rel": 0.00192,
+        "max_feret_rel": 0.00896
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0291",
+      "status": "COMPLETED",
+      "seconds": 26.8269,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1569,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.945578,
+        "iou": 0.896774,
+        "precision": 0.918318,
+        "recall": 0.974506,
+        "tp": 1529,
+        "fp": 136,
+        "fn": 40
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1665,
+        "components": 1,
+        "mask_sha256": "7081a6cd41606ed6abfd8f3b6a3de8d6a94799c4b98cb56edbb8c9109cf8a365"
+      },
+      "measurement_error": {
+        "area_rel": 0.061185,
+        "perimeter_rel": -0.103531,
+        "max_feret_rel": -0.062278
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0300",
+      "status": "COMPLETED",
+      "seconds": 6.5705,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 5907,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.973914,
+        "iou": 0.949155,
+        "precision": 0.959127,
+        "recall": 0.989165,
+        "tp": 5843,
+        "fp": 249,
+        "fn": 64
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 6092,
+        "components": 2,
+        "mask_sha256": "a683af34dd7650943aea646182f1f1228183b57e9d9401c963f5fd11d6bc5c36"
+      },
+      "measurement_error": {
+        "area_rel": 0.031319,
+        "perimeter_rel": -0.002716,
+        "max_feret_rel": -0.006491
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0301",
+      "status": "COMPLETED",
+      "seconds": 11.7205,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3009,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.953515,
+        "iou": 0.91116,
+        "precision": 0.949275,
+        "recall": 0.957793,
+        "tp": 2882,
+        "fp": 154,
+        "fn": 127
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3036,
+        "components": 2,
+        "mask_sha256": "8ae26ba1c4e09f2fb8861c53876131d7753f9f9c6d3fa104cec0cb9db7dc5d7b"
+      },
+      "measurement_error": {
+        "area_rel": 0.008973,
+        "perimeter_rel": -0.049255,
+        "max_feret_rel": 0.001943
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0303",
+      "status": "COMPLETED",
+      "seconds": 11.5223,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2569,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.871795,
+        "iou": 0.772727,
+        "precision": 0.781308,
+        "recall": 0.985987,
+        "tp": 2533,
+        "fp": 709,
+        "fn": 36
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3242,
+        "components": 2,
+        "mask_sha256": "ca51458a2ef41b0169ce11e0e848cc479ee23e58c502a82247d48d9f58616be3"
+      },
+      "measurement_error": {
+        "area_rel": 0.26197,
+        "perimeter_rel": 0.237929,
+        "max_feret_rel": 0.028328
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0322",
+      "status": "COMPLETED",
+      "seconds": 18.9908,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 543,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.95293,
+        "iou": 0.910092,
+        "precision": 0.995984,
+        "recall": 0.913444,
+        "tp": 496,
+        "fp": 2,
+        "fn": 47
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 498,
+        "components": 1,
+        "mask_sha256": "6b60ef7ab2540ab56717134ba3056dde07f68522fcc522777711311375bc9ec0"
+      },
+      "measurement_error": {
+        "area_rel": -0.082873,
+        "perimeter_rel": -0.087814,
+        "max_feret_rel": -0.029365
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0326",
+      "status": "COMPLETED",
+      "seconds": 24.0167,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 15858,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.875821,
+        "iou": 0.779076,
+        "precision": 0.995424,
+        "recall": 0.781877,
+        "tp": 12399,
+        "fp": 57,
+        "fn": 3459
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 12456,
+        "components": 1,
+        "mask_sha256": "8300deb16efb7ad8252f4cd9a60b00440408379f9b427dbd3f00a39c019a5a4e"
+      },
+      "measurement_error": {
+        "area_rel": -0.214529,
+        "perimeter_rel": -0.091977,
+        "max_feret_rel": -0.163794
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0334",
+      "status": "COMPLETED",
+      "seconds": 4.3778,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3152,
+        "components": 4
+      },
+      "metrics": {
+        "dice": 0.879437,
+        "iou": 0.784818,
+        "precision": 0.907801,
+        "recall": 0.852792,
+        "tp": 2688,
+        "fp": 273,
+        "fn": 464
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2961,
+        "components": 2,
+        "mask_sha256": "17b33563a601e9fbcf2f6672e376177a3678e105977033d6195beb0a3bc0e4f9"
+      },
+      "measurement_error": {
+        "area_rel": -0.060596,
+        "perimeter_rel": -0.415042,
+        "max_feret_rel": -0.435895
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0337",
+      "status": "COMPLETED",
+      "seconds": 6.4256,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1176,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.681024,
+        "iou": 0.516328,
+        "precision": 0.517699,
+        "recall": 0.994898,
+        "tp": 1170,
+        "fp": 1090,
+        "fn": 6
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 2260,
+        "components": 1,
+        "mask_sha256": "443517e91b9d91c8da5b261e910ea21cdee676ce61eeae721c433d4b119d2692"
+      },
+      "measurement_error": {
+        "area_rel": 0.921769,
+        "perimeter_rel": -0.019921,
+        "max_feret_rel": 0.074824
+      },
+      "category": "OVER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0341",
+      "status": "COMPLETED",
+      "seconds": 7.1576,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 212,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.406571,
+        "iou": 0.255155,
+        "precision": 0.259843,
+        "recall": 0.933962,
+        "tp": 198,
+        "fp": 564,
+        "fn": 14
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 762,
+        "components": 1,
+        "mask_sha256": "7ee80af4241b58ea690d8a65b04cc8b74df14eaecffa0d494e015c59ff581233"
+      },
+      "measurement_error": {
+        "area_rel": 2.59434,
+        "perimeter_rel": 0.438157,
+        "max_feret_rel": 0.55332
+      },
+      "category": "LOW_OVERLAP"
+    },
+    {
+      "sample_id": "0349",
+      "status": "COMPLETED",
+      "seconds": 5.1041,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1699,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.192405,
+        "iou": 0.106443,
+        "precision": 0.339791,
+        "recall": 0.134197,
+        "tp": 228,
+        "fp": 443,
+        "fn": 1471
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 671,
+        "components": 1,
+        "mask_sha256": "84e58ce78dbc3f1b709a931c031f1e5572286c6ca70ac53e4823f13db799c9d3"
+      },
+      "measurement_error": {
+        "area_rel": -0.605062,
+        "perimeter_rel": -0.694166,
+        "max_feret_rel": -0.8691
+      },
+      "category": "LOW_OVERLAP"
+    },
+    {
+      "sample_id": "0355",
+      "status": "COMPLETED",
+      "seconds": 11.101,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2130,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.965831,
+        "iou": 0.933921,
+        "precision": 0.938053,
+        "recall": 0.995305,
+        "tp": 2120,
+        "fp": 140,
+        "fn": 10
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2260,
+        "components": 1,
+        "mask_sha256": "b38f720cbde8bfdec48e79c7428464668c4987a58496c3a30288dbf39eb4b240"
+      },
+      "measurement_error": {
+        "area_rel": 0.061033,
+        "perimeter_rel": -0.025447,
+        "max_feret_rel": 0.042697
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0363",
+      "status": "COMPLETED",
+      "seconds": 7.1043,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 4820,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.961681,
+        "iou": 0.92619,
+        "precision": 0.978938,
+        "recall": 0.945021,
+        "tp": 4555,
+        "fp": 98,
+        "fn": 265
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 4653,
+        "components": 1,
+        "mask_sha256": "f07c18e89a6294e318bf55d6f1fde9a6b715bec4d2df9a8de1d22a0644468036"
+      },
+      "measurement_error": {
+        "area_rel": -0.034647,
+        "perimeter_rel": -0.043284,
+        "max_feret_rel": 0.02097
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0365",
+      "status": "COMPLETED",
+      "seconds": 7.4918,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 20164,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.971504,
+        "iou": 0.944587,
+        "precision": 0.997492,
+        "recall": 0.946836,
+        "tp": 19092,
+        "fp": 48,
+        "fn": 1072
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 19140,
+        "components": 1,
+        "mask_sha256": "509c5f7acbf44eb197956a3b40b430fb43907f9950909c68b171415cf4d7651d"
+      },
+      "measurement_error": {
+        "area_rel": -0.050784,
+        "perimeter_rel": -0.032671,
+        "max_feret_rel": -0.036709
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0369",
+      "status": "COMPLETED",
+      "seconds": 11.7797,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3338,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.978059,
+        "iou": 0.957061,
+        "precision": 0.961772,
+        "recall": 0.994907,
+        "tp": 3321,
+        "fp": 132,
+        "fn": 17
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3453,
+        "components": 1,
+        "mask_sha256": "187f1b54c1f3b8ad7c43e2d461bd9b31ae623e0e3926942733d47632566711df"
+      },
+      "measurement_error": {
+        "area_rel": 0.034452,
+        "perimeter_rel": -0.019731,
+        "max_feret_rel": 0.002818
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0375",
+      "status": "COMPLETED",
+      "seconds": 7.1971,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3416,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.988502,
+        "iou": 0.977266,
+        "precision": 0.982923,
+        "recall": 0.994145,
+        "tp": 3396,
+        "fp": 59,
+        "fn": 20
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3455,
+        "components": 1,
+        "mask_sha256": "32b020e4b9f87605cc42f955a65fef5da6a4531f5faf2048c22e9c01f1687f96"
+      },
+      "measurement_error": {
+        "area_rel": 0.011417,
+        "perimeter_rel": -0.04079,
+        "max_feret_rel": -0.005657
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0376",
+      "status": "COMPLETED",
+      "seconds": 7.4983,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 831,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.914127,
+        "iou": 0.841837,
+        "precision": 0.847023,
+        "recall": 0.99278,
+        "tp": 825,
+        "fp": 149,
+        "fn": 6
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 974,
+        "components": 1,
+        "mask_sha256": "14925ef0977937971a9bd035e6a80caba2569718c0ddd58ddbaf35d60154241c"
+      },
+      "measurement_error": {
+        "area_rel": 0.172082,
+        "perimeter_rel": -0.110468,
+        "max_feret_rel": 0.063302
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0382",
+      "status": "COMPLETED",
+      "seconds": 6.1799,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 17205,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.931934,
+        "iou": 0.872543,
+        "precision": 0.879703,
+        "recall": 0.990759,
+        "tp": 17046,
+        "fp": 2331,
+        "fn": 159
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 19377,
+        "components": 2,
+        "mask_sha256": "b16cbc80d9a7412ebdf61729a1162cb4e5cf34f0008fd606258f174f831b8f54"
+      },
+      "measurement_error": {
+        "area_rel": 0.126242,
+        "perimeter_rel": 0.11007,
+        "max_feret_rel": 0.359913
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0390",
+      "status": "COMPLETED",
+      "seconds": 4.7268,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1155,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.919888,
+        "iou": 0.851661,
+        "precision": 0.85229,
+        "recall": 0.999134,
+        "tp": 1154,
+        "fp": 200,
+        "fn": 1
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1354,
+        "components": 1,
+        "mask_sha256": "ae8916a3f508cd3d3ec6bfcf2a264124e686e158e3e434062a5b59da13a2f9f6"
+      },
+      "measurement_error": {
+        "area_rel": 0.172294,
+        "perimeter_rel": 0.043002,
+        "max_feret_rel": 0.106094
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0398",
+      "status": "COMPLETED",
+      "seconds": 5.46,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 601,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.943973,
+        "iou": 0.893891,
+        "precision": 0.963605,
+        "recall": 0.925125,
+        "tp": 556,
+        "fp": 21,
+        "fn": 45
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 577,
+        "components": 1,
+        "mask_sha256": "08d3a497f9d70749495853f61b7f761119ba7ed5ebdf52a8f4f6219afc76374f"
+      },
+      "measurement_error": {
+        "area_rel": -0.039933,
+        "perimeter_rel": -0.091528,
+        "max_feret_rel": -0.034384
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0405",
+      "status": "COMPLETED",
+      "seconds": 4.4431,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 967,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.930633,
+        "iou": 0.870265,
+        "precision": 0.911706,
+        "recall": 0.950362,
+        "tp": 919,
+        "fp": 89,
+        "fn": 48
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1008,
+        "components": 1,
+        "mask_sha256": "79d075666fab90c4dc0561b564d95a764467e80ecc07831fa6338e608b2282f8"
+      },
+      "measurement_error": {
+        "area_rel": 0.042399,
+        "perimeter_rel": -0.124118,
+        "max_feret_rel": -0.076535
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0407",
+      "status": "COMPLETED",
+      "seconds": 4.8922,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1909,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.705882,
+        "iou": 0.545455,
+        "precision": 0.938315,
+        "recall": 0.565741,
+        "tp": 1080,
+        "fp": 71,
+        "fn": 829
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1151,
+        "components": 1,
+        "mask_sha256": "2379ae31d8a387069ef053eaa8c3a2832dc17699506fbd0eb9ea07951d9af7a2"
+      },
+      "measurement_error": {
+        "area_rel": -0.397067,
+        "perimeter_rel": -0.28945,
+        "max_feret_rel": -0.239598
+      },
+      "category": "UNDER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0412",
+      "status": "COMPLETED",
+      "seconds": 5.4442,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1469,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.623596,
+        "iou": 0.453061,
+        "precision": 0.475205,
+        "recall": 0.906739,
+        "tp": 1332,
+        "fp": 1471,
+        "fn": 137
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION"
+      ],
+      "pred": {
+        "area_px": 2803,
+        "components": 2,
+        "mask_sha256": "47bdea91a53fbefbe5282707af12d9d3e0db3531b92fd293c018274a4a1cfa25"
+      },
+      "measurement_error": {
+        "area_rel": 0.908101,
+        "perimeter_rel": 0.644963,
+        "max_feret_rel": 2.195127
+      },
+      "category": "OVER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0416",
+      "status": "COMPLETED",
+      "seconds": 4.4911,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 6997,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.976642,
+        "iou": 0.954351,
+        "precision": 0.967466,
+        "recall": 0.985994,
+        "tp": 6899,
+        "fp": 232,
+        "fn": 98
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 7131,
+        "components": 1,
+        "mask_sha256": "36fd1b60e1e462a440a19c7b5a2ebe2e324db434e03eccc2b8338d189089bfd4"
+      },
+      "measurement_error": {
+        "area_rel": 0.019151,
+        "perimeter_rel": -0.062167,
+        "max_feret_rel": 0.015495
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0417",
+      "status": "COMPLETED",
+      "seconds": 4.8772,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 0,
+        "components": 0
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": 0.0,
+        "recall": null,
+        "tp": 0,
+        "fp": 648,
+        "fn": 0
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 648,
+        "components": 1,
+        "mask_sha256": "9bcab8d4cd172681c423c764e9e82725b8a96a8026a793b3623b0954432b2b98"
+      },
+      "category": "FALSE_POSITIVE_ON_EMPTY"
+    },
+    {
+      "sample_id": "0429",
+      "status": "COMPLETED",
+      "seconds": 12.7348,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2035,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.977436,
+        "iou": 0.955868,
+        "precision": 0.986486,
+        "recall": 0.96855,
+        "tp": 1971,
+        "fp": 27,
+        "fn": 64
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1998,
+        "components": 1,
+        "mask_sha256": "d989eb4fde7898e350cd9670d48f9083b9bee5664f3cc35cadec62f3ea80a6d0"
+      },
+      "measurement_error": {
+        "area_rel": -0.018182,
+        "perimeter_rel": -0.050563,
+        "max_feret_rel": -0.030891
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0437",
+      "status": "COMPLETED",
+      "seconds": 13.4395,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 8347,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.960791,
+        "iou": 0.924541,
+        "precision": 0.928675,
+        "recall": 0.995208,
+        "tp": 8307,
+        "fp": 638,
+        "fn": 40
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION"
+      ],
+      "pred": {
+        "area_px": 8945,
+        "components": 2,
+        "mask_sha256": "6ce8e7465c382588b04f9b2475883d4beb8c9353a4246daaefd5e700abba39e3"
+      },
+      "measurement_error": {
+        "area_rel": 0.071643,
+        "perimeter_rel": 0.222088,
+        "max_feret_rel": 1.286543
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0438",
+      "status": "COMPLETED",
+      "seconds": 13.926,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 8508,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.970761,
+        "iou": 0.943183,
+        "precision": 0.979768,
+        "recall": 0.961918,
+        "tp": 8184,
+        "fp": 169,
+        "fn": 324
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 8353,
+        "components": 1,
+        "mask_sha256": "5bc817439dabd6346be84c9b0f6e6da83b432897465b6cd43752d33df30159ac"
+      },
+      "measurement_error": {
+        "area_rel": -0.018218,
+        "perimeter_rel": -0.044608,
+        "max_feret_rel": -0.025438
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0439",
+      "status": "COMPLETED",
+      "seconds": 6.669,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2333,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.838768,
+        "iou": 0.722308,
+        "precision": 0.723431,
+        "recall": 0.997857,
+        "tp": 2328,
+        "fp": 890,
+        "fn": 5
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3218,
+        "components": 1,
+        "mask_sha256": "1ceddc1387c09b829e11a3186f2e7026bc0a3002ba2c4c6a0790d4d82a76964e"
+      },
+      "measurement_error": {
+        "area_rel": 0.37934,
+        "perimeter_rel": 0.073118,
+        "max_feret_rel": 0.297783
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0447",
+      "status": "COMPLETED",
+      "seconds": 5.9671,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1032,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.962038,
+        "iou": 0.926853,
+        "precision": 0.992784,
+        "recall": 0.93314,
+        "tp": 963,
+        "fp": 7,
+        "fn": 69
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 970,
+        "components": 1,
+        "mask_sha256": "7c0f72167d43d4973e4405a53a39863fc023455f29d1bd0dbc14c47e527807ea"
+      },
+      "measurement_error": {
+        "area_rel": -0.060078,
+        "perimeter_rel": -0.123983,
+        "max_feret_rel": -0.031674
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0450",
+      "status": "COMPLETED",
+      "seconds": 6.206,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 532,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.84542,
+        "iou": 0.732231,
+        "precision": 0.858527,
+        "recall": 0.832707,
+        "tp": 443,
+        "fp": 73,
+        "fn": 89
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 516,
+        "components": 1,
+        "mask_sha256": "b0b614c515670fe9ee6edbc1688c65e1a94f88bc257196f98445f39d357862d2"
+      },
+      "measurement_error": {
+        "area_rel": -0.030075,
+        "perimeter_rel": -0.031863,
+        "max_feret_rel": 0.033394
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0451",
+      "status": "COMPLETED",
+      "seconds": 8.6432,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 6380,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.924324,
+        "iou": 0.859296,
+        "precision": 0.872201,
+        "recall": 0.983072,
+        "tp": 6272,
+        "fp": 919,
+        "fn": 108
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION"
+      ],
+      "pred": {
+        "area_px": 7191,
+        "components": 2,
+        "mask_sha256": "cb0c837665ae9e7109649698a4ef4b6a832afd72eca571eb1a311fed9fcac93e"
+      },
+      "measurement_error": {
+        "area_rel": 0.127116,
+        "perimeter_rel": 0.362198,
+        "max_feret_rel": 0.381765
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0456",
+      "status": "COMPLETED",
+      "seconds": 14.1153,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 38,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 38
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 0,
+        "components": 0,
+        "mask_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+      },
+      "category": "MISSED_WOUND"
+    },
+    {
+      "sample_id": "0466",
+      "status": "COMPLETED",
+      "seconds": 20.2607,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2220,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.904645,
+        "iou": 0.825893,
+        "precision": 0.825893,
+        "recall": 1.0,
+        "tp": 2220,
+        "fp": 468,
+        "fn": 0
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2688,
+        "components": 1,
+        "mask_sha256": "4364c784853c55b4d154ba8d2cc282fe65e8b4a7c4b2d3bca8c223d0608315f7"
+      },
+      "measurement_error": {
+        "area_rel": 0.210811,
+        "perimeter_rel": 0.047759,
+        "max_feret_rel": 0.038104
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0470",
+      "status": "COMPLETED",
+      "seconds": 12.9489,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2912,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.971855,
+        "iou": 0.945251,
+        "precision": 0.959812,
+        "recall": 0.984203,
+        "tp": 2866,
+        "fp": 120,
+        "fn": 46
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2986,
+        "components": 1,
+        "mask_sha256": "078d9e54274fd9fc195b3e250daea87ca5d0e84c5b817075cf59dbb103cb60fd"
+      },
+      "measurement_error": {
+        "area_rel": 0.025412,
+        "perimeter_rel": -0.032671,
+        "max_feret_rel": 0.002019
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0475",
+      "status": "COMPLETED",
+      "seconds": 10.2852,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 122,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.368,
+        "iou": 0.22549,
+        "precision": 0.228628,
+        "recall": 0.942623,
+        "tp": 115,
+        "fp": 388,
+        "fn": 7
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 503,
+        "components": 1,
+        "mask_sha256": "4f3766f4c910ed8cf057243c4b1ad1d7d262b791b6ade95ea9769b993f78031d"
+      },
+      "measurement_error": {
+        "area_rel": 3.122951,
+        "perimeter_rel": 1.184015,
+        "max_feret_rel": 0.99563
+      },
+      "category": "LOW_OVERLAP"
+    },
+    {
+      "sample_id": "0483",
+      "status": "COMPLETED",
+      "seconds": 5.3638,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 0,
+        "components": 0
+      },
+      "metrics": {
+        "dice": 1.0,
+        "iou": 1.0,
+        "precision": null,
+        "recall": null,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 0,
+        "components": 0,
+        "mask_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+      },
+      "category": "CORRECT_EMPTY"
+    },
+    {
+      "sample_id": "0494",
+      "status": "COMPLETED",
+      "seconds": 5.1416,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1572,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.942002,
+        "iou": 0.890364,
+        "precision": 0.905516,
+        "recall": 0.981552,
+        "tp": 1543,
+        "fp": 161,
+        "fn": 29
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1704,
+        "components": 1,
+        "mask_sha256": "48e183d6a2fc1879b49150b5ba7a0e72a5204c343d6766a57304c708cce8b611"
+      },
+      "measurement_error": {
+        "area_rel": 0.083969,
+        "perimeter_rel": 0.010596,
+        "max_feret_rel": 0.06118
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0496",
+      "status": "COMPLETED",
+      "seconds": 5.2402,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1204,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.970156,
+        "iou": 0.942041,
+        "precision": 0.982128,
+        "recall": 0.958472,
+        "tp": 1154,
+        "fp": 21,
+        "fn": 50
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1175,
+        "components": 1,
+        "mask_sha256": "8865463bab795c349981019d35f9ecb4b3685cccd55d95dda7e107e97141fceb"
+      },
+      "measurement_error": {
+        "area_rel": -0.024086,
+        "perimeter_rel": -0.056994,
+        "max_feret_rel": 0.006369
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0503",
+      "status": "COMPLETED",
+      "seconds": 7.3071,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2555,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.979905,
+        "iou": 0.960603,
+        "precision": 0.986513,
+        "recall": 0.973386,
+        "tp": 2487,
+        "fp": 34,
+        "fn": 68
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2521,
+        "components": 1,
+        "mask_sha256": "4274faa892eb663eea05bdc583e2b7aae1d2f7bb274f68dfc5965e8597fbf4ff"
+      },
+      "measurement_error": {
+        "area_rel": -0.013307,
+        "perimeter_rel": -0.082372,
+        "max_feret_rel": -0.013315
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0504",
+      "status": "COMPLETED",
+      "seconds": 9.737,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2463,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.850017,
+        "iou": 0.739157,
+        "precision": 0.745032,
+        "recall": 0.989444,
+        "tp": 2437,
+        "fp": 834,
+        "fn": 26
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3271,
+        "components": 2,
+        "mask_sha256": "1a605f5e8e0f1bfd43f0a3efcb63a98a0a1d755914be4142acbcb8b72f14c3d1"
+      },
+      "measurement_error": {
+        "area_rel": 0.328055,
+        "perimeter_rel": 0.027034,
+        "max_feret_rel": 0.045442
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0511",
+      "status": "COMPLETED",
+      "seconds": 14.5766,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 4891,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.970739,
+        "iou": 0.943141,
+        "precision": 0.971534,
+        "recall": 0.969945,
+        "tp": 4744,
+        "fp": 139,
+        "fn": 147
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 4883,
+        "components": 1,
+        "mask_sha256": "4ab1eeb711e7f221b83249acfd005ca2fd4e6731d3263072c483997d7fb6f929"
+      },
+      "measurement_error": {
+        "area_rel": -0.001636,
+        "perimeter_rel": -0.071448,
+        "max_feret_rel": -0.015192
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0516",
+      "status": "COMPLETED",
+      "seconds": 14.8106,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 4615,
+        "components": 4
+      },
+      "metrics": {
+        "dice": 0.677498,
+        "iou": 0.512284,
+        "precision": 0.989592,
+        "recall": 0.51506,
+        "tp": 2377,
+        "fp": 25,
+        "fn": 2238
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2402,
+        "components": 2,
+        "mask_sha256": "3fefad910e8c281e1f5927e6fd9ae612029c98d92058d9f6a719ab3deadc458d"
+      },
+      "measurement_error": {
+        "area_rel": -0.479523,
+        "perimeter_rel": -0.467466,
+        "max_feret_rel": -0.070404
+      },
+      "category": "UNDER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0517",
+      "status": "COMPLETED",
+      "seconds": 11.7554,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 8084,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.923922,
+        "iou": 0.858601,
+        "precision": 0.875526,
+        "recall": 0.977981,
+        "tp": 7906,
+        "fp": 1124,
+        "fn": 178
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION"
+      ],
+      "pred": {
+        "area_px": 9030,
+        "components": 2,
+        "mask_sha256": "2dc4f0bc3a476a6bcb2e1344547e02783035ded6274e00522fde7d47cb9f095a"
+      },
+      "measurement_error": {
+        "area_rel": 0.117021,
+        "perimeter_rel": 0.212577,
+        "max_feret_rel": 0.898097
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0525",
+      "status": "COMPLETED",
+      "seconds": 6.1183,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3381,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.96927,
+        "iou": 0.940372,
+        "precision": 0.982675,
+        "recall": 0.956226,
+        "tp": 3233,
+        "fp": 57,
+        "fn": 148
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3290,
+        "components": 1,
+        "mask_sha256": "571496c605e83c657abdd6c66ccb9b92bd26e1629d13cb4f52bae47d2b1b3a2b"
+      },
+      "measurement_error": {
+        "area_rel": -0.026915,
+        "perimeter_rel": -0.075965,
+        "max_feret_rel": 0.014702
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0528",
+      "status": "COMPLETED",
+      "seconds": 6.1051,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 418,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.903226,
+        "iou": 0.823529,
+        "precision": 0.844075,
+        "recall": 0.971292,
+        "tp": 406,
+        "fp": 75,
+        "fn": 12
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 481,
+        "components": 1,
+        "mask_sha256": "b199f1a596bd3bf7c81859789bd43179ea8040381896a2a1ef4c7111912e2583"
+      },
+      "measurement_error": {
+        "area_rel": 0.150718,
+        "perimeter_rel": -0.019018,
+        "max_feret_rel": -0.009047
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0533",
+      "status": "COMPLETED",
+      "seconds": 5.0684,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 0,
+        "components": 0
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": 0.0,
+        "recall": null,
+        "tp": 0,
+        "fp": 962,
+        "fn": 0
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 962,
+        "components": 1,
+        "mask_sha256": "3e68822352d94033a495fa029e1a15aaca539445e0e5c33f8fc330a12bb217bd"
+      },
+      "category": "FALSE_POSITIVE_ON_EMPTY"
+    },
+    {
+      "sample_id": "0541",
+      "status": "COMPLETED",
+      "seconds": 17.416,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2646,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.882883,
+        "iou": 0.790323,
+        "precision": 0.790323,
+        "recall": 1.0,
+        "tp": 2646,
+        "fp": 702,
+        "fn": 0
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3348,
+        "components": 1,
+        "mask_sha256": "687d71146e24592a4e6c5f0caeb4dc6e25cbf902f92906c21a9fd223eb10c1fd"
+      },
+      "measurement_error": {
+        "area_rel": 0.265306,
+        "perimeter_rel": 0.114075,
+        "max_feret_rel": 0.099057
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0543",
+      "status": "COMPLETED",
+      "seconds": 8.6073,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2412,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.960438,
+        "iou": 0.923888,
+        "precision": 0.940405,
+        "recall": 0.981343,
+        "tp": 2367,
+        "fp": 150,
+        "fn": 45
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2517,
+        "components": 1,
+        "mask_sha256": "856153fa57c9391fb7f1d519eecc05ffa8bb66d313cac0d7be7956ea90f46185"
+      },
+      "measurement_error": {
+        "area_rel": 0.043532,
+        "perimeter_rel": -0.075815,
+        "max_feret_rel": 0.007155
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0548",
+      "status": "COMPLETED",
+      "seconds": 9.5199,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 4871,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.57072,
+        "iou": 0.399306,
+        "precision": 0.984902,
+        "recall": 0.401766,
+        "tp": 1957,
+        "fp": 30,
+        "fn": 2914
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1987,
+        "components": 1,
+        "mask_sha256": "c9a54c1f0023f01cf4df6359a962aa9d8cc7a5c9109e136388a6ceb0c9d2205d"
+      },
+      "measurement_error": {
+        "area_rel": -0.592076,
+        "perimeter_rel": -0.673874,
+        "max_feret_rel": -0.843728
+      },
+      "category": "UNDER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0549",
+      "status": "COMPLETED",
+      "seconds": 9.1517,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1915,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.698779,
+        "iou": 0.537018,
+        "precision": 0.997096,
+        "recall": 0.537859,
+        "tp": 1030,
+        "fp": 3,
+        "fn": 885
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1033,
+        "components": 1,
+        "mask_sha256": "ba51c51ab0b416745153f2d7c2bb0caef702781a879714d6ad65a80efbc1fa59"
+      },
+      "measurement_error": {
+        "area_rel": -0.460574,
+        "perimeter_rel": -0.295651,
+        "max_feret_rel": -0.244661
+      },
+      "category": "UNDER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0557",
+      "status": "COMPLETED",
+      "seconds": 16.4345,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2948,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.976556,
+        "iou": 0.954186,
+        "precision": 0.971151,
+        "recall": 0.982022,
+        "tp": 2895,
+        "fp": 86,
+        "fn": 53
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2981,
+        "components": 1,
+        "mask_sha256": "f5af861f64602a1248da0eb1aeb1aaafbe71f75abd72bd1fef51a33547f6bc69"
+      },
+      "measurement_error": {
+        "area_rel": 0.011194,
+        "perimeter_rel": -0.070041,
+        "max_feret_rel": -0.033778
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0559",
+      "status": "COMPLETED",
+      "seconds": 8.5404,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3897,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.971378,
+        "iou": 0.944349,
+        "precision": 0.954883,
+        "recall": 0.988453,
+        "tp": 3852,
+        "fp": 182,
+        "fn": 45
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 4034,
+        "components": 1,
+        "mask_sha256": "b4a7aa000fcf74e7a34403897cc8c5d732c7389e30e076a31883f27b0f5eeed0"
+      },
+      "measurement_error": {
+        "area_rel": 0.035155,
+        "perimeter_rel": 0.03632,
+        "max_feret_rel": 0.182043
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0565",
+      "status": "COMPLETED",
+      "seconds": 21.0558,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 6618,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.956947,
+        "iou": 0.917449,
+        "precision": 0.968726,
+        "recall": 0.945452,
+        "tp": 6257,
+        "fp": 202,
+        "fn": 361
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 6459,
+        "components": 1,
+        "mask_sha256": "101afcdbaab45a5284b57089cafeb66ea542ae11e97330aad6f75508c2ef671a"
+      },
+      "measurement_error": {
+        "area_rel": -0.024025,
+        "perimeter_rel": -0.099128,
+        "max_feret_rel": 0.008668
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0566",
+      "status": "COMPLETED",
+      "seconds": 14.9375,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1649,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.925914,
+        "iou": 0.862048,
+        "precision": 0.992372,
+        "recall": 0.867799,
+        "tp": 1431,
+        "fp": 11,
+        "fn": 218
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1442,
+        "components": 1,
+        "mask_sha256": "903848f33ca1b9f01fc5750b2b74fcd430925ad5472979b3cfffd55722865814"
+      },
+      "measurement_error": {
+        "area_rel": -0.125531,
+        "perimeter_rel": -0.104815,
+        "max_feret_rel": -0.058693
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0571",
+      "status": "COMPLETED",
+      "seconds": 13.4544,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 438,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.831527,
+        "iou": 0.711636,
+        "precision": 0.731369,
+        "recall": 0.96347,
+        "tp": 422,
+        "fp": 155,
+        "fn": 16
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 577,
+        "components": 1,
+        "mask_sha256": "e1a2bd575eafae3fd7ddcc99db2efceeb2821dcd4f0788043c784356d9373965"
+      },
+      "measurement_error": {
+        "area_rel": 0.317352,
+        "perimeter_rel": 0.117656,
+        "max_feret_rel": 0.091033
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0577",
+      "status": "COMPLETED",
+      "seconds": 15.9911,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1709,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.957907,
+        "iou": 0.919214,
+        "precision": 0.931931,
+        "recall": 0.985372,
+        "tp": 1684,
+        "fp": 123,
+        "fn": 25
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1807,
+        "components": 1,
+        "mask_sha256": "a26aba1565a4e9ef7a16e2be0a9f2ebd4f25ffc165f4f97f74495d854f927bfb"
+      },
+      "measurement_error": {
+        "area_rel": 0.057343,
+        "perimeter_rel": -0.062057,
+        "max_feret_rel": 0.0
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0580",
+      "status": "COMPLETED",
+      "seconds": 12.8096,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 86,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 86
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 0,
+        "components": 0,
+        "mask_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+      },
+      "category": "MISSED_WOUND"
+    },
+    {
+      "sample_id": "0582",
+      "status": "COMPLETED",
+      "seconds": 10.9828,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2814,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.971719,
+        "iou": 0.944993,
+        "precision": 0.991858,
+        "recall": 0.952381,
+        "tp": 2680,
+        "fp": 22,
+        "fn": 134
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2702,
+        "components": 2,
+        "mask_sha256": "d00f813519d400dc11457d7f2c5c0645c4ca36d8e3edb1abb6b606c392615384"
+      },
+      "measurement_error": {
+        "area_rel": -0.039801,
+        "perimeter_rel": -0.054401,
+        "max_feret_rel": -0.002563
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0588",
+      "status": "COMPLETED",
+      "seconds": 9.8269,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 222,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.723127,
+        "iou": 0.566327,
+        "precision": 0.566327,
+        "recall": 1.0,
+        "tp": 222,
+        "fp": 170,
+        "fn": 0
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 392,
+        "components": 1,
+        "mask_sha256": "e07e06e2443201d65eafc25b8c3719f05ab70a4c24b97ef5ed4645dc2ebd7f4d"
+      },
+      "measurement_error": {
+        "area_rel": 0.765766,
+        "perimeter_rel": 0.197994,
+        "max_feret_rel": 0.213165
+      },
+      "category": "OVER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0591",
+      "status": "COMPLETED",
+      "seconds": 9.1426,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1540,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.706273,
+        "iou": 0.545921,
+        "precision": 0.817949,
+        "recall": 0.621429,
+        "tp": 957,
+        "fp": 213,
+        "fn": 583
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION"
+      ],
+      "pred": {
+        "area_px": 1170,
+        "components": 2,
+        "mask_sha256": "6f32c379ebbb3e9297ab709f9c4727cf990df585234dbec9fc774bb6b48c0b99"
+      },
+      "measurement_error": {
+        "area_rel": -0.24026,
+        "perimeter_rel": -0.249424,
+        "max_feret_rel": 0.045516
+      },
+      "category": "UNDER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0603",
+      "status": "COMPLETED",
+      "seconds": 5.6825,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 10863,
+        "components": 3
+      },
+      "metrics": {
+        "dice": 0.938409,
+        "iou": 0.883965,
+        "precision": 0.915798,
+        "recall": 0.962165,
+        "tp": 10452,
+        "fp": 961,
+        "fn": 411
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 11413,
+        "components": 3,
+        "mask_sha256": "a8c21c4fba911a38eff50845da529790826d7f59a37d7a305f3b317e5f569080"
+      },
+      "measurement_error": {
+        "area_rel": 0.050631,
+        "perimeter_rel": -0.026923,
+        "max_feret_rel": 0.04496
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0604",
+      "status": "COMPLETED",
+      "seconds": 16.8651,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3883,
+        "components": 3
+      },
+      "metrics": {
+        "dice": 0.870357,
+        "iou": 0.770471,
+        "precision": 0.991765,
+        "recall": 0.775431,
+        "tp": 3011,
+        "fp": 25,
+        "fn": 872
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3036,
+        "components": 2,
+        "mask_sha256": "892ece71e8bbd7c49b3a704aa95137df7eb3cc3d8c7fb6795bb670ceffa9d490"
+      },
+      "measurement_error": {
+        "area_rel": -0.21813,
+        "perimeter_rel": -0.31215,
+        "max_feret_rel": -0.252826
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0607",
+      "status": "COMPLETED",
+      "seconds": 8.4906,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 5292,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.967635,
+        "iou": 0.9373,
+        "precision": 0.996198,
+        "recall": 0.940665,
+        "tp": 4978,
+        "fp": 19,
+        "fn": 314
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 4997,
+        "components": 1,
+        "mask_sha256": "d2d9c0349b4109d3d2723eb29d6cf093055f1b33833900a69f69636e3ca11077"
+      },
+      "measurement_error": {
+        "area_rel": -0.055745,
+        "perimeter_rel": -0.059271,
+        "max_feret_rel": -0.007842
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0612",
+      "status": "COMPLETED",
+      "seconds": 6.9869,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 155,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.820809,
+        "iou": 0.696078,
+        "precision": 0.743455,
+        "recall": 0.916129,
+        "tp": 142,
+        "fp": 49,
+        "fn": 13
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 191,
+        "components": 1,
+        "mask_sha256": "d9e3290f32b84aae2293cda9ee4b1b559b62de81fd4381097acde22b1276aef8"
+      },
+      "measurement_error": {
+        "area_rel": 0.232258,
+        "perimeter_rel": -0.015771,
+        "max_feret_rel": -0.03783
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0615",
+      "status": "COMPLETED",
+      "seconds": 6.4008,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 6170,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.948521,
+        "iou": 0.902082,
+        "precision": 0.979124,
+        "recall": 0.919773,
+        "tp": 5675,
+        "fp": 121,
+        "fn": 495
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 5796,
+        "components": 1,
+        "mask_sha256": "defcfc5abe146003254f747230d039e6026354be205f69e652f1fd40dbf920a3"
+      },
+      "measurement_error": {
+        "area_rel": -0.060616,
+        "perimeter_rel": -0.059316,
+        "max_feret_rel": -0.009528
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0616",
+      "status": "COMPLETED",
+      "seconds": 4.9911,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 14865,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.961308,
+        "iou": 0.925499,
+        "precision": 0.946182,
+        "recall": 0.976926,
+        "tp": 14522,
+        "fp": 826,
+        "fn": 343
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 15348,
+        "components": 1,
+        "mask_sha256": "7b4b24a6e3b5770ced5dc04d1735ad0c615c6f3bd81adced5770b136c23932a9"
+      },
+      "measurement_error": {
+        "area_rel": 0.032492,
+        "perimeter_rel": -0.012489,
+        "max_feret_rel": 0.056171
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0627",
+      "status": "COMPLETED",
+      "seconds": 4.7806,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3512,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.980662,
+        "iou": 0.962057,
+        "precision": 0.98674,
+        "recall": 0.974658,
+        "tp": 3423,
+        "fp": 46,
+        "fn": 89
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3469,
+        "components": 1,
+        "mask_sha256": "5a5c2a0906952669f423fdf62079abd70f2f91ca19417cb93ac5ef7cbf5f58f8"
+      },
+      "measurement_error": {
+        "area_rel": -0.012244,
+        "perimeter_rel": -0.097022,
+        "max_feret_rel": -0.030935
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0638",
+      "status": "COMPLETED",
+      "seconds": 5.7869,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 338,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.897401,
+        "iou": 0.813896,
+        "precision": 0.834606,
+        "recall": 0.970414,
+        "tp": 328,
+        "fp": 65,
+        "fn": 10
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 393,
+        "components": 1,
+        "mask_sha256": "a082df518973629b9632c92fa24dfb0f9b5ce826b004fca3f9b9867f2cb89713"
+      },
+      "measurement_error": {
+        "area_rel": 0.162722,
+        "perimeter_rel": -0.142189,
+        "max_feret_rel": -0.036435
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0642",
+      "status": "COMPLETED",
+      "seconds": 5.5504,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 5019,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.982317,
+        "iou": 0.965248,
+        "precision": 0.979592,
+        "recall": 0.985057,
+        "tp": 4944,
+        "fp": 103,
+        "fn": 75
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 5047,
+        "components": 1,
+        "mask_sha256": "3fbe4c42c9015ae1d0e864b18284e84138340910cdc21797b207fe5dae6bb06d"
+      },
+      "measurement_error": {
+        "area_rel": 0.005579,
+        "perimeter_rel": -0.030677,
+        "max_feret_rel": 0.00947
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0644",
+      "status": "COMPLETED",
+      "seconds": 6.8246,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 804,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.96,
+        "iou": 0.923077,
+        "precision": 0.997319,
+        "recall": 0.925373,
+        "tp": 744,
+        "fp": 2,
+        "fn": 60
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 746,
+        "components": 1,
+        "mask_sha256": "eed970b35d6f710746e8fea7bf782454ec2e988c1e99c979f302cc5d7f30aa7b"
+      },
+      "measurement_error": {
+        "area_rel": -0.072139,
+        "perimeter_rel": -0.08102,
+        "max_feret_rel": -0.046714
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0647",
+      "status": "COMPLETED",
+      "seconds": 4.8367,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 739,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.953209,
+        "iou": 0.9106,
+        "precision": 0.941876,
+        "recall": 0.964817,
+        "tp": 713,
+        "fp": 44,
+        "fn": 26
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 757,
+        "components": 1,
+        "mask_sha256": "09fb8f9e396048235eb0ded028e9f0fab71060b60fa96d81821c129d3f713618"
+      },
+      "measurement_error": {
+        "area_rel": 0.024357,
+        "perimeter_rel": -0.102803,
+        "max_feret_rel": -0.033663
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0651",
+      "status": "COMPLETED",
+      "seconds": 4.793,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 4302,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.973263,
+        "iou": 0.947919,
+        "precision": 0.977715,
+        "recall": 0.968852,
+        "tp": 4168,
+        "fp": 95,
+        "fn": 134
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 4263,
+        "components": 1,
+        "mask_sha256": "8191cd3b985ad59dcc6a1d584f2932c3053b272d9bac7fcb1065c778d9408d9c"
+      },
+      "measurement_error": {
+        "area_rel": -0.009066,
+        "perimeter_rel": -0.044307,
+        "max_feret_rel": 0.013119
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0652",
+      "status": "COMPLETED",
+      "seconds": 6.495,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 288,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.953237,
+        "iou": 0.910653,
+        "precision": 0.988806,
+        "recall": 0.920139,
+        "tp": 265,
+        "fp": 3,
+        "fn": 23
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 268,
+        "components": 1,
+        "mask_sha256": "101d7cd98cb9f0075f28579cd85e2a5ec0b1e8c2cba5f55077c4e58a8ce53eda"
+      },
+      "measurement_error": {
+        "area_rel": -0.069444,
+        "perimeter_rel": -0.099686,
+        "max_feret_rel": -0.04526
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0657",
+      "status": "COMPLETED",
+      "seconds": 6.0724,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 5543,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.975793,
+        "iou": 0.952731,
+        "precision": 0.992169,
+        "recall": 0.959949,
+        "tp": 5321,
+        "fp": 42,
+        "fn": 222
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 5363,
+        "components": 1,
+        "mask_sha256": "e1171e424b57b445fa2ff1005d073a07c6e193dc2e70ff5ab3e053739e95248a"
+      },
+      "measurement_error": {
+        "area_rel": -0.032473,
+        "perimeter_rel": -0.040153,
+        "max_feret_rel": 0.003715
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0674",
+      "status": "COMPLETED",
+      "seconds": 6.2403,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 10670,
+        "components": 5
+      },
+      "metrics": {
+        "dice": 0.915778,
+        "iou": 0.84464,
+        "precision": 0.881074,
+        "recall": 0.953327,
+        "tp": 10172,
+        "fp": 1373,
+        "fn": 498
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 11545,
+        "components": 4,
+        "mask_sha256": "0abea6affbbeadd121fc48da5e0345ab870bb852fa3fbf1caa312b0b3b55d221"
+      },
+      "measurement_error": {
+        "area_rel": 0.082006,
+        "perimeter_rel": -0.035454,
+        "max_feret_rel": -0.043097
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0679",
+      "status": "COMPLETED",
+      "seconds": 5.9618,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1009,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.764385,
+        "iou": 0.618627,
+        "precision": 0.982866,
+        "recall": 0.625372,
+        "tp": 631,
+        "fp": 11,
+        "fn": 378
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 642,
+        "components": 1,
+        "mask_sha256": "5a9e1524ec5a89d7bc10b6b2f4a455e494cb8c290730271f049a36ce546a6e18"
+      },
+      "measurement_error": {
+        "area_rel": -0.363726,
+        "perimeter_rel": -0.267475,
+        "max_feret_rel": -0.17531
+      },
+      "category": "UNDER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0682",
+      "status": "COMPLETED",
+      "seconds": 6.0609,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2519,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.722198,
+        "iou": 0.565187,
+        "precision": 0.573228,
+        "recall": 0.975784,
+        "tp": 2458,
+        "fp": 1830,
+        "fn": 61
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION"
+      ],
+      "pred": {
+        "area_px": 4288,
+        "components": 2,
+        "mask_sha256": "99b7ec7fca2076c62d066abc9832ad1ebbd6a401f75bf287341c80ff776b9662"
+      },
+      "measurement_error": {
+        "area_rel": 0.702263,
+        "perimeter_rel": 0.881187,
+        "max_feret_rel": 2.597198
+      },
+      "category": "OVER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0706",
+      "status": "COMPLETED",
+      "seconds": 6.71,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 12780,
+        "components": 4
+      },
+      "metrics": {
+        "dice": 0.931116,
+        "iou": 0.871111,
+        "precision": 0.910239,
+        "recall": 0.952973,
+        "tp": 12179,
+        "fp": 1201,
+        "fn": 601
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 13380,
+        "components": 4,
+        "mask_sha256": "0037ba42a1e154c173a9fab98915b3949302fcab87bfb21a823cf2852d800a6a"
+      },
+      "measurement_error": {
+        "area_rel": 0.046948,
+        "perimeter_rel": -0.031033,
+        "max_feret_rel": 0.060294
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0712",
+      "status": "COMPLETED",
+      "seconds": 13.9208,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1275,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.935546,
+        "iou": 0.878898,
+        "precision": 0.920973,
+        "recall": 0.950588,
+        "tp": 1212,
+        "fp": 104,
+        "fn": 63
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1316,
+        "components": 2,
+        "mask_sha256": "aee358a002d002681523a51472f5b0296e1ec0e2ce6b8bc137b2680577531f98"
+      },
+      "measurement_error": {
+        "area_rel": 0.032157,
+        "perimeter_rel": -0.004631,
+        "max_feret_rel": 0.000581
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0715",
+      "status": "COMPLETED",
+      "seconds": 5.6288,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 209,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.900862,
+        "iou": 0.819608,
+        "precision": 0.819608,
+        "recall": 1.0,
+        "tp": 209,
+        "fp": 46,
+        "fn": 0
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 255,
+        "components": 1,
+        "mask_sha256": "74aeaa3f753f8be30e98421c4d47c60cb3aa843501072a7274022b7bff0b9606"
+      },
+      "measurement_error": {
+        "area_rel": 0.220096,
+        "perimeter_rel": 0.087997,
+        "max_feret_rel": 0.077034
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0717",
+      "status": "COMPLETED",
+      "seconds": 4.7839,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2221,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.945012,
+        "iou": 0.895756,
+        "precision": 0.913445,
+        "recall": 0.978838,
+        "tp": 2174,
+        "fp": 206,
+        "fn": 47
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2380,
+        "components": 1,
+        "mask_sha256": "be18a07de79275d328acba22292c1213195c0c182db1568ba4e65b9b2a6ac254"
+      },
+      "measurement_error": {
+        "area_rel": 0.071589,
+        "perimeter_rel": -0.053288,
+        "max_feret_rel": -0.032289
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0721",
+      "status": "COMPLETED",
+      "seconds": 4.652,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1005,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.441258,
+        "iou": 0.283086,
+        "precision": 0.295286,
+        "recall": 0.872637,
+        "tp": 877,
+        "fp": 2093,
+        "fn": 128
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION",
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 2970,
+        "components": 2,
+        "mask_sha256": "347f738ffcbe091a64ebcc053adff15bb824fb0ac26aa5b91f8dcecb62554601"
+      },
+      "measurement_error": {
+        "area_rel": 1.955224,
+        "perimeter_rel": 1.497376,
+        "max_feret_rel": 2.643554
+      },
+      "category": "LOW_OVERLAP"
+    },
+    {
+      "sample_id": "0728",
+      "status": "COMPLETED",
+      "seconds": 4.9813,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 912,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.913793,
+        "iou": 0.84127,
+        "precision": 0.85,
+        "recall": 0.987939,
+        "tp": 901,
+        "fp": 159,
+        "fn": 11
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1060,
+        "components": 1,
+        "mask_sha256": "a428a08e8fb8e0f6024f03ebaa6c18d5e478a7541d651cd64df00b76d1d8cdcd"
+      },
+      "measurement_error": {
+        "area_rel": 0.162281,
+        "perimeter_rel": -0.13072,
+        "max_feret_rel": 0.0
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0729",
+      "status": "COMPLETED",
+      "seconds": 5.5778,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 7038,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.939679,
+        "iou": 0.886222,
+        "precision": 0.99968,
+        "recall": 0.886473,
+        "tp": 6239,
+        "fp": 2,
+        "fn": 799
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 6241,
+        "components": 1,
+        "mask_sha256": "7c3589707a8a0dae606c8d2a8e6ecd9fa4f8edf3850922d3f3f96abbd029b44e"
+      },
+      "measurement_error": {
+        "area_rel": -0.113242,
+        "perimeter_rel": -0.044053,
+        "max_feret_rel": -0.023496
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0730",
+      "status": "COMPLETED",
+      "seconds": 4.5097,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 47,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 47
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 0,
+        "components": 0,
+        "mask_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+      },
+      "category": "MISSED_WOUND"
+    },
+    {
+      "sample_id": "0738",
+      "status": "COMPLETED",
+      "seconds": 5.2496,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1082,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.870411,
+        "iou": 0.770556,
+        "precision": 0.834606,
+        "recall": 0.909427,
+        "tp": 984,
+        "fp": 195,
+        "fn": 98
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1179,
+        "components": 1,
+        "mask_sha256": "e1b19fb044b2eed83e23c7eeb92f0a9edb17e9010f46cf31d9bc98655fc733f0"
+      },
+      "measurement_error": {
+        "area_rel": 0.089649,
+        "perimeter_rel": -0.260907,
+        "max_feret_rel": -0.656433
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0745",
+      "status": "COMPLETED",
+      "seconds": 11.6542,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 8759,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.990116,
+        "iou": 0.980425,
+        "precision": 0.985302,
+        "recall": 0.994977,
+        "tp": 8715,
+        "fp": 130,
+        "fn": 44
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 8845,
+        "components": 1,
+        "mask_sha256": "1d6af23ba5f3cf6b53e6b5f6b9fb22e7d2920331529d79a37cd1193a2b19a02f"
+      },
+      "measurement_error": {
+        "area_rel": 0.009818,
+        "perimeter_rel": -0.035974,
+        "max_feret_rel": -0.002159
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0757",
+      "status": "COMPLETED",
+      "seconds": 4.9942,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 541,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.949379,
+        "iou": 0.903636,
+        "precision": 0.982213,
+        "recall": 0.918669,
+        "tp": 497,
+        "fp": 9,
+        "fn": 44
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 506,
+        "components": 1,
+        "mask_sha256": "3fbc41a5065ee73c9039c911ecc4d70a07947fc7a0dc6ad1b786516b8ae0f603"
+      },
+      "measurement_error": {
+        "area_rel": -0.064695,
+        "perimeter_rel": -0.162774,
+        "max_feret_rel": -0.081962
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0763",
+      "status": "COMPLETED",
+      "seconds": 4.7749,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 15821,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.945891,
+        "iou": 0.897337,
+        "precision": 0.925852,
+        "recall": 0.966816,
+        "tp": 15296,
+        "fp": 1225,
+        "fn": 525
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 16521,
+        "components": 1,
+        "mask_sha256": "aa0c1ab643aff528e2c9fbe39a13e1950cf8c726c8e6a6392f14d4c1713412be"
+      },
+      "measurement_error": {
+        "area_rel": 0.044245,
+        "perimeter_rel": -0.049117,
+        "max_feret_rel": 0.010823
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0781",
+      "status": "COMPLETED",
+      "seconds": 12.7561,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 812,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.876619,
+        "iou": 0.78034,
+        "precision": 0.981679,
+        "recall": 0.791872,
+        "tp": 643,
+        "fp": 12,
+        "fn": 169
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 655,
+        "components": 1,
+        "mask_sha256": "ebcec3d8c3eed03fc3a3c1f6339d46e2a6254f208de2f5aad45ae8dccbd31a69"
+      },
+      "measurement_error": {
+        "area_rel": -0.19335,
+        "perimeter_rel": -0.300531,
+        "max_feret_rel": -0.313785
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0796",
+      "status": "COMPLETED",
+      "seconds": 11.8775,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 8163,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.982342,
+        "iou": 0.965296,
+        "precision": 0.986774,
+        "recall": 0.977949,
+        "tp": 7983,
+        "fp": 107,
+        "fn": 180
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 8090,
+        "components": 1,
+        "mask_sha256": "11af27ff33903fa82ba53336b73431151b712d7447107666f787745f317081ad"
+      },
+      "measurement_error": {
+        "area_rel": -0.008943,
+        "perimeter_rel": -0.015944,
+        "max_feret_rel": 0.016623
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0798",
+      "status": "COMPLETED",
+      "seconds": 17.359,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 812,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 812
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 0,
+        "components": 0,
+        "mask_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+      },
+      "category": "MISSED_WOUND"
+    },
+    {
+      "sample_id": "0802",
+      "status": "COMPLETED",
+      "seconds": 16.2836,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1894,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.961559,
+        "iou": 0.925964,
+        "precision": 0.972462,
+        "recall": 0.950898,
+        "tp": 1801,
+        "fp": 51,
+        "fn": 93
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1852,
+        "components": 1,
+        "mask_sha256": "f7f2cae76fb84ad29dbeba2e1ad69a07519e1444b3bfff18ccb1c5cd368c5b93"
+      },
+      "measurement_error": {
+        "area_rel": -0.022175,
+        "perimeter_rel": -0.036998,
+        "max_feret_rel": 0.006837
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0806",
+      "status": "COMPLETED",
+      "seconds": 11.427,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 7308,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.981946,
+        "iou": 0.964531,
+        "precision": 0.967091,
+        "recall": 0.997263,
+        "tp": 7288,
+        "fp": 248,
+        "fn": 20
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 7536,
+        "components": 1,
+        "mask_sha256": "53f0a94a93a012afe2fff118e3d2c5bb0e856272af6bc8fbce717adc7359a655"
+      },
+      "measurement_error": {
+        "area_rel": 0.031199,
+        "perimeter_rel": -0.056093,
+        "max_feret_rel": 0.005723
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0809",
+      "status": "COMPLETED",
+      "seconds": 4.2602,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2159,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.968895,
+        "iou": 0.939667,
+        "precision": 0.971149,
+        "recall": 0.966651,
+        "tp": 2087,
+        "fp": 62,
+        "fn": 72
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2149,
+        "components": 1,
+        "mask_sha256": "6476fe69f142c75498b5a85e55cc8b7a641e4130958e7c6eb01d8fb214bd600c"
+      },
+      "measurement_error": {
+        "area_rel": -0.004632,
+        "perimeter_rel": -0.030943,
+        "max_feret_rel": -0.022747
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0813",
+      "status": "COMPLETED",
+      "seconds": 4.1804,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 570,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.963749,
+        "iou": 0.930034,
+        "precision": 0.97148,
+        "recall": 0.95614,
+        "tp": 545,
+        "fp": 16,
+        "fn": 25
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 561,
+        "components": 1,
+        "mask_sha256": "00fcb3ab5e2f607d6fdefacbd8841d032f299e97904ee625e39c91a6272ec6f7"
+      },
+      "measurement_error": {
+        "area_rel": -0.015789,
+        "perimeter_rel": -0.039359,
+        "max_feret_rel": 0.009849
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0816",
+      "status": "COMPLETED",
+      "seconds": 4.1888,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 20,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 20
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 0,
+        "components": 0,
+        "mask_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+      },
+      "category": "MISSED_WOUND"
+    },
+    {
+      "sample_id": "0820",
+      "status": "COMPLETED",
+      "seconds": 5.1094,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 12943,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.94195,
+        "iou": 0.89027,
+        "precision": 0.943008,
+        "recall": 0.940895,
+        "tp": 12178,
+        "fp": 736,
+        "fn": 765
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 12914,
+        "components": 1,
+        "mask_sha256": "06d76e25fa908797eb4a7e70256d08e39919866b3d7ac1b4dbbbea0f6fa41919"
+      },
+      "measurement_error": {
+        "area_rel": -0.002241,
+        "perimeter_rel": -0.188137,
+        "max_feret_rel": -0.023669
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0824",
+      "status": "COMPLETED",
+      "seconds": 5.3113,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1322,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.852673,
+        "iou": 0.743182,
+        "precision": 0.749141,
+        "recall": 0.98941,
+        "tp": 1308,
+        "fp": 438,
+        "fn": 14
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1746,
+        "components": 1,
+        "mask_sha256": "efad372f41fa0323b454a08da0c700d9a1a447118d3d364c49557a3c5f94a530"
+      },
+      "measurement_error": {
+        "area_rel": 0.320726,
+        "perimeter_rel": 0.120335,
+        "max_feret_rel": 0.098292
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0830",
+      "status": "COMPLETED",
+      "seconds": 4.9167,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 425,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.865828,
+        "iou": 0.763401,
+        "precision": 0.780718,
+        "recall": 0.971765,
+        "tp": 413,
+        "fp": 116,
+        "fn": 12
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 529,
+        "components": 2,
+        "mask_sha256": "4a559fe3d21e49a2e34269ce8d4705b1721ad3b2f9aed446040d00cab9e76661"
+      },
+      "measurement_error": {
+        "area_rel": 0.244706,
+        "perimeter_rel": 0.006739,
+        "max_feret_rel": 0.020781
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0833",
+      "status": "COMPLETED",
+      "seconds": 6.0079,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1806,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.936675,
+        "iou": 0.880893,
+        "precision": 0.894657,
+        "recall": 0.982835,
+        "tp": 1775,
+        "fp": 209,
+        "fn": 31
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1984,
+        "components": 1,
+        "mask_sha256": "6e93be36663373e2e7e1730dc7e8d8adf973a4343fe477432445ce279965ebc4"
+      },
+      "measurement_error": {
+        "area_rel": 0.09856,
+        "perimeter_rel": -0.023438,
+        "max_feret_rel": 0.039879
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0834",
+      "status": "COMPLETED",
+      "seconds": 7.6353,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 761,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.933691,
+        "iou": 0.875628,
+        "precision": 0.952186,
+        "recall": 0.9159,
+        "tp": 697,
+        "fp": 35,
+        "fn": 64
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 732,
+        "components": 1,
+        "mask_sha256": "c4398512b34edab1632f9920604a56369c2c010151efac82dcd6e17e6ed6c1f8"
+      },
+      "measurement_error": {
+        "area_rel": -0.038108,
+        "perimeter_rel": -0.24156,
+        "max_feret_rel": -0.410096
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0835",
+      "status": "COMPLETED",
+      "seconds": 14.8832,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2012,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.883936,
+        "iou": 0.792012,
+        "precision": 0.975405,
+        "recall": 0.808151,
+        "tp": 1626,
+        "fp": 41,
+        "fn": 386
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1667,
+        "components": 1,
+        "mask_sha256": "d11f8c6d7e02000c4442bf018af9288d37a625f51db7cc9ee67a511551805c55"
+      },
+      "measurement_error": {
+        "area_rel": -0.171471,
+        "perimeter_rel": -0.124771,
+        "max_feret_rel": -0.071524
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0842",
+      "status": "COMPLETED",
+      "seconds": 29.02,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1274,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.859025,
+        "iou": 0.752887,
+        "precision": 0.975075,
+        "recall": 0.767661,
+        "tp": 978,
+        "fp": 25,
+        "fn": 296
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1003,
+        "components": 1,
+        "mask_sha256": "6cc06820378f1fc7ee4cf7a5b6cf9bd9f9de4723d9fb1bbe15416f3697a1fbd3"
+      },
+      "measurement_error": {
+        "area_rel": -0.212716,
+        "perimeter_rel": -0.420698,
+        "max_feret_rel": -0.27877
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0847",
+      "status": "COMPLETED",
+      "seconds": 7.2969,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 4830,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.977228,
+        "iou": 0.95547,
+        "precision": 0.972718,
+        "recall": 0.981781,
+        "tp": 4742,
+        "fp": 133,
+        "fn": 88
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 4875,
+        "components": 1,
+        "mask_sha256": "6db127fca3f886e89e4d8ad54fd8135f8e530d4842b1ee77209c07d43cb7dbc9"
+      },
+      "measurement_error": {
+        "area_rel": 0.009317,
+        "perimeter_rel": -0.113475,
+        "max_feret_rel": -0.053546
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0849",
+      "status": "COMPLETED",
+      "seconds": 5.5512,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 545,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.938343,
+        "iou": 0.883848,
+        "precision": 0.98783,
+        "recall": 0.893578,
+        "tp": 487,
+        "fp": 6,
+        "fn": 58
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 493,
+        "components": 1,
+        "mask_sha256": "453f2039aa82b6963aee06d93819b81b50ea7a83963969d00bf185e425c2de44"
+      },
+      "measurement_error": {
+        "area_rel": -0.095413,
+        "perimeter_rel": -0.100004,
+        "max_feret_rel": -0.056473
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0865",
+      "status": "COMPLETED",
+      "seconds": 5.1674,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1436,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.945078,
+        "iou": 0.895876,
+        "precision": 0.968567,
+        "recall": 0.922702,
+        "tp": 1325,
+        "fp": 43,
+        "fn": 111
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1368,
+        "components": 1,
+        "mask_sha256": "b6434199b53972f1e770ab51fac781ca3207f7c1eab1d0225d5fa00bef3c04c0"
+      },
+      "measurement_error": {
+        "area_rel": -0.047354,
+        "perimeter_rel": -0.042868,
+        "max_feret_rel": -0.023642
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0867",
+      "status": "COMPLETED",
+      "seconds": 21.3441,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 80,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.754717,
+        "iou": 0.606061,
+        "precision": 0.606061,
+        "recall": 1.0,
+        "tp": 80,
+        "fp": 52,
+        "fn": 0
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 132,
+        "components": 1,
+        "mask_sha256": "19edefcb2a2fc6812cc97e7f808f0e56c3a9e410d809d9fc05af32759ace083b"
+      },
+      "measurement_error": {
+        "area_rel": 0.65,
+        "perimeter_rel": 0.320378,
+        "max_feret_rel": 0.308994
+      },
+      "category": "OVER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0869",
+      "status": "COMPLETED",
+      "seconds": 26.2842,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 0,
+        "components": 0
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": 0.0,
+        "recall": null,
+        "tp": 0,
+        "fp": 1539,
+        "fn": 0
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1539,
+        "components": 1,
+        "mask_sha256": "1c3431cff0801c9b89cd136a255304a59ac431ac089ee649332bfe3e82a80a0d"
+      },
+      "category": "FALSE_POSITIVE_ON_EMPTY"
+    },
+    {
+      "sample_id": "0874",
+      "status": "COMPLETED",
+      "seconds": 4.3083,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 18853,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.934822,
+        "iou": 0.877621,
+        "precision": 0.915704,
+        "recall": 0.954755,
+        "tp": 18000,
+        "fp": 1657,
+        "fn": 853
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION"
+      ],
+      "pred": {
+        "area_px": 19657,
+        "components": 2,
+        "mask_sha256": "1383c8ef02b6fd11598b2813bbae7271b16f2bb13767c12ea68cc1606640a5b3"
+      },
+      "measurement_error": {
+        "area_rel": 0.042646,
+        "perimeter_rel": -0.104119,
+        "max_feret_rel": 0.187355
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0880",
+      "status": "COMPLETED",
+      "seconds": 5.9174,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2304,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.921376,
+        "iou": 0.854215,
+        "precision": 0.886792,
+        "recall": 0.958767,
+        "tp": 2209,
+        "fp": 282,
+        "fn": 95
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2491,
+        "components": 2,
+        "mask_sha256": "4836cf61a50c45b4416e2cf2db9429bcb70de4c4cc2361158800ff87f5786186"
+      },
+      "measurement_error": {
+        "area_rel": 0.081163,
+        "perimeter_rel": -0.016929,
+        "max_feret_rel": 0.01103
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0881",
+      "status": "COMPLETED",
+      "seconds": 4.6944,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1028,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.793826,
+        "iou": 0.658135,
+        "precision": 0.916031,
+        "recall": 0.700389,
+        "tp": 720,
+        "fp": 66,
+        "fn": 308
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 786,
+        "components": 1,
+        "mask_sha256": "1c425416b3c9cbefc063fc6b124045721392e04905c89fe82d4f2d8fdbd8847d"
+      },
+      "measurement_error": {
+        "area_rel": -0.235409,
+        "perimeter_rel": -0.425178,
+        "max_feret_rel": -0.306637
+      },
+      "category": "UNDER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0887",
+      "status": "COMPLETED",
+      "seconds": 4.1715,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 11779,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.977723,
+        "iou": 0.956416,
+        "precision": 0.986855,
+        "recall": 0.968758,
+        "tp": 11411,
+        "fp": 152,
+        "fn": 368
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 11563,
+        "components": 1,
+        "mask_sha256": "3a9ffe19c4c14f26b41118caaf386c95c9ac595b44957b86c1685c80098dbcba"
+      },
+      "measurement_error": {
+        "area_rel": -0.018338,
+        "perimeter_rel": -0.028966,
+        "max_feret_rel": 0.008241
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0900",
+      "status": "COMPLETED",
+      "seconds": 5.7153,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 5965,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.919418,
+        "iou": 0.850855,
+        "precision": 0.957018,
+        "recall": 0.884661,
+        "tp": 5277,
+        "fp": 237,
+        "fn": 688
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 5514,
+        "components": 1,
+        "mask_sha256": "c75c0083fd0d4dc0aeb5da00268f9eeef85fa27ea7bfdfc154d9f5f0ea7127e1"
+      },
+      "measurement_error": {
+        "area_rel": -0.075608,
+        "perimeter_rel": -0.318413,
+        "max_feret_rel": -0.454835
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0901",
+      "status": "COMPLETED",
+      "seconds": 4.1231,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 6260,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.986622,
+        "iou": 0.973597,
+        "precision": 0.983646,
+        "recall": 0.989617,
+        "tp": 6195,
+        "fp": 103,
+        "fn": 65
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 6298,
+        "components": 1,
+        "mask_sha256": "ad685c20667e6eae4b8d119b546ffb343fceef9e60f73223866874f54b5e0aef"
+      },
+      "measurement_error": {
+        "area_rel": 0.00607,
+        "perimeter_rel": -0.028046,
+        "max_feret_rel": -0.011217
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0904",
+      "status": "COMPLETED",
+      "seconds": 3.6065,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 50,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 50
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 0,
+        "components": 0,
+        "mask_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+      },
+      "category": "MISSED_WOUND"
+    },
+    {
+      "sample_id": "0905",
+      "status": "COMPLETED",
+      "seconds": 4.5066,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 494,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.930674,
+        "iou": 0.870337,
+        "precision": 0.876565,
+        "recall": 0.991903,
+        "tp": 490,
+        "fp": 69,
+        "fn": 4
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 559,
+        "components": 1,
+        "mask_sha256": "7a1e8c6bf5830c3a1722af7ddbecf668e0150f705a1e53fc4b0d9a8414a94eb6"
+      },
+      "measurement_error": {
+        "area_rel": 0.131579,
+        "perimeter_rel": -0.031985,
+        "max_feret_rel": -0.019075
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0906",
+      "status": "COMPLETED",
+      "seconds": 4.8371,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 172,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.917127,
+        "iou": 0.846939,
+        "precision": 0.873684,
+        "recall": 0.965116,
+        "tp": 166,
+        "fp": 24,
+        "fn": 6
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 190,
+        "components": 1,
+        "mask_sha256": "d548f0ec03187152f3133aaa93e6d95fb46a14d05cb57c01305feb430b5fb5ad"
+      },
+      "measurement_error": {
+        "area_rel": 0.104651,
+        "perimeter_rel": -0.085788,
+        "max_feret_rel": 0.008525
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0922",
+      "status": "COMPLETED",
+      "seconds": 5.4903,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 617,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.962963,
+        "iou": 0.928571,
+        "precision": 0.9568,
+        "recall": 0.969206,
+        "tp": 598,
+        "fp": 27,
+        "fn": 19
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 625,
+        "components": 1,
+        "mask_sha256": "5d8a90f13404dfc55b4da0c9772dbfc9317c7fc0cbd019df5984384f860704b7"
+      },
+      "measurement_error": {
+        "area_rel": 0.012966,
+        "perimeter_rel": -0.07156,
+        "max_feret_rel": -0.070098
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0937",
+      "status": "COMPLETED",
+      "seconds": 5.5333,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1397,
+        "components": 3
+      },
+      "metrics": {
+        "dice": 0.737455,
+        "iou": 0.584102,
+        "precision": 0.985629,
+        "recall": 0.58912,
+        "tp": 823,
+        "fp": 12,
+        "fn": 574
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 835,
+        "components": 1,
+        "mask_sha256": "1df140eecc309bdcd4843d5bd9555bfee044a4138a2050f89bf2949777005ebd"
+      },
+      "measurement_error": {
+        "area_rel": -0.402291,
+        "perimeter_rel": -0.588898,
+        "max_feret_rel": -0.480996
+      },
+      "category": "UNDER_SEGMENTATION"
+    },
+    {
+      "sample_id": "0940",
+      "status": "COMPLETED",
+      "seconds": 5.2456,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 12965,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.961936,
+        "iou": 0.926664,
+        "precision": 0.988683,
+        "recall": 0.936599,
+        "tp": 12143,
+        "fp": 139,
+        "fn": 822
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 12282,
+        "components": 2,
+        "mask_sha256": "d9912264a04d82c6ccbc0e5c7a46dc1ed4c22a67d97880840b7629f7fc58aa1d"
+      },
+      "measurement_error": {
+        "area_rel": -0.05268,
+        "perimeter_rel": -0.101554,
+        "max_feret_rel": 0.001434
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0946",
+      "status": "COMPLETED",
+      "seconds": 4.2275,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1895,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.939651,
+        "iou": 0.886171,
+        "precision": 0.942645,
+        "recall": 0.936675,
+        "tp": 1775,
+        "fp": 108,
+        "fn": 120
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1883,
+        "components": 1,
+        "mask_sha256": "fdb53e7feb57f064407dcb8f8df1b914c2a7ec536d1081d9b1c736475f7bd792"
+      },
+      "measurement_error": {
+        "area_rel": -0.006332,
+        "perimeter_rel": -0.03206,
+        "max_feret_rel": -0.012328
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0947",
+      "status": "COMPLETED",
+      "seconds": 4.1761,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 19795,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.978698,
+        "iou": 0.958284,
+        "precision": 0.966642,
+        "recall": 0.991058,
+        "tp": 19618,
+        "fp": 677,
+        "fn": 177
+      },
+      "flags": [
+        "FRAGMENTED_PREDICTION"
+      ],
+      "pred": {
+        "area_px": 20295,
+        "components": 2,
+        "mask_sha256": "b9b9f699a1bebbdd7fec6686ac0d44d583e8610f923bb9821771172b718610bd"
+      },
+      "measurement_error": {
+        "area_rel": 0.025259,
+        "perimeter_rel": -0.002721,
+        "max_feret_rel": 0.030891
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0948",
+      "status": "COMPLETED",
+      "seconds": 4.8096,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 840,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.93018,
+        "iou": 0.869474,
+        "precision": 0.882479,
+        "recall": 0.983333,
+        "tp": 826,
+        "fp": 110,
+        "fn": 14
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 936,
+        "components": 1,
+        "mask_sha256": "f349ac7ed7f97a51341ed0dcd601b45c7b8c15a7962a34b7a08c3c1564a29ae0"
+      },
+      "measurement_error": {
+        "area_rel": 0.114286,
+        "perimeter_rel": 0.00752,
+        "max_feret_rel": 0.149108
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0949",
+      "status": "COMPLETED",
+      "seconds": 6.4681,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 925,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.914257,
+        "iou": 0.842056,
+        "precision": 0.861377,
+        "recall": 0.974054,
+        "tp": 901,
+        "fp": 145,
+        "fn": 24
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 1046,
+        "components": 1,
+        "mask_sha256": "e881a9d0fa9a5f1a5d5dd6bad33c2f4629d5a673c3f365ed263c065d44e77d64"
+      },
+      "measurement_error": {
+        "area_rel": 0.130811,
+        "perimeter_rel": -0.119252,
+        "max_feret_rel": 0.011827
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0954",
+      "status": "COMPLETED",
+      "seconds": 4.7994,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1477,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.90679,
+        "iou": 0.829475,
+        "precision": 0.833239,
+        "recall": 0.994584,
+        "tp": 1469,
+        "fp": 294,
+        "fn": 8
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1763,
+        "components": 1,
+        "mask_sha256": "2b93ffec540c2f4b3c8dd672c3aa4efcb019f120f28de5b3c3b5fdbd58e0675b"
+      },
+      "measurement_error": {
+        "area_rel": 0.193636,
+        "perimeter_rel": 0.09484,
+        "max_feret_rel": 0.074972
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0955",
+      "status": "COMPLETED",
+      "seconds": 4.8832,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 137,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 137
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 0,
+        "components": 0,
+        "mask_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+      },
+      "category": "MISSED_WOUND"
+    },
+    {
+      "sample_id": "0958",
+      "status": "COMPLETED",
+      "seconds": 5.1201,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 382,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.94359,
+        "iou": 0.893204,
+        "precision": 0.924623,
+        "recall": 0.963351,
+        "tp": 368,
+        "fp": 30,
+        "fn": 14
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 398,
+        "components": 1,
+        "mask_sha256": "346ebd0fa2bc27cd9461994fe9e49fe46478e542b59c224157b98b9d89a43069"
+      },
+      "measurement_error": {
+        "area_rel": 0.041885,
+        "perimeter_rel": -0.053138,
+        "max_feret_rel": 0.011662
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0961",
+      "status": "COMPLETED",
+      "seconds": 6.8287,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 735,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.911652,
+        "iou": 0.837647,
+        "precision": 0.860943,
+        "recall": 0.968707,
+        "tp": 712,
+        "fp": 115,
+        "fn": 23
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 827,
+        "components": 1,
+        "mask_sha256": "ab267ba4c6586b87ffc8902467de365d326f8a57676786e3cc5a13ac2b68280b"
+      },
+      "measurement_error": {
+        "area_rel": 0.12517,
+        "perimeter_rel": 0.029184,
+        "max_feret_rel": 0.085902
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0964",
+      "status": "COMPLETED",
+      "seconds": 5.7316,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2727,
+        "components": 4
+      },
+      "metrics": {
+        "dice": 0.89408,
+        "iou": 0.808449,
+        "precision": 0.991514,
+        "recall": 0.814081,
+        "tp": 2220,
+        "fp": 19,
+        "fn": 507
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2239,
+        "components": 1,
+        "mask_sha256": "bdbb01e7f3102415948a4b4f7951876f96f004ecbdac490c53f3302b7d1b35d6"
+      },
+      "measurement_error": {
+        "area_rel": -0.178951,
+        "perimeter_rel": -0.488831,
+        "max_feret_rel": -0.681557
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0971",
+      "status": "COMPLETED",
+      "seconds": 5.1037,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 3630,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.978898,
+        "iou": 0.958669,
+        "precision": 0.973828,
+        "recall": 0.984022,
+        "tp": 3572,
+        "fp": 96,
+        "fn": 58
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 3668,
+        "components": 2,
+        "mask_sha256": "8e39492750b606ca7f356ec15265680d8667aedc1013b53f1a50ae70e55fcc3e"
+      },
+      "measurement_error": {
+        "area_rel": 0.010468,
+        "perimeter_rel": -0.046364,
+        "max_feret_rel": 0.0
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0973",
+      "status": "COMPLETED",
+      "seconds": 4.679,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 857,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.0,
+        "iou": 0.0,
+        "precision": null,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 857
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 0,
+        "components": 0,
+        "mask_sha256": "8a39d2abd3999ab73c34db2476849cddf303ce389b35826850f9a700589b4a90"
+      },
+      "category": "MISSED_WOUND"
+    },
+    {
+      "sample_id": "0974",
+      "status": "COMPLETED",
+      "seconds": 4.4426,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 9780,
+        "components": 5
+      },
+      "metrics": {
+        "dice": 0.944737,
+        "iou": 0.895262,
+        "precision": 0.984481,
+        "recall": 0.908078,
+        "tp": 8881,
+        "fp": 140,
+        "fn": 899
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 9021,
+        "components": 4,
+        "mask_sha256": "b7275af71c29af8b266a6797e1e75d3043b64e318cdd33d7e92a1559d294849c"
+      },
+      "measurement_error": {
+        "area_rel": -0.077607,
+        "perimeter_rel": -0.086382,
+        "max_feret_rel": -0.142358
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0976",
+      "status": "COMPLETED",
+      "seconds": 6.9503,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 1374,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.943582,
+        "iou": 0.89319,
+        "precision": 0.983425,
+        "recall": 0.906841,
+        "tp": 1246,
+        "fp": 21,
+        "fn": 128
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 1267,
+        "components": 1,
+        "mask_sha256": "f0115d86ee73d2624f5655d9d97fa7f1ce6c19962ad173f3867f242d7ca858a5"
+      },
+      "measurement_error": {
+        "area_rel": -0.077875,
+        "perimeter_rel": -0.087585,
+        "max_feret_rel": -0.038186
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0979",
+      "status": "COMPLETED",
+      "seconds": 7.1876,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 570,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.890465,
+        "iou": 0.802557,
+        "precision": 0.808298,
+        "recall": 0.991228,
+        "tp": 565,
+        "fp": 134,
+        "fn": 5
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 699,
+        "components": 1,
+        "mask_sha256": "44ac57c0f5cd2e6a7de55379e28043f6f1762bf3ebee6f557c4d83b47280b96c"
+      },
+      "measurement_error": {
+        "area_rel": 0.226316,
+        "perimeter_rel": -0.063174,
+        "max_feret_rel": 0.035659
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "0985",
+      "status": "COMPLETED",
+      "seconds": 7.8252,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 8215,
+        "components": 3
+      },
+      "metrics": {
+        "dice": 0.953512,
+        "iou": 0.911155,
+        "precision": 0.944683,
+        "recall": 0.962508,
+        "tp": 7907,
+        "fp": 463,
+        "fn": 308
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 8370,
+        "components": 3,
+        "mask_sha256": "f6cc5d30bae54e12e34bfc779c9ade86243638b5f03edb6d65c44715c4a6f7af"
+      },
+      "measurement_error": {
+        "area_rel": 0.018868,
+        "perimeter_rel": -0.10221,
+        "max_feret_rel": -0.013508
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "1003",
+      "status": "COMPLETED",
+      "seconds": 4.3397,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 973,
+        "components": 1
+      },
+      "metrics": {
+        "dice": 0.936309,
+        "iou": 0.880246,
+        "precision": 0.99537,
+        "recall": 0.883864,
+        "tp": 860,
+        "fp": 4,
+        "fn": 113
+      },
+      "flags": [
+        "SMALL_WOUND"
+      ],
+      "pred": {
+        "area_px": 864,
+        "components": 1,
+        "mask_sha256": "869a17a1ee1a9b95709c2046260ea7eb2f5c25af2c49f3bba6d9463af6eb76a5"
+      },
+      "measurement_error": {
+        "area_rel": -0.112025,
+        "perimeter_rel": -0.088947,
+        "max_feret_rel": -0.048664
+      },
+      "category": "GOOD"
+    },
+    {
+      "sample_id": "1009",
+      "status": "COMPLETED",
+      "seconds": 4.4977,
+      "quality_reasons": [],
+      "gt": {
+        "area_px": 2611,
+        "components": 2
+      },
+      "metrics": {
+        "dice": 0.889917,
+        "iou": 0.801667,
+        "precision": 0.860773,
+        "recall": 0.921103,
+        "tp": 2405,
+        "fp": 389,
+        "fn": 206
+      },
+      "flags": [],
+      "pred": {
+        "area_px": 2794,
+        "components": 1,
+        "mask_sha256": "6619c153f1018eef137e51b6db903db74f2225059e1356fee64fc16a9fdfbc68"
+      },
+      "measurement_error": {
+        "area_rel": 0.070088,
+        "perimeter_rel": -0.230743,
+        "max_feret_rel": -0.700992
+      },
+      "category": "GOOD"
+    }
+  ]
+}

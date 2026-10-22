@@ -97,7 +97,8 @@ Quality-rejected and failed analyses are still stored, so they can be audited. T
 ## 8. Limitations
 
 - Trained and evaluated only on FUSeg2021 images. Performance on other cameras, skin tones, wound types and
-  acquisition protocols has not been established. The external LowerLimb check shows a measurable drop.
+  acquisition protocols has not been established. On the external LowerLimb V3 check, Dice drops from 0.92 to 0.26. Much of this drop appears to come
+  from a different annotation protocol, but that is a hypothesis (see `reports/final/phase_06_validation_report.md`).
 - Physical units (mm, mm²) are only as good as the `pixels_per_mm` calibration supplied. Without it,
   only pixel values are reported.
 - Trends and comparisons describe the segmented region in the images. They are not assessments of
