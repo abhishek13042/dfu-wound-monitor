@@ -1,0 +1,114 @@
+2026-10-21 20:44:27,683 INFO src.segmentation.dataset: Manifest loaded: split=train, annotated valid samples=668
+2026-10-21 20:44:27,713 INFO src.segmentation.dataset: Manifest loaded: split=val, annotated valid samples=118
+2026-10-21 20:44:28,059 INFO spec_02_03: Training: train=668 internal_val=118 device=cuda
+Downloading: "https://download.pytorch.org/models/resnet34-b627a593.pth" to /root/.cache/torch/hub/checkpoints/resnet34-b627a593.pth
+
+  0%|          | 0.00/83.3M [00:00<?, ?B/s]
+  8%|▊         | 6.25M/83.3M [00:00<00:01, 65.5MB/s]
+ 33%|███▎      | 27.2M/83.3M [00:00<00:00, 156MB/s] 
+ 64%|██████▍   | 53.2M/83.3M [00:00<00:00, 209MB/s]
+ 96%|█████████▌| 79.6M/83.3M [00:00<00:00, 235MB/s]
+100%|██████████| 83.3M/83.3M [00:00<00:00, 210MB/s]
+2026-10-21 20:46:30,563 INFO src.segmentation.strong_trainer: epoch=1 train_loss=0.6774 val_loss=0.5401 val_dice=0.2912
+2026-10-21 20:47:01,382 INFO src.segmentation.strong_trainer: epoch=2 train_loss=0.3906 val_loss=0.3227 val_dice=0.6707
+2026-10-21 20:47:33,413 INFO src.segmentation.strong_trainer: epoch=3 train_loss=0.2716 val_loss=0.2260 val_dice=0.7872
+2026-10-21 20:48:06,592 INFO src.segmentation.strong_trainer: epoch=4 train_loss=0.2238 val_loss=0.1815 val_dice=0.8128
+2026-10-21 20:48:38,562 INFO src.segmentation.strong_trainer: epoch=5 train_loss=0.1821 val_loss=0.1565 val_dice=0.8312
+2026-10-21 20:49:10,835 INFO src.segmentation.strong_trainer: epoch=6 train_loss=0.1632 val_loss=0.1373 val_dice=0.8328
+2026-10-21 20:49:43,674 INFO src.segmentation.strong_trainer: epoch=7 train_loss=0.1495 val_loss=0.1262 val_dice=0.8345
+2026-10-21 20:50:16,191 INFO src.segmentation.strong_trainer: epoch=8 train_loss=0.1321 val_loss=0.1127 val_dice=0.8564
+2026-10-21 20:50:48,550 INFO src.segmentation.strong_trainer: epoch=9 train_loss=0.1245 val_loss=0.1056 val_dice=0.8510
+2026-10-21 20:51:20,505 INFO src.segmentation.strong_trainer: epoch=10 train_loss=0.1180 val_loss=0.1022 val_dice=0.8582
+2026-10-21 20:51:52,805 INFO src.segmentation.strong_trainer: epoch=11 train_loss=0.1101 val_loss=0.1002 val_dice=0.8543
+2026-10-21 20:52:24,644 INFO src.segmentation.strong_trainer: epoch=12 train_loss=0.1025 val_loss=0.0929 val_dice=0.8634
+2026-10-21 20:52:57,108 INFO src.segmentation.strong_trainer: epoch=13 train_loss=0.1032 val_loss=0.0912 val_dice=0.8627
+2026-10-21 20:53:28,986 INFO src.segmentation.strong_trainer: epoch=14 train_loss=0.0987 val_loss=0.0904 val_dice=0.8613
+2026-10-21 20:54:01,261 INFO src.segmentation.strong_trainer: epoch=15 train_loss=0.0954 val_loss=0.0891 val_dice=0.8611
+2026-10-21 20:54:33,454 INFO src.segmentation.strong_trainer: epoch=16 train_loss=0.0936 val_loss=0.0865 val_dice=0.8555
+2026-10-21 20:55:05,540 INFO src.segmentation.strong_trainer: epoch=17 train_loss=0.0893 val_loss=0.0869 val_dice=0.8519
+2026-10-21 20:55:37,395 INFO src.segmentation.strong_trainer: epoch=18 train_loss=0.0865 val_loss=0.0859 val_dice=0.8526
+2026-10-21 20:56:09,722 INFO src.segmentation.strong_trainer: epoch=19 train_loss=0.0854 val_loss=0.0826 val_dice=0.8587
+2026-10-21 20:56:41,842 INFO src.segmentation.strong_trainer: epoch=20 train_loss=0.0877 val_loss=0.0813 val_dice=0.8686
+2026-10-21 20:57:14,284 INFO src.segmentation.strong_trainer: epoch=21 train_loss=0.0833 val_loss=0.0808 val_dice=0.8684
+2026-10-21 20:57:46,341 INFO src.segmentation.strong_trainer: epoch=22 train_loss=0.0795 val_loss=0.0792 val_dice=0.8704
+2026-10-21 20:58:18,887 INFO src.segmentation.strong_trainer: epoch=23 train_loss=0.0834 val_loss=0.0789 val_dice=0.8704
+2026-10-21 20:58:51,140 INFO src.segmentation.strong_trainer: epoch=24 train_loss=0.0793 val_loss=0.0776 val_dice=0.8721
+2026-10-21 20:59:23,742 INFO src.segmentation.strong_trainer: epoch=25 train_loss=0.0801 val_loss=0.0772 val_dice=0.8723
+2026-10-21 20:59:56,060 INFO src.segmentation.strong_trainer: epoch=26 train_loss=0.0795 val_loss=0.0781 val_dice=0.8706
+2026-10-21 21:00:27,938 INFO src.segmentation.strong_trainer: epoch=27 train_loss=0.0792 val_loss=0.0781 val_dice=0.8702
+2026-10-21 21:01:00,090 INFO src.segmentation.strong_trainer: epoch=28 train_loss=0.0758 val_loss=0.0777 val_dice=0.8705
+2026-10-21 21:01:32,090 INFO src.segmentation.strong_trainer: epoch=29 train_loss=0.0758 val_loss=0.0776 val_dice=0.8706
+2026-10-21 21:02:04,089 INFO src.segmentation.strong_trainer: epoch=30 train_loss=0.0774 val_loss=0.0773 val_dice=0.8712
+2026-10-21 21:02:35,877 INFO src.segmentation.strong_trainer: epoch=31 train_loss=0.0771 val_loss=0.0770 val_dice=0.8715
+2026-10-21 21:03:07,774 INFO src.segmentation.strong_trainer: epoch=32 train_loss=0.0723 val_loss=0.0768 val_dice=0.8715
+2026-10-21 21:03:39,519 INFO src.segmentation.strong_trainer: epoch=33 train_loss=0.0733 val_loss=0.0763 val_dice=0.8720
+2026-10-21 21:04:11,297 INFO src.segmentation.strong_trainer: epoch=34 train_loss=0.0718 val_loss=0.0764 val_dice=0.8716
+2026-10-21 21:04:43,223 INFO src.segmentation.strong_trainer: epoch=35 train_loss=0.0712 val_loss=0.0771 val_dice=0.8702
+2026-10-21 21:05:15,373 INFO src.segmentation.strong_trainer: epoch=36 train_loss=0.0726 val_loss=0.0775 val_dice=0.8693
+2026-10-21 21:05:47,311 INFO src.segmentation.strong_trainer: epoch=37 train_loss=0.0702 val_loss=0.0778 val_dice=0.8690
+2026-10-21 21:06:19,448 INFO src.segmentation.strong_trainer: epoch=38 train_loss=0.0672 val_loss=0.0785 val_dice=0.8677
+2026-10-21 21:06:51,406 INFO src.segmentation.strong_trainer: epoch=39 train_loss=0.0671 val_loss=0.0785 val_dice=0.8677
+2026-10-21 21:07:23,067 INFO src.segmentation.strong_trainer: epoch=40 train_loss=0.0700 val_loss=0.0782 val_dice=0.8683
+2026-10-21 21:07:54,995 INFO src.segmentation.strong_trainer: epoch=41 train_loss=0.0692 val_loss=0.0785 val_dice=0.8677
+2026-10-21 21:08:26,864 INFO src.segmentation.strong_trainer: epoch=42 train_loss=0.0699 val_loss=0.0782 val_dice=0.8678
+2026-10-21 21:08:58,765 INFO src.segmentation.strong_trainer: epoch=43 train_loss=0.0670 val_loss=0.0770 val_dice=0.8696
+2026-10-21 21:09:30,751 INFO src.segmentation.strong_trainer: epoch=44 train_loss=0.0668 val_loss=0.0762 val_dice=0.8707
+2026-10-21 21:10:02,490 INFO src.segmentation.strong_trainer: epoch=45 train_loss=0.0667 val_loss=0.0764 val_dice=0.8704
+2026-10-21 21:10:34,300 INFO src.segmentation.strong_trainer: epoch=46 train_loss=0.0658 val_loss=0.0757 val_dice=0.8716
+2026-10-21 21:11:06,188 INFO src.segmentation.strong_trainer: epoch=47 train_loss=0.0667 val_loss=0.0755 val_dice=0.8717
+2026-10-21 21:11:38,170 INFO src.segmentation.strong_trainer: epoch=48 train_loss=0.0676 val_loss=0.0756 val_dice=0.8717
+2026-10-21 21:12:10,224 INFO src.segmentation.strong_trainer: epoch=49 train_loss=0.0661 val_loss=0.0751 val_dice=0.8726
+2026-10-21 21:12:42,745 INFO src.segmentation.strong_trainer: epoch=50 train_loss=0.0642 val_loss=0.0751 val_dice=0.8721
+2026-10-21 21:13:14,800 INFO src.segmentation.strong_trainer: epoch=51 train_loss=0.0650 val_loss=0.0755 val_dice=0.8714
+2026-10-21 21:13:46,513 INFO src.segmentation.strong_trainer: epoch=52 train_loss=0.0626 val_loss=0.0766 val_dice=0.8690
+2026-10-21 21:14:18,585 INFO src.segmentation.strong_trainer: epoch=53 train_loss=0.0618 val_loss=0.0778 val_dice=0.8665
+2026-10-21 21:14:50,650 INFO src.segmentation.strong_trainer: epoch=54 train_loss=0.0618 val_loss=0.0776 val_dice=0.8666
+2026-10-21 21:15:22,866 INFO src.segmentation.strong_trainer: epoch=55 train_loss=0.0622 val_loss=0.0766 val_dice=0.8683
+2026-10-21 21:15:54,980 INFO src.segmentation.strong_trainer: epoch=56 train_loss=0.0615 val_loss=0.0768 val_dice=0.8680
+2026-10-21 21:16:26,868 INFO src.segmentation.strong_trainer: epoch=57 train_loss=0.0613 val_loss=0.0767 val_dice=0.8682
+2026-10-21 21:16:58,738 INFO src.segmentation.strong_trainer: epoch=58 train_loss=0.0630 val_loss=0.0764 val_dice=0.8685
+2026-10-21 21:17:30,524 INFO src.segmentation.strong_trainer: epoch=59 train_loss=0.0591 val_loss=0.0768 val_dice=0.8680
+2026-10-21 21:18:02,445 INFO src.segmentation.strong_trainer: epoch=60 train_loss=0.0598 val_loss=0.0733 val_dice=0.8749
+2026-10-21 21:18:34,562 INFO src.segmentation.strong_trainer: epoch=61 train_loss=0.0592 val_loss=0.0723 val_dice=0.8765
+2026-10-21 21:19:07,076 INFO src.segmentation.strong_trainer: epoch=62 train_loss=0.0590 val_loss=0.0721 val_dice=0.8770
+2026-10-21 21:19:39,871 INFO src.segmentation.strong_trainer: epoch=63 train_loss=0.0584 val_loss=0.0719 val_dice=0.8771
+2026-10-21 21:20:13,118 INFO src.segmentation.strong_trainer: epoch=64 train_loss=0.0574 val_loss=0.0716 val_dice=0.8779
+2026-10-21 21:20:46,358 INFO src.segmentation.strong_trainer: epoch=65 train_loss=0.0582 val_loss=0.0714 val_dice=0.8783
+2026-10-21 21:21:19,727 INFO src.segmentation.strong_trainer: epoch=66 train_loss=0.0581 val_loss=0.0711 val_dice=0.8789
+2026-10-21 21:21:53,068 INFO src.segmentation.strong_trainer: epoch=67 train_loss=0.0571 val_loss=0.0711 val_dice=0.8789
+2026-10-21 21:22:26,085 INFO src.segmentation.strong_trainer: epoch=68 train_loss=0.0586 val_loss=0.0712 val_dice=0.8787
+2026-10-21 21:22:58,922 INFO src.segmentation.strong_trainer: epoch=69 train_loss=0.0574 val_loss=0.0710 val_dice=0.8789
+2026-10-21 21:23:32,459 INFO src.segmentation.strong_trainer: epoch=70 train_loss=0.0577 val_loss=0.0709 val_dice=0.8791
+2026-10-21 21:24:05,494 INFO src.segmentation.strong_trainer: epoch=71 train_loss=0.0559 val_loss=0.0709 val_dice=0.8792
+2026-10-21 21:24:38,895 INFO src.segmentation.strong_trainer: epoch=72 train_loss=0.0560 val_loss=0.0709 val_dice=0.8791
+2026-10-21 21:25:11,854 INFO src.segmentation.strong_trainer: epoch=73 train_loss=0.0572 val_loss=0.0713 val_dice=0.8782
+2026-10-21 21:25:44,500 INFO src.segmentation.strong_trainer: epoch=74 train_loss=0.0564 val_loss=0.0717 val_dice=0.8776
+2026-10-21 21:26:17,186 INFO src.segmentation.strong_trainer: epoch=75 train_loss=0.0560 val_loss=0.0719 val_dice=0.8771
+2026-10-21 21:26:49,291 INFO src.segmentation.strong_trainer: epoch=76 train_loss=0.0549 val_loss=0.0721 val_dice=0.8768
+2026-10-21 21:27:22,126 INFO src.segmentation.strong_trainer: epoch=77 train_loss=0.0564 val_loss=0.0723 val_dice=0.8763
+2026-10-21 21:27:54,886 INFO src.segmentation.strong_trainer: epoch=78 train_loss=0.0556 val_loss=0.0725 val_dice=0.8758
+2026-10-21 21:28:28,364 INFO src.segmentation.strong_trainer: epoch=79 train_loss=0.0540 val_loss=0.0726 val_dice=0.8758
+2026-10-21 21:29:02,132 INFO src.segmentation.strong_trainer: epoch=80 train_loss=0.0544 val_loss=0.0727 val_dice=0.8755
+2026-10-21 21:29:35,374 INFO src.segmentation.strong_trainer: epoch=81 train_loss=0.0556 val_loss=0.0728 val_dice=0.8753
+2026-10-21 21:30:08,794 INFO src.segmentation.strong_trainer: epoch=82 train_loss=0.0541 val_loss=0.0729 val_dice=0.8752
+2026-10-21 21:30:41,996 INFO src.segmentation.strong_trainer: epoch=83 train_loss=0.0537 val_loss=0.0729 val_dice=0.8751
+2026-10-21 21:31:15,225 INFO src.segmentation.strong_trainer: epoch=84 train_loss=0.0545 val_loss=0.0731 val_dice=0.8748
+2026-10-21 21:31:48,294 INFO src.segmentation.strong_trainer: epoch=85 train_loss=0.0535 val_loss=0.0732 val_dice=0.8746
+2026-10-21 21:32:21,673 INFO src.segmentation.strong_trainer: epoch=86 train_loss=0.0533 val_loss=0.0733 val_dice=0.8745
+2026-10-21 21:32:55,214 INFO src.segmentation.strong_trainer: epoch=87 train_loss=0.0535 val_loss=0.0734 val_dice=0.8743
+2026-10-21 21:33:28,569 INFO src.segmentation.strong_trainer: epoch=88 train_loss=0.0526 val_loss=0.0734 val_dice=0.8743
+2026-10-21 21:34:02,510 INFO src.segmentation.strong_trainer: epoch=89 train_loss=0.0539 val_loss=0.0735 val_dice=0.8741
+2026-10-21 21:34:35,760 INFO src.segmentation.strong_trainer: epoch=90 train_loss=0.0530 val_loss=0.0737 val_dice=0.8737
+2026-10-21 21:35:08,930 INFO src.segmentation.strong_trainer: epoch=91 train_loss=0.0527 val_loss=0.0740 val_dice=0.8733
+2026-10-21 21:35:42,210 INFO src.segmentation.strong_trainer: epoch=92 train_loss=0.0541 val_loss=0.0742 val_dice=0.8729
+2026-10-21 21:36:15,758 INFO src.segmentation.strong_trainer: epoch=93 train_loss=0.0532 val_loss=0.0744 val_dice=0.8725
+2026-10-21 21:36:49,119 INFO src.segmentation.strong_trainer: epoch=94 train_loss=0.0542 val_loss=0.0744 val_dice=0.8725
+2026-10-21 21:37:22,651 INFO src.segmentation.strong_trainer: epoch=95 train_loss=0.0527 val_loss=0.0745 val_dice=0.8723
+2026-10-21 21:37:55,778 INFO src.segmentation.strong_trainer: epoch=96 train_loss=0.0533 val_loss=0.0744 val_dice=0.8723
+2026-10-21 21:37:56,269 INFO src.segmentation.strong_trainer: Early stopping at epoch 96 (patience 25)
+2026-10-21 21:37:57,024 INFO src.segmentation.dataset: Manifest loaded: split=val, annotated valid samples=118
+2026-10-21 21:39:19,511 INFO spec_02_03: Wrote /kaggle/working/spec-02-03/postprocessing_tuning.json
+2026-10-21 21:39:19,559 INFO src.segmentation.dataset: Manifest loaded: split=test, annotated valid samples=191
+2026-10-21 21:40:31,778 INFO spec_02_03: Wrote /kaggle/working/spec-02-03/heldout_test_evaluation.json
+2026-10-21 21:51:04,617 INFO spec_02_03: Wrote /kaggle/working/spec-02-03/lowerlimb_external_evaluation.json
+2026-10-21 21:51:04,646 INFO spec_02_03: Wrote /kaggle/working/spec-02-03/experiment_record.json

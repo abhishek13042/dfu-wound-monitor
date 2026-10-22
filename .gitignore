@@ -115,3 +115,10 @@ logs/
 wandb/
 mlruns/
 lightning_logs/
+
+# Phase 05 service runtime data (SQLite database + blob store)
+runtime/
+
+# model weights anywhere in the tree (pinned by SHA-256 in configs; not stored in git)
+*.pth
+*.pt

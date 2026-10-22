@@ -75,6 +75,18 @@ Initial engineering roles:
 
 These roles are planning hypotheses until verified against official dataset documentation.
 
+> **Current roles (updated 2026-10-21, after Phase 01 acquisition).** The
+> hypotheses above were superseded. DFUC2020/2021/2022 are BLOCKED pending the
+> official DFU license application.
+>
+> - FUSeg2021: primary binary segmentation dataset.
+> - LowerLimbFeetWound V3: candidate external evaluation set.
+> - Medetec: qualitative out-of-distribution review and quality-gate fixtures. It has no masks.
+> - DFUTissueSegNet: optional tissue extension. It shares the AZH source with FUSeg2021.
+>
+> See `data/external/dataset_registry.json` v2.0.0 and
+> `specs/phase-01/OPEN_QUESTIONS.md`.
+
 The project SHALL avoid pretending that separate datasets form a single longitudinal clinical cohort.
 
 ## 10. Implementation Tasks
@@ -132,4 +144,5 @@ Dataset selection cannot establish clinical validity. External generalization mu
 
 ## 17. Traceability
 
-Each selected dataset SHALL map to one or more downstream Phase 01/02/03/04/10 specifications.
+Each selected dataset SHALL map to one or more downstream Phase 01, Phase 02,
+or consolidated Phase 03–06 specifications.

@@ -72,9 +72,11 @@ class TestPhase01Pipeline(unittest.TestCase):
         self.assertEqual(canonical, "wound_tissue")
         self.assertEqual(status, "VERIFIED")
 
-        canonical_tissue, status_t, _ = map_source_label_to_canonical("DFUTissueSegNet", "slough")
-        self.assertEqual(canonical_tissue, "tissue_slough")
+        canonical_tissue, status_t, _ = map_source_label_to_canonical("DFUTissueSegNet", "fibrin")
+        self.assertEqual(canonical_tissue, "tissue_fibrin")
         self.assertEqual(status_t, "VERIFIED")
+        _, status_slough, _ = map_source_label_to_canonical("DFUTissueSegNet", "slough")
+        self.assertNotEqual(status_slough, "VERIFIED")
 
     def test_p01_s05_patient_aware_splitting_and_leakage(self) -> None:
         """P01-S05: Verify patient-level splitting and leakage detection."""
@@ -114,6 +116,27 @@ class TestPhase01Pipeline(unittest.TestCase):
         self.assertEqual(stats["total_samples"], 2)
         self.assertEqual(stats["width_stats"]["mean"], 512.0)
         self.assertEqual(stats["aspect_ratio_stats"]["mean"], 1.0)
+
+    def test_p01_s05_exam_level_grouping_when_patient_ids_absent(self) -> None:
+        """Repeated images from one verified examination stay together."""
+        samples = [
+            {"sample_id": "E1_A", "exam_id": "EXAM01", "checksum_sha256": "h1"},
+            {"sample_id": "E1_B", "exam_id": "EXAM01", "checksum_sha256": "h2"},
+            {"sample_id": "E2_A", "exam_id": "EXAM02", "checksum_sha256": "h3"},
+            {"sample_id": "E3_A", "exam_id": "EXAM03", "checksum_sha256": "h4"},
+        ]
+        records, summary = generate_deterministic_splits(
+            sample_records=samples,
+            train_ratio=0.5,
+            val_ratio=0.25,
+            test_ratio=0.25,
+            random_seed=42,
+        )
+
+        split_by_id = {record["sample_id"]: record["split"] for record in records}
+        self.assertEqual(split_by_id["E1_A"], split_by_id["E1_B"])
+        self.assertEqual(summary["split_mode"], "EXAM_LEVEL")
+        self.assertTrue(summary["exam_level_isolation_achieved"])
 
 
 if __name__ == "__main__":

@@ -14,8 +14,14 @@ Coding Style: Beginner-Understandable Python
 
 import json
 import os
+import argparse
+import sys
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
+
+# Make direct execution from the repository root resolve the project package.
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 # Import our modular pipeline functions
 from src.data.ingestion import ingest_dataset_directory
@@ -65,8 +71,19 @@ def create_synthetic_demo_dataset(base_dir: Path) -> Tuple[Path, Path]:
     return source_img_dir, source_ann_dir
 
 
-def run_phase_01_pipeline():
-    """Execute the end-to-end Phase 01 data foundation pipeline."""
+def run_phase_01_pipeline(
+    dataset_root: Optional[Path] = None,
+    images_dir: Optional[Path] = None,
+    annotations_dir: Optional[Path] = None,
+    dataset_version: str = "unknown",
+    use_synthetic_demo: bool = False,
+):
+    """Execute the end-to-end Phase 01 pipeline for a verified local dataset.
+
+    A real dataset source must be supplied explicitly. The synthetic fixture is
+    available only with ``--demo`` and is marked as a smoke-test source in the
+    generated manifest. There is no download or silent fallback behavior.
+    """
     project_root = Path(__file__).parent.parent
     data_dir = project_root / "data"
     raw_dir = data_dir / "raw"
@@ -88,12 +105,40 @@ def run_phase_01_pipeline():
         registry = json.load(f)
     print(f"[P01-S01] Registry loaded: {len(registry['datasets'])} verified dataset entries.")
 
-    # 2. P01-S02: Create & Ingest Primary Segmentation Dataset (DFUC2022)
-    demo_img_dir, demo_ann_dir = create_synthetic_demo_dataset(data_dir / "interim")
+    # 2. P01-S02: Select an explicit source for primary segmentation.
+    if use_synthetic_demo:
+        demo_img_dir, demo_ann_dir = create_synthetic_demo_dataset(data_dir / "interim")
+        source_img_dir = demo_img_dir
+        source_ann_dir = demo_ann_dir
+        source_type = "synthetic_demo"
+        resolved_dataset_version = "synthetic-demo-1"
+    else:
+        if images_dir is None and dataset_root is not None:
+            images_dir = dataset_root / "images"
+        if annotations_dir is None and dataset_root is not None:
+            annotations_dir = dataset_root / "annotations"
+
+        if images_dir is None or annotations_dir is None:
+            raise RuntimeError(
+                "REAL DATA BASELINE BLOCKED: provide --dataset-root PATH with "
+                "images/ and annotations/ directories, or provide both "
+                "--images-dir and --annotations-dir. Use --demo only for the "
+                "historical synthetic smoke fixture."
+            )
+        if not images_dir.is_dir() or not annotations_dir.is_dir():
+            raise FileNotFoundError(
+                "REAL DATA BASELINE BLOCKED: expected local DFUC2022 directories "
+                f"were not found: images={images_dir}, annotations={annotations_dir}."
+            )
+        source_img_dir = images_dir
+        source_ann_dir = annotations_dir
+        source_type = "real"
+        resolved_dataset_version = dataset_version
+
     ingestion_report = ingest_dataset_directory(
         dataset_name="DFUC2022",
-        source_images_dir=demo_img_dir,
-        source_annotations_dir=demo_ann_dir,
+        source_images_dir=source_img_dir,
+        source_annotations_dir=source_ann_dir,
         destination_raw_dir=raw_dir
     )
 
@@ -104,8 +149,9 @@ def run_phase_01_pipeline():
     # 3. P01-S03: Data Quality Validation
     validation_report = run_dataset_quality_validation(
         ingestion_report=ingestion_report,
-        raw_images_dir=demo_img_dir,
-        raw_annotations_dir=demo_ann_dir
+        raw_images_dir=raw_dir / "DFUC2022" / "images",
+        raw_annotations_dir=raw_dir / "DFUC2022" / "annotations",
+        require_annotation=True,
     )
 
     with open(manifests_dir / "quality_validation_report.json", "w", encoding="utf-8") as f:
@@ -114,19 +160,48 @@ def run_phase_01_pipeline():
 
     # 4. P01-S04: Schema & Label Harmonization
     canonical_samples = []
+    exclusion_records = []
+    ingestion_samples_by_id = {
+        sample["sample_id"]: sample for sample in ingestion_report.get("samples", [])
+    }
+    duplicate_sample_ids = {
+        duplicate["file_name"].rsplit(".", 1)[0]
+        for duplicate in ingestion_report.get("duplicates", [])
+    }
     for s_result in validation_report["sample_results"]:
         sample_id = s_result["sample_id"]
-        # Find matching ingestion sample
-        ingest_sample = next(s for s in ingestion_report["samples"] if s["sample_id"] == sample_id)
+        ingest_sample = ingestion_samples_by_id[sample_id]
 
         img_meta = s_result.get("image_metadata") or {"width": 512, "height": 512, "channels": 3}
 
+        if not s_result["is_valid"]:
+            exclusion_records.append(
+                {
+                    "sample_id": sample_id,
+                    "dataset": "DFUC2022",
+                    "reason": s_result.get("issue_category") or "validation_failed",
+                    "validation_status": "INVALID",
+                }
+            )
+            continue
+
+        if sample_id in duplicate_sample_ids:
+            exclusion_records.append(
+                {
+                    "sample_id": sample_id,
+                    "dataset": "DFUC2022",
+                    "reason": "duplicate_image_checksum",
+                    "validation_status": "QUARANTINED",
+                }
+            )
+            continue
+
         canonical_obj = create_canonical_sample_metadata(
             dataset_name="DFUC2022",
-            dataset_version="2022.1",
+            dataset_version=resolved_dataset_version,
             source_sample_id=sample_id,
-            image_path=str(demo_img_dir / f"{sample_id}.png"),
-            annotation_path=str(demo_ann_dir / f"{sample_id}.png"),
+            image_path=ingest_sample["raw_image_path"],
+            annotation_path=ingest_sample["raw_annotation_path"],
             checksum_sha256=ingest_sample["sha256"],
             width=img_meta["width"],
             height=img_meta["height"],
@@ -135,9 +210,17 @@ def run_phase_01_pipeline():
             patient_id=None,  # Unknown for DFUC2022 public release
             exam_id=None,
             original_label="wound",
-            validation_status="VALID" if s_result["is_valid"] else "INVALID"
+            validation_status="VALID",
+            annotation_checksum_sha256=ingest_sample.get("annotation_sha256"),
         )
         canonical_samples.append(canonical_obj.to_dict())
+
+    if not canonical_samples:
+        raise RuntimeError(
+            "Phase 01 produced no usable DFUC2022 segmentation samples. "
+            "Review reports/ingestion_report.json and "
+            "data/manifests/quality_validation_report.json."
+        )
 
     # 5. P01-S05: Patient-Aware / Deterministic Splitting
     manifest_records, split_summary = generate_deterministic_splits(
@@ -151,13 +234,19 @@ def run_phase_01_pipeline():
     leakage_report = verify_split_leakage(manifest_records)
     split_summary["leakage_analysis"] = leakage_report
 
-    with open(manifests_dir / "dataset_manifest.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "manifest_version": "1.0.0",
+    manifest_document = {
+            "manifest_version": "1.1.0",
             "dataset_name": "DFUC2022",
+            "dataset_version": resolved_dataset_version,
+            "dataset_source_type": source_type,
+            "source_images_dir": str(source_img_dir),
+            "source_annotations_dir": str(source_ann_dir),
             "split_summary": split_summary,
-            "samples": manifest_records
-        }, f, indent=2)
+            "exclusions": exclusion_records,
+            "samples": manifest_records,
+        }
+    with open(manifests_dir / "dataset_manifest.json", "w", encoding="utf-8") as f:
+        json.dump(manifest_document, f, indent=2)
 
     print(f"[P01-S05] Manifest saved. Split summary: Train={split_summary['train_samples']}, Val={split_summary['val_samples']}, Test={split_summary['test_samples']}.")
     print(f"[P01-S05] Leakage verification passed: {leakage_report['leakage_test_passed']}.")
@@ -182,9 +271,41 @@ def run_phase_01_pipeline():
 
     print(f"[P01-S06] EDA visualization grid rendered to: {grid_path}")
     print("\n==================================================")
+    if not leakage_report["leakage_test_passed"]:
+        raise RuntimeError(
+            "TRAINING STOPPED: split leakage validation failed. "
+            "The manifest was written for audit, but Phase 02 training is blocked "
+            "until the split is corrected."
+        )
+
     print("        PHASE 01 PIPELINE EXECUTION PASSED        ")
     print("==================================================")
 
 
 if __name__ == "__main__":
-    run_phase_01_pipeline()
+    parser = argparse.ArgumentParser(
+        description="Run the Phase 01 DFUC2022 ingestion and manifest pipeline."
+    )
+    source_group = parser.add_mutually_exclusive_group()
+    source_group.add_argument(
+        "--dataset-root",
+        type=Path,
+        help="Local verified DFUC2022 root containing images/ and annotations/.",
+    )
+    source_group.add_argument(
+        "--demo",
+        action="store_true",
+        help="Use the historical synthetic fixture for smoke testing only.",
+    )
+    parser.add_argument("--images-dir", type=Path, default=None)
+    parser.add_argument("--annotations-dir", type=Path, default=None)
+    parser.add_argument("--dataset-version", default="unknown")
+    args = parser.parse_args()
+
+    run_phase_01_pipeline(
+        dataset_root=args.dataset_root,
+        images_dir=args.images_dir,
+        annotations_dir=args.annotations_dir,
+        dataset_version=args.dataset_version,
+        use_synthetic_demo=args.demo,
+    )

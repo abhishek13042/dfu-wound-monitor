@@ -1,0 +1,18 @@
+{
+  "quality_config_version": "p03-s02-v1",
+  "description": "Technical image-quality thresholds. Each threshold sits beyond the range observed on the curated FUSeg2021 and LowerLimb V3 images (reports/quality/quality_gate_calibration.json), so the gate rejects only clearly unusable photos. A value exactly at a threshold is accepted.",
+  "analysis_size": 512,
+  "checks": {
+    "min_side_px": 128,
+    "max_aspect_ratio": 4.0,
+    "min_laplacian_variance": 8.0,
+    "min_mean_luminance": 30.0,
+    "max_mean_luminance": 220.0,
+    "max_dark_fraction": 0.70,
+    "max_bright_fraction": 0.50,
+    "min_luminance_std": 10.0,
+    "max_glare_fraction": 0.40,
+    "min_content_fraction": 0.30,
+    "min_entropy_bits": 3.0
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "manifest_version": "fuseg2021-heldout-v1",
+  "parent_manifest_sha256": "840ede82ee25ac2b053e57580a51c0460d28d2cb91b7b65adab5e5844fe46a3f",
+  "parameters": {
+    "internal_val_fraction": 0.15,
+    "seed": 42,
+    "near_duplicate_method": "64-bit DCT pHash",
+    "max_hamming_distance": 8
+  },
+  "counts": {
+    "train": 668,
+    "val": 118,
+    "test": 191
+  },
+  "empty_mask_counts": {
+    "train": 15,
+    "val": 3,
+    "test": 5
+  },
+  "near_duplicate_pairs": 14,
+  "near_duplicate_groups_with_multiple_members": 13,
+  "largest_group_size": 3,
+  "train_quarantined_near_duplicate_of_test": [
+    "train/0023",
+    "train/0200",
+    "train/0244",
+    "train/0440",
+    "train/0524",
+    "train/0649",
+    "train/0808"
+  ],
+  "cross_split_groups": [
+    [
+      "train/0023",
+      "train/0200",
+      "validation/0375"
+    ],
+    [
+      "train/0244",
+      "validation/0276"
+    ],
+    [
+      "train/0440",
+      "validation/0407"
+    ],
+    [
+      "train/0524",
+      "validation/0004"
+    ],
+    [
+      "train/0649",
+      "validation/0834"
+    ],
+    [
+      "train/0808",
+      "validation/0577"
+    ]
+  ],
+  "pairs": [
+    {
+      "a": "train/0012",
+      "b": "train/0172",
+      "hamming": 8
+    },
+    {
+      "a": "train/0023",
+      "b": "validation/0375",
+      "hamming": 6
+    },
+    {
+      "a": "train/0153",
+      "b": "train/0243",
+      "hamming": 6
+    },
+    {
+      "a": "train/0200",
+      "b": "validation/0375",
+      "hamming": 8
+    },
+    {
+      "a": "train/0219",
+      "b": "train/0312",
+      "hamming": 8
+    },
+    {
+      "a": "train/0244",
+      "b": "validation/0276",
+      "hamming": 8
+    },
+    {
+      "a": "train/0421",
+      "b": "train/0748",
+      "hamming": 8
+    },
+    {
+      "a": "train/0440",
+      "b": "validation/0407",
+      "hamming": 8
+    },
+    {
+      "a": "train/0463",
+      "b": "train/0768",
+      "hamming": 8
+    },
+    {
+      "a": "train/0524",
+      "b": "validation/0004",
+      "hamming": 8
+    },
+    {
+      "a": "train/0649",
+      "b": "validation/0834",
+      "hamming": 6
+    },
+    {
+      "a": "train/0680",
+      "b": "train/0750",
+      "hamming": 6
+    },
+    {
+      "a": "train/0739",
+      "b": "train/0993",
+      "hamming": 8
+    },
+    {
+      "a": "train/0808",
+      "b": "validation/0577",
+      "hamming": 8
+    }
+  ],
+  "exact_leakage_analysis": {
+    "leakage_test_passed": true,
+    "checksum_leakage_detected": false,
+    "sample_id_leakage_detected": false,
+    "annotation_checksum_leakage_detected": false,
+    "patient_leakage_detected": false,
+    "exam_leakage_detected": false,
+    "exact_path_duplication_detected": false,
+    "checksum_overlaps": {
+      "train_vs_val": 0,
+      "train_vs_test": 0,
+      "val_vs_test": 0
+    },
+    "sample_id_overlaps": {
+      "train_vs_val": 0,
+      "train_vs_test": 0,
+      "val_vs_test": 0
+    },
+    "annotation_checksum_overlaps": {
+      "train_vs_val": 1,
+      "train_vs_test": 1,
+      "val_vs_test": 1
+    },
+    "repeated_empty_mask_checksums_allowed": 1,
+    "annotation_checksum_leakage_overlaps": {
+      "train_vs_val": 0,
+      "train_vs_test": 0,
+      "val_vs_test": 0
+    },
+    "patient_overlaps": {
+      "train_vs_val": 0,
+      "train_vs_test": 0,
+      "val_vs_test": 0
+    },
+    "exam_overlaps": {
+      "train_vs_val": 0,
+      "train_vs_test": 0,
+      "val_vs_test": 0
+    },
+    "exact_path_overlaps": {
+      "image_train_vs_val": 0,
+      "image_train_vs_test": 0,
+      "image_val_vs_test": 0,
+      "annotation_train_vs_val": 0,
+      "annotation_train_vs_test": 0,
+      "annotation_val_vs_test": 0
+    }
+  }
+}

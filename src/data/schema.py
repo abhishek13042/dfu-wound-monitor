@@ -8,7 +8,7 @@ Coding Style: Beginner-Understandable Python
 """
 
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 @dataclass
@@ -34,6 +34,7 @@ class CanonicalSampleMetadata:
     canonical_label: str
     metadata_status: str       # 'VERIFIED', 'INFERRED', 'UNKNOWN'
     validation_status: str     # 'VALID', 'INVALID', 'QUARANTINED'
+    annotation_checksum_sha256: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert dataclass instance to standard dictionary."""
@@ -91,29 +92,32 @@ LABEL_MAPPING_REGISTRY: Dict[str, Dict[str, Dict[str, str]]] = {
         }
     },
     "DFUTissueSegNet": {
+        # Classes per the source palette (DFUTissue/Labeled/*/Palette/palette_colorCode.txt):
+        # Red=Fibrin, Green=Granulation, Blue=Callus.  Slough/eschar are not
+        # labeled classes in the released masks.
         "granulation": {
             "canonical_label": "tissue_granulation",
             "mapping_status": "VERIFIED",
             "task_type": "tissue_segmentation",
-            "notes": "Healthy healing pink/red granulation tissue."
+            "notes": "Palette green. Pink/red granulation tissue."
         },
-        "slough": {
-            "canonical_label": "tissue_slough",
+        "fibrin": {
+            "canonical_label": "tissue_fibrin",
             "mapping_status": "VERIFIED",
             "task_type": "tissue_segmentation",
-            "notes": "Yellow/white devitalized soft tissue."
+            "notes": "Palette red. Yellow/white fibrinous (slough-like) tissue."
         },
-        "eschar": {
-            "canonical_label": "tissue_eschar",
+        "callus": {
+            "canonical_label": "tissue_callus",
             "mapping_status": "VERIFIED",
             "task_type": "tissue_segmentation",
-            "notes": "Black/brown necrotic tissue."
+            "notes": "Palette blue. Hyperkeratotic callus around the ulcer."
         },
         "background": {
             "canonical_label": "background",
             "mapping_status": "VERIFIED",
             "task_type": "tissue_segmentation",
-            "notes": "Background skin/surroundings."
+            "notes": "Palette black. Background skin/surroundings."
         }
     },
     "FUSeg2021": {
@@ -121,13 +125,13 @@ LABEL_MAPPING_REGISTRY: Dict[str, Dict[str, Dict[str, str]]] = {
             "canonical_label": "wound_tissue",
             "mapping_status": "VERIFIED",
             "task_type": "wound_segmentation",
-            "notes": "External validation dataset binary segmentation mask target."
+            "notes": "Primary SPEC-02-01 binary wound segmentation mask target."
         },
         "background": {
             "canonical_label": "background",
             "mapping_status": "VERIFIED",
             "task_type": "wound_segmentation",
-            "notes": "External validation dataset background target."
+            "notes": "Primary SPEC-02-01 binary wound segmentation background target."
         }
     }
 }
@@ -175,7 +179,8 @@ def create_canonical_sample_metadata(
     patient_id: Optional[str],
     exam_id: Optional[str],
     original_label: str,
-    validation_status: str
+    validation_status: str,
+    annotation_checksum_sha256: Optional[str] = None,
 ) -> CanonicalSampleMetadata:
     """
     Construct a validated CanonicalSampleMetadata instance.
@@ -208,5 +213,6 @@ def create_canonical_sample_metadata(
         original_label=original_label,
         canonical_label=canonical_label,
         metadata_status=metadata_status,
-        validation_status=validation_status
+        validation_status=validation_status,
+        annotation_checksum_sha256=annotation_checksum_sha256,
     )

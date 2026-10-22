@@ -1,0 +1,61 @@
+{
+  "release": "DFU-WoundMonitor research prototype",
+  "generated_utc": "2026-10-22T10:23:55+00:00",
+  "git": {
+    "commit": "158dced4eb1048abe86672b01301364442ce8030",
+    "dirty": true
+  },
+  "versions": {
+    "service": "p05-1.0",
+    "api": "v1",
+    "inference_engine": "p03-s01-1.0",
+    "measurement_engine": "p03-s03-1.0",
+    "record_schema": "p04-s01-v1",
+    "database_schema": 1,
+    "comparison_policy": "p04-s02-v1",
+    "trend": "p04-s03-v1",
+    "model": "spec-02-03-resnet34-unet-512-v1"
+  },
+  "model_artifact": {
+    "checkpoint_path": "models/checkpoints/spec-02-03/resnet34_unet_512_best.pth",
+    "checkpoint_sha256": "26aca52e401f23b5781d2596d74c1fd7fa86a6af0ab9fb3db9fa17dcffb5cf04",
+    "present": true,
+    "verified": true,
+    "in_git": false
+  },
+  "configs": {
+    "configs/inference/spec_02_03_inference.json": "12de1d332413b86779f81e3b8e02a3403f01aa420e11e86101ca1c440ba0cb0d",
+    "configs/training/segmentation_resnet34_unet_512.json": "d37ac08c0babcc403a86c920ee4a643d04e7c6449b2c0ea843879a6ff4e4cb35",
+    "configs/quality/quality_gate_v1.json": "0e61ab319db8433d1967d2e38deaa86934ae4e18d21886260f6cc527d3dad4ec",
+    "configs/measurement/measurement_v1.json": "c00dabe45273de236403045ff5e1d5be224c98f397cbdfb7989fdf5b0a05b6aa",
+    "requirements.txt": "57e0392887dc05a7248b8f2b83bacdf3020878807004ecde4a7afabf1e6211a3"
+  },
+  "evidence": {
+    "reports/experiments/spec_02_03_report.md": "d7468b88020148e93a4a23ea820c7226eda9f5ef86e7b6d6caa33c2232989044",
+    "reports/experiments/spec-02-03/cpu_verification/heldout_test_evaluation.json": "4ec3ded3352a95e65cf4a9130fbfa8f5f89ef096a10957c3626536ba40d3a15b",
+    "reports/quality/quality_gate_calibration.json": "1a5e47a9b4f566b023febfe6fe11bfdcb1cc864916afc7611f35d54e1b531a2b",
+    "reports/final/p06_validation_fuseg2021_test.json": null,
+    "reports/final/p06_validation_lowerlimb_external.json": null,
+    "reports/final/p06_benchmark.json": null,
+    "reports/final/phase_06_validation_report.md": null,
+    "docs/release/RELEASE.md": "d2e92c9fc21af6f11beaa86ff3830d5b39df8c9c41a68e74171f30f251a384ee"
+  },
+  "build_environment": {
+    "python": "3.14.0",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "commands": {
+    "install": "python -m pip install -r requirements.txt",
+    "tests": "python -m pytest -q",
+    "serve": "python -m uvicorn src.api.app:app --host 127.0.0.1 --port 8000",
+    "smoke_test": "python scripts/deployment/smoke_test.py",
+    "validation": "python scripts/evaluation/run_phase_06_validation.py --split test",
+    "benchmark": "python scripts/evaluation/run_phase_06_benchmark.py --images 20"
+  },
+  "limitations": [
+    "Research prototype. Not a medical device and not clinically validated.",
+    "Segmentation was trained and evaluated on FUSeg2021 images only; other cameras, skin tones and wound types may perform worse.",
+    "Image-derived 2-D projected geometry. Foot curvature, camera angle and lens distortion are not corrected. Not a clinical measurement.",
+    "Trends and comparisons are image-derived technical values, not assessments of healing."
+  ]
+}

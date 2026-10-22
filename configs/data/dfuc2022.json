@@ -1,0 +1,16 @@
+{
+  "dataset_name": "DFUC2022",
+  "dataset_version": "REPLACE_WITH_VERIFIED_LOCAL_VERSION",
+  "source_type": "real",
+  "dataset_root": "REPLACE_WITH_LOCAL_DFUC2022_ROOT",
+  "expected_structure": {
+    "images": "<dataset_root>/images/",
+    "annotations": "<dataset_root>/annotations/"
+  },
+  "annotation_type": "wound_segmentation",
+  "annotation_pairing": "same_stem_image_and_mask",
+  "patient_id_policy": "Do not infer patient IDs from filenames; public DFUC2022 release does not provide verified IDs.",
+  "download_policy": "No automatic download. The dataset must be acquired through the verified source and supplied locally.",
+  "phase_02_role": "primary_segmentation",
+  "notes": "This file is a path/configuration template. It does not assert that the dataset is present in this checkout."
+}

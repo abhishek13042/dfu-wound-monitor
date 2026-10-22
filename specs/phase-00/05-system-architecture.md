@@ -85,7 +85,7 @@ Target conceptual architecture:
      │  CV Inference    │          │    Database     │
      │                  │          │                 │
      │ Quality          │          │ Examinations    │
-     │ Detection        │          │ Measurements    │
+     │ (Localization)*  │          │ Measurements    │
      │ Segmentation     │          │ Model versions  │
      │ Measurement      │          │ History         │
      └────────┬─────────┘          └─────────────────┘
@@ -104,9 +104,9 @@ Image
   ↓
 Quality Assessment
   ↓
-Localization / Detection
+[Optional] Localization / Detection *
   ↓
-Segmentation
+Segmentation (full image by default)
   ↓
 Post-processing
   ↓
@@ -116,6 +116,11 @@ Optional Tissue Analysis
 ```
 
 The exact implementation order may differ where experimentation shows a better design.
+
+\* **Update (2026-10-21):** under `specs/REVISED_ROADMAP.md`, localization and
+detection are optional backlog items. Full-image segmentation is the default.
+The detection stage is added only when an approved spec shows that it is
+needed. Detection datasets (DFUC2020) are also license-blocked.
 
 ## 10. Implementation Tasks
 

@@ -174,8 +174,8 @@ class TestLoadManifestSamples:
                     "split": "train",
                     "validation_status": "VALID",
                     "annotation_type": "wound_segmentation",
-                    "image_path": "",
-                    "annotation_path": "",
+                    "image_path": str(tmp_path / "image.png"),
+                    "annotation_path": str(tmp_path / "mask.png"),
                 },
                 {
                     "source_sample_id": "BAD_001",
@@ -376,8 +376,8 @@ class TestLightweightUNet:
 
         assert output.shape == (2, 1, 64, 64), f"Expected (2, 1, 64, 64), got {output.shape}"
 
-    def test_output_range_after_sigmoid(self) -> None:
-        """Output values are in [0, 1] after sigmoid — REQ-P02-S03-003."""
+    def test_output_is_finite_logits(self) -> None:
+        """Model returns finite raw logits; sigmoid is applied at the loss boundary."""
         model = LightweightUNet(encoder_channels=[8, 16, 32, 64], num_classes=1)
         model.eval()
 
@@ -385,8 +385,7 @@ class TestLightweightUNet:
         with torch.no_grad():
             output = model(input_tensor)
 
-        assert output.min().item() >= 0.0, f"Output below 0: {output.min().item()}"
-        assert output.max().item() <= 1.0, f"Output above 1: {output.max().item()}"
+        assert torch.isfinite(output).all()
 
     def test_parameter_count_is_positive(self) -> None:
         """Model has positive parameter count — REQ-P02-S03-005."""
@@ -466,9 +465,8 @@ class TestBCEDiceLoss:
         targets = torch.zeros(1, 1, 32, 32)
         targets[:, :, 8:24, 8:24] = 1.0      # wound region in ground truth
 
-        predictions = torch.zeros(1, 1, 32, 32)
-        predictions[:, :, 8:24, 8:24] = 0.99  # model predicts same region
-        predictions[:, :, :8, :] = 0.01       # background areas near zero
+        predictions = torch.full((1, 1, 32, 32), -8.0)
+        predictions[:, :, 8:24, 8:24] = 8.0  # model predicts same region
 
         loss = loss_fn(predictions, targets)
         assert loss.item() < 0.2, f"Loss too high for near-perfect foreground prediction: {loss.item()}"
@@ -490,6 +488,14 @@ class TestBCEDiceLoss:
 
         loss = loss_fn(predictions, targets)
         assert torch.isfinite(loss), "Loss is not finite for all-zero mask"
+
+    def test_logits_contract_is_stable_for_extreme_values(self) -> None:
+        """BCEWithLogits + Dice remains finite for large positive/negative logits."""
+        loss_fn = BCEDiceLoss()
+        predictions = torch.tensor([[[[1000.0, -1000.0], [-1000.0, 1000.0]]]])
+        targets = torch.tensor([[[[1.0, 0.0], [0.0, 1.0]]]])
+        loss = loss_fn(predictions, targets)
+        assert torch.isfinite(loss)
 
 
 # ============================================================

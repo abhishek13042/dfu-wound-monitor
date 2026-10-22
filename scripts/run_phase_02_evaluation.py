@@ -40,10 +40,13 @@ from src.segmentation.evaluator import (
     collect_predictions_for_visualization,
     create_qualitative_visualization,
     evaluate_on_test_set,
+    save_prediction_artifacts,
     save_evaluation_results,
 )
 from src.segmentation.model import BCEDiceLoss, LightweightUNet
+from src.data.splitting import validate_manifest_for_training
 from src.segmentation.trainer import load_checkpoint, select_device
+from scripts.verify_phase_02_metrics import verify_saved_predictions
 
 
 def load_config(config_path: str) -> dict:
@@ -93,6 +96,7 @@ def main():
     manifest_path = data_config.get("manifest_path", "data/manifests/dataset_manifest.json")
 
     print(f"Loading data from manifest: {manifest_path}")
+    validate_manifest_for_training(manifest_path, require_real_data=True)
     _, _, test_loader = create_dataloaders(
         manifest_path=manifest_path,
         input_height=preprocessing_config.get("input_height", 256),
@@ -158,8 +162,17 @@ def main():
         normalize_std=preprocessing_config.get("normalize_std", [0.229, 0.224, 0.225]),
     )
 
-    # ---- Create qualitative visualization figures ----
     output_config = config.get("output", {})
+    prediction_output_dir = output_config.get(
+        "prediction_output_dir",
+        f"outputs/predictions/{experiment_id}",
+    )
+    prediction_artifact_paths = save_prediction_artifacts(
+        visualization_data=visualization_data,
+        output_dir=prediction_output_dir,
+    )
+
+    # ---- Create qualitative visualization figures ----
     qualitative_output_dir = output_config.get(
         "qualitative_output_dir",
         "outputs/visualizations/phase_02_qualitative"
@@ -197,6 +210,21 @@ def main():
         visualization_paths=visualization_paths,
         checkpoint_metadata=checkpoint_metadata,
         output_path=evaluation_results_path,
+        prediction_artifact_paths=prediction_artifact_paths,
+        independent_verification_path=output_config.get(
+            "independent_metric_verification_file",
+            f"reports/evaluation/{experiment_id}_independent_metric_verification.json",
+        ),
+    )
+
+    independent_verification_path = output_config.get(
+        "independent_metric_verification_file",
+        f"reports/evaluation/{experiment_id}_independent_metric_verification.json",
+    )
+    independent_report = verify_saved_predictions(
+        predictions_dir=prediction_output_dir,
+        evaluation_results_path=evaluation_results_path,
+        output_path=independent_verification_path,
     )
 
     # ---- Final summary ----
@@ -208,6 +236,8 @@ def main():
         f"  Test Precision: {aggregate_results['mean_precision']:.4f}\n"
         f"  Test Recall:    {aggregate_results['mean_recall']:.4f}\n"
         f"  Results: {evaluation_results_path}\n"
+        f"  Independent metrics: {independent_verification_path} ({independent_report['verification_status']})\n"
+        f"  Predictions: {prediction_output_dir}\n"
         f"  Visualizations: {qualitative_output_dir}\n"
         f"{'='*60}\n"
         f"DISCLAIMER: These results are from a monitoring prototype on 3 test samples.\n"

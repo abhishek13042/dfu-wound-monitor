@@ -90,17 +90,17 @@ def evaluate_on_test_set(
             mask_batch = mask_batch.to(device)
 
             # Forward pass
-            predictions = model(image_batch)
+            prediction_logits = model(image_batch)
 
             # Loss
-            loss = loss_fn(predictions, mask_batch)
+            loss = loss_fn(prediction_logits, mask_batch)
             batch_size = image_batch.shape[0]
             total_test_loss += loss.item() * batch_size
             total_test_samples += batch_size
 
             # Per-sample metrics
             batch_results = evaluate_batch(
-                predictions_batch=predictions,
+                predictions_batch=torch.sigmoid(prediction_logits),
                 targets_batch=mask_batch,
                 sample_ids=list(sample_ids),
                 prediction_threshold=prediction_threshold,
@@ -175,7 +175,7 @@ def collect_predictions_for_visualization(
     with torch.no_grad():
         for image_batch, mask_batch, sample_ids in test_loader:
             image_batch_device = image_batch.to(device)
-            predictions = model(image_batch_device)
+            predictions = torch.sigmoid(model(image_batch_device))
 
             batch_size = image_batch.shape[0]
             for sample_index in range(batch_size):
@@ -226,6 +226,36 @@ def collect_predictions_for_visualization(
     return visualization_data
 
 
+def save_prediction_artifacts(
+    visualization_data: List[Dict[str, Any]],
+    output_dir: str,
+) -> List[str]:
+    """Save per-sample probabilities, binary predictions, and ground truth.
+
+    The compressed NumPy files are intentionally generated artifacts rather than
+    Git-tracked source data. They keep the sample identifier next to both the
+    prediction and its reference mask so the independent metric verifier can
+    audit an evaluation without calling the production metric module.
+    """
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    saved_paths: List[str] = []
+
+    for sample_data in visualization_data:
+        sample_id = str(sample_data["sample_id"])
+        artifact_path = output_path / f"{sample_id}.npz"
+        np.savez_compressed(
+            artifact_path,
+            sample_id=np.array(sample_id),
+            prediction_probability=np.asarray(sample_data["prediction_probs"], dtype=np.float32),
+            prediction_binary=np.asarray(sample_data["prediction_binary"], dtype=np.uint8),
+            ground_truth_mask=np.asarray(sample_data["ground_truth"], dtype=np.uint8),
+        )
+        saved_paths.append(str(artifact_path))
+
+    return saved_paths
+
+
 def create_qualitative_visualization(
     visualization_data: List[Dict[str, Any]],
     output_dir: str,
@@ -270,8 +300,10 @@ def create_qualitative_visualization(
         else:
             quality_label = "POOR"
 
-        # Create figure with 4 panels
-        fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+        # Create a seven-panel figure required by P02-S06:
+        # image, ground truth, probability, binary prediction, ground-truth
+        # overlay, prediction overlay, and TP/FP/FN error overlay.
+        fig, axes = plt.subplots(1, 7, figsize=(28, 4))
         fig.suptitle(
             f"Sample: {sample_id} | Quality: {quality_label} | Dice={dice:.3f} | IoU={iou:.3f}",
             fontsize=12,
@@ -300,7 +332,35 @@ def create_qualitative_visualization(
         )
         axes[2].axis("off")
 
-        # Panel 4: Overlay showing TP, FP, FN
+        # Panel 4: Binary prediction
+        axes[3].imshow(prediction_binary, cmap="gray", vmin=0, vmax=1)
+        axes[3].set_title("Binary Prediction", fontsize=10)
+        axes[3].axis("off")
+
+        # Build masks used by all overlay panels.
+        tp_mask = (prediction_binary == 1) & (ground_truth == 1)
+        fp_mask = (prediction_binary == 1) & (ground_truth == 0)
+        fn_mask = (prediction_binary == 0) & (ground_truth == 1)
+
+        # Panel 5: Ground-truth overlay
+        ground_truth_overlay = image_display.copy()
+        ground_truth_overlay[ground_truth == 1] = (
+            0.6 * ground_truth_overlay[ground_truth == 1] + 0.4 * np.array([1.0, 0.0, 0.0])
+        )
+        axes[4].imshow(ground_truth_overlay)
+        axes[4].set_title("Ground Truth Overlay", fontsize=10)
+        axes[4].axis("off")
+
+        # Panel 6: Prediction overlay
+        prediction_overlay = image_display.copy()
+        prediction_overlay[prediction_binary == 1] = (
+            0.6 * prediction_overlay[prediction_binary == 1] + 0.4 * np.array([0.0, 0.4, 1.0])
+        )
+        axes[5].imshow(prediction_overlay)
+        axes[5].set_title("Prediction Overlay", fontsize=10)
+        axes[5].axis("off")
+
+        # Panel 7: Overlay showing TP, FP, FN
         # Create RGB overlay:
         #   TP (wound in both GT and Pred): Green
         #   FP (wound in Pred, not GT): Blue
@@ -308,21 +368,17 @@ def create_qualitative_visualization(
         #   TN (background in both): Black
         overlay = np.zeros((*ground_truth.shape, 3), dtype=np.float32)
 
-        tp_mask = (prediction_binary == 1) & (ground_truth == 1)
-        fp_mask = (prediction_binary == 1) & (ground_truth == 0)
-        fn_mask = (prediction_binary == 0) & (ground_truth == 1)
-
         overlay[tp_mask] = [0.0, 0.8, 0.0]   # Green = True Positive
         overlay[fp_mask] = [0.2, 0.4, 1.0]   # Blue = False Positive
         overlay[fn_mask] = [1.0, 0.2, 0.2]   # Red = False Negative
 
-        axes[3].imshow(overlay)
+        axes[6].imshow(overlay)
         tp_patch = mpatches.Patch(color=(0.0, 0.8, 0.0), label="TP")
         fp_patch = mpatches.Patch(color=(0.2, 0.4, 1.0), label="FP")
         fn_patch = mpatches.Patch(color=(1.0, 0.2, 0.2), label="FN")
-        axes[3].legend(handles=[tp_patch, fp_patch, fn_patch], loc="lower right", fontsize=8)
-        axes[3].set_title("Prediction Overlay (TP/FP/FN)", fontsize=10)
-        axes[3].axis("off")
+        axes[6].legend(handles=[tp_patch, fp_patch, fn_patch], loc="lower right", fontsize=8)
+        axes[6].set_title("TP / FP / FN", fontsize=10)
+        axes[6].axis("off")
 
         plt.tight_layout()
 
@@ -442,6 +498,8 @@ def save_evaluation_results(
     visualization_paths: List[str],
     checkpoint_metadata: Dict[str, Any],
     output_path: str,
+    prediction_artifact_paths: Optional[List[str]] = None,
+    independent_verification_path: Optional[str] = None,
 ) -> None:
     """
     Save complete test evaluation results to a JSON file (REQ-P02-S05-005).
@@ -453,6 +511,8 @@ def save_evaluation_results(
         visualization_paths: Paths to saved qualitative figures.
         checkpoint_metadata: Info about which checkpoint was evaluated.
         output_path: Path to write the results JSON.
+        prediction_artifact_paths: Saved raw prediction artifact paths.
+        independent_verification_path: Independent metric audit JSON path.
     """
     os.makedirs(Path(output_path).parent, exist_ok=True)
 
@@ -473,6 +533,8 @@ def save_evaluation_results(
         "per_sample_results": per_sample_results,
         "failure_analysis": failure_analysis,
         "qualitative_visualization_paths": visualization_paths,
+        "prediction_artifact_paths": prediction_artifact_paths or [],
+        "independent_metric_verification_path": independent_verification_path,
     }
 
     with open(output_path, "w", encoding="utf-8") as output_file:

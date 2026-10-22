@@ -51,10 +51,15 @@ WHY NOT USE ACCURACY? (REQ-P02-S05-007)
     This is completely misleading. Dice, IoU, Precision, and Recall focus on
     the foreground class and are therefore appropriate for imbalanced segmentation.
 
-AGGREGATION METHOD (REQ-P02-S05-006):
-    Macro-average: Compute each metric per sample, then take the mean.
-    This treats each sample equally, regardless of its wound size.
-    We DO NOT mix per-pixel aggregation with per-sample aggregation.
+AGGREGATION METHOD (REQ-P02-S05-006, REQ-SPEC-02-03-006):
+    Primary: macro-average. Each metric is computed per sample, then averaged,
+    so each sample counts equally regardless of wound size.
+    Reported alongside, under separate keys (never mixed into the macro mean):
+      * pooled_*     - TP/FP/FN summed over the dataset first (FUSeg leaderboard style)
+      * nonempty_*   - macro mean over images whose ground truth has wound pixels,
+                       plus empty_false_positive_rate for the empty images
+      * *_hd95       - 95th-percentile boundary distance (pixels); undefined
+                       when exactly one of prediction/ground truth is empty
 
 Coding Style: Beginner-Understandable Python
 """
@@ -97,6 +102,14 @@ def compute_binary_segmentation_metrics(
             f"Shape mismatch: predicted {predicted_mask.shape} vs "
             f"ground truth {ground_truth_mask.shape}"
         )
+    if epsilon <= 0:
+        raise ValueError("epsilon must be positive")
+    if not np.isfinite(predicted_mask).all() or not np.isfinite(ground_truth_mask).all():
+        raise ValueError("Segmentation masks must contain finite values")
+    if not set(np.unique(predicted_mask)).issubset({0, 1}) or not set(
+        np.unique(ground_truth_mask)
+    ).issubset({0, 1}):
+        raise ValueError("Segmentation masks must contain only binary values {0, 1}")
 
     # Flatten to 1D for simple element-wise operations
     predicted_flat = predicted_mask.flatten().astype(np.float32)
@@ -207,7 +220,7 @@ def aggregate_metrics(
     precision_scores = [result["precision"] for result in per_sample_results]
     recall_scores = [result["recall"] for result in per_sample_results]
 
-    return {
+    aggregate = {
         "mean_dice": float(np.mean(dice_scores)),
         "mean_iou": float(np.mean(iou_scores)),
         "mean_precision": float(np.mean(precision_scores)),
@@ -219,6 +232,106 @@ def aggregate_metrics(
         "_note": "Why not accuracy: ~15% foreground → a background-only predictor gets ~85% accuracy. "
                  "Dice/IoU focus on the foreground class and are appropriate for imbalanced segmentation.",
     }
+    # Supplementary aggregates are reported under explicit names so they are
+    # never confused with the macro-average primary metric.
+    if all(key in result for result in per_sample_results for key in ("true_positives", "false_positives", "false_negatives")):
+        aggregate.update(compute_pooled_metrics(per_sample_results))
+    if all("wound_area_ratio_ground_truth" in result for result in per_sample_results):
+        aggregate.update(compute_nonempty_subset_metrics(per_sample_results))
+    hd95_values = [result["hd95"] for result in per_sample_results if result.get("hd95") is not None]
+    if hd95_values:
+        aggregate["mean_hd95"] = float(np.mean(hd95_values))
+        aggregate["median_hd95"] = float(np.median(hd95_values))
+        aggregate["hd95_num_samples"] = len(hd95_values)
+    return aggregate
+
+
+def compute_pooled_metrics(per_sample_results: List[Dict[str, Any]]) -> Dict[str, float]:
+    """Dataset-level (micro / pooled) Dice and IoU.
+
+    TP, FP and FN are summed over all images before the ratio is taken:
+
+        pooled_dice = 2*ΣTP / (2*ΣTP + ΣFP + ΣFN)
+
+    This is the aggregation used by the FUSeg2021 challenge leaderboard.  It
+    weights large wounds more heavily and is unaffected by the empty/empty
+    convention, so it complements the macro average instead of replacing it.
+    """
+    tp = float(sum(result["true_positives"] for result in per_sample_results))
+    fp = float(sum(result["false_positives"] for result in per_sample_results))
+    fn = float(sum(result["false_negatives"] for result in per_sample_results))
+    dice_denominator = 2.0 * tp + fp + fn
+    iou_denominator = tp + fp + fn
+    return {
+        "pooled_dice": float(2.0 * tp / dice_denominator) if dice_denominator > 0 else 1.0,
+        "pooled_iou": float(tp / iou_denominator) if iou_denominator > 0 else 1.0,
+        "pooled_precision": float(tp / (tp + fp)) if tp + fp > 0 else 1.0,
+        "pooled_recall": float(tp / (tp + fn)) if tp + fn > 0 else 1.0,
+    }
+
+
+def compute_nonempty_subset_metrics(per_sample_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Macro metrics on images whose ground truth contains wound pixels.
+
+    Empty/empty images score Dice 1.0 by convention and can inflate the macro
+    mean.  Reporting the non-empty subset and the empty-image false-positive
+    rate separately makes that effect visible.
+    """
+    nonempty = [result for result in per_sample_results if result["wound_area_ratio_ground_truth"] > 0]
+    empty = [result for result in per_sample_results if result["wound_area_ratio_ground_truth"] == 0]
+    metrics: Dict[str, Any] = {
+        "nonempty_num_samples": len(nonempty),
+        "empty_num_samples": len(empty),
+    }
+    if nonempty:
+        metrics["nonempty_mean_dice"] = float(np.mean([result["dice"] for result in nonempty]))
+        metrics["nonempty_mean_iou"] = float(np.mean([result["iou"] for result in nonempty]))
+    if empty:
+        false_alarms = sum(
+            result.get("false_positives", 0) > 0 or result.get("wound_area_ratio_predicted", 0.0) > 0
+            for result in empty
+        )
+        metrics["empty_false_positive_rate"] = float(false_alarms / len(empty))
+    return metrics
+
+
+def compute_hd95(
+    predicted_mask: np.ndarray,
+    ground_truth_mask: np.ndarray,
+    pixel_spacing: float = 1.0,
+) -> Optional[float]:
+    """95th-percentile symmetric Hausdorff distance between mask boundaries.
+
+    Distances are in pixels multiplied by ``pixel_spacing`` (pass the
+    native-resolution spacing to get millimetres once calibration exists).
+
+    Edge cases:
+        both masks empty       -> 0.0 (perfect agreement)
+        exactly one mask empty -> None (undefined; counted separately)
+    """
+    from scipy import ndimage
+
+    if predicted_mask.shape != ground_truth_mask.shape:
+        raise ValueError("HD95 masks must have the same shape")
+    prediction = predicted_mask.astype(bool)
+    ground_truth = ground_truth_mask.astype(bool)
+    if not prediction.any() and not ground_truth.any():
+        return 0.0
+    if not prediction.any() or not ground_truth.any():
+        return None
+
+    def boundary(mask: np.ndarray) -> np.ndarray:
+        return mask & ~ndimage.binary_erosion(mask, border_value=0)
+
+    prediction_boundary = boundary(prediction)
+    ground_truth_boundary = boundary(ground_truth)
+    distance_to_ground_truth = ndimage.distance_transform_edt(~ground_truth_boundary)
+    distance_to_prediction = ndimage.distance_transform_edt(~prediction_boundary)
+    distances = np.concatenate([
+        distance_to_ground_truth[prediction_boundary],
+        distance_to_prediction[ground_truth_boundary],
+    ])
+    return float(np.percentile(distances, 95) * pixel_spacing)
 
 
 # ============================================================
@@ -230,9 +343,13 @@ def evaluate_batch(
     targets_batch: torch.Tensor,
     sample_ids: List[str],
     prediction_threshold: float = 0.5,
+    include_hd95: bool = False,
 ) -> List[Dict[str, Any]]:
     """
     Evaluate a batch of predictions and targets.
+
+    ``include_hd95`` adds the boundary metric; it is off during training
+    epochs because the distance transform is comparatively slow.
 
     Inputs:
         predictions_batch: Tensor of shape (B, 1, H, W), values in [0, 1].
@@ -246,6 +363,20 @@ def evaluate_batch(
     batch_results = []
 
     batch_size = predictions_batch.shape[0]
+
+    if predictions_batch.shape != targets_batch.shape:
+        raise ValueError(
+            f"Prediction/target batch shape mismatch: {predictions_batch.shape} vs "
+            f"{targets_batch.shape}"
+        )
+    if predictions_batch.ndim != 4 or predictions_batch.shape[1] != 1:
+        raise ValueError("Batch metrics expect tensors with shape (B, 1, H, W)")
+    if len(sample_ids) != batch_size:
+        raise ValueError(f"Expected {batch_size} sample IDs, got {len(sample_ids)}")
+    if not 0.0 <= prediction_threshold <= 1.0:
+        raise ValueError("prediction_threshold must be in [0, 1]")
+    if not torch.isfinite(predictions_batch).all() or not torch.isfinite(targets_batch).all():
+        raise ValueError("Prediction probabilities and targets must be finite")
 
     for sample_index in range(batch_size):
         # Extract single sample from batch
@@ -270,6 +401,8 @@ def evaluate_batch(
             "wound_area_ratio_ground_truth": float(ground_truth.mean()),
             **sample_metrics,
         }
+        if include_hd95:
+            sample_result["hd95"] = compute_hd95(predicted_binary, ground_truth)
 
         batch_results.append(sample_result)
 

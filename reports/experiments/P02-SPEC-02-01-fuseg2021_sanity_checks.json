@@ -1,0 +1,78 @@
+{
+  "status": "PASS",
+  "real_training_sample_ids": [
+    "0778",
+    "0578",
+    "0521",
+    "0685",
+    "0225",
+    "0586",
+    "0832",
+    "0538"
+  ],
+  "train_image_shape": [
+    8,
+    3,
+    256,
+    256
+  ],
+  "train_mask_shape": [
+    8,
+    1,
+    256,
+    256
+  ],
+  "mask_values": [
+    0.0,
+    1.0
+  ],
+  "validation_deterministic": true,
+  "validation_sample_ids": [
+    "0001",
+    "0002",
+    "0003",
+    "0004",
+    "0005",
+    "0006",
+    "0007",
+    "0008"
+  ],
+  "one_real_batch_loss": 0.79869544506073,
+  "one_real_batch_loss_finite": true,
+  "one_real_batch_gradients_finite": true,
+  "forward_pass": {
+    "input_shape": [
+      2,
+      3,
+      256,
+      256
+    ],
+    "expected_output_shape": [
+      2,
+      1,
+      256,
+      256
+    ],
+    "actual_output_shape": [
+      2,
+      1,
+      256,
+      256
+    ],
+    "output_type": "raw_logits",
+    "logits_min": -23.4599552154541,
+    "logits_max": 2.2113304138183594,
+    "probability_min": 6.478446945568095e-11,
+    "probability_max": 0.9012624025344849,
+    "output_shape_correct": true,
+    "logits_finite": true,
+    "probability_range_valid": true,
+    "loss_value": 2.383474349975586,
+    "loss_is_finite": true,
+    "forward_pass_success": true,
+    "total_parameters": 838785,
+    "trainable_parameters": 838785,
+    "non_trainable_parameters": 0
+  },
+  "real_sample_panel": "/mnt/d/Project_12D/outputs/visualizations/phase_02_fuseg2021_baseline/sanity_real_samples.png"
+}

@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DFU-WoundMonitor</title>
+<style>
+  :root { --bg:#f6f7f9; --panel:#fff; --text:#1d2330; --muted:#5d6678; --line:#d9dde5; --accent:#2457c5;
+          --warn-bg:#fff6e0; --warn:#8a5a00; --err-bg:#fdecec; --err:#a32020; --ok:#1e7a3c; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171d; --panel:#1d2129; --text:#e6e9ef; --muted:#9aa3b5; --line:#323846; --accent:#7aa2ff;
+            --warn-bg:#3a2f12; --warn:#f2c46b; --err-bg:#3b1c1c; --err:#ff9b9b; --ok:#6fd08c; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 system-ui, sans-serif; }
+  header { padding:12px 16px; border-bottom:1px solid var(--line); background:var(--panel); }
+  header h1 { margin:0; font-size:18px; }
+  .banner { margin-top:6px; color:var(--muted); font-size:12px; }
+  main { display:grid; grid-template-columns:300px 1fr; gap:16px; padding:16px; max-width:1300px; margin:auto; }
+  @media (max-width:860px) { main { grid-template-columns:1fr; } }
+  section { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:16px; }
+  h2 { font-size:15px; margin:0 0 8px; }
+  label { display:block; font-size:12px; color:var(--muted); margin-top:8px; }
+  input, select, button { font:inherit; width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px;
+                          background:var(--bg); color:var(--text); }
+  button { background:var(--accent); color:#fff; border:none; cursor:pointer; margin-top:8px; }
+  button.secondary { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  button:disabled { opacity:.5; cursor:default; }
+  ul.list { list-style:none; margin:0; padding:0; }
+  ul.list li { padding:6px 8px; border-radius:6px; cursor:pointer; display:flex; justify-content:space-between; gap:8px; }
+  ul.list li.sel { background:var(--bg); outline:1px solid var(--accent); }
+  .muted { color:var(--muted); font-size:12px; }
+  .msg { padding:8px 10px; border-radius:6px; margin:8px 0; }
+  .msg.warn { background:var(--warn-bg); color:var(--warn); }
+  .msg.err { background:var(--err-bg); color:var(--err); }
+  .msg.ok { color:var(--ok); }
+  .images { display:flex; gap:12px; flex-wrap:wrap; }
+  .images img { max-width:100%; max-height:420px; border:1px solid var(--line); border-radius:6px; }
+  table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
+  th, td { text-align:left; padding:4px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:500; }
+  pre { overflow:auto; font-size:12px; background:var(--bg); padding:8px; border-radius:6px; }
+  .tag { font-size:11px; padding:1px 6px; border-radius:10px; border:1px solid var(--line); white-space:nowrap; }
+  .scroll { overflow-x:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>DFU-WoundMonitor</h1>
+  <div class="banner" id="banner">Research prototype. Not a medical device. Values are image-derived technical measurements.</div>
+  <div class="muted" id="ready">Checking service…</div>
+</header>
+<main>
+  <div>
+    <section>
+      <h2>Cases</h2>
+      <ul class="list" id="cases"></ul>
+      <label>New case label <input id="caseLabel" maxlength="200"></label>
+      <label>Identity
+        <select id="caseIdentity"><option>UNKNOWN</option><option>UNVERIFIED</option><option>VERIFIED</option></select>
+      </label>
+      <button id="addCase">Create case</button>
+    </section>
+    <section id="examPanel" hidden>
+      <h2>Examinations</h2>
+      <ul class="list" id="exams"></ul>
+      <label>Captured at <input id="examTime" type="datetime-local"></label>
+      <button id="addExam">Add examination</button>
+      <button id="deleteCase" class="secondary">Delete case and all its data</button>
+    </section>
+  </div>
+  <div>
+    <section>
+      <h2>Analyse an image</h2>
+      <div class="muted" id="target">No examination selected — the analysis will not be linked to a case.</div>
+      <label>Image (PNG/JPEG) <input id="file" type="file" accept="image/png,image/jpeg"></label>
+      <label>Pixels per mm (optional calibration) <input id="ppmm" type="number" step="any" min="0"></label>
+      <button id="analyze">Analyse</button>
+      <div id="analysisMsg"></div>
+    </section>
+    <section id="result" hidden></section>
+    <section id="trendPanel" hidden>
+      <h2>Trend</h2>
+      <div id="trend"></div>
+    </section>
+  </div>
+</main>
+<script>
+"use strict";
+const API = "/api/v1";
+const S = { caseId: null, examId: null };
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const fmt = (v, d = 1) => (v === null || v === undefined) ? "—" : (typeof v === "number" ? v.toFixed(d) : esc(v));
+
+async function call(path, options = {}) {
+  let response;
+  try { response = await fetch(path, options); }
+  catch (e) { return { ok: false, body: { error: { category: "INFRASTRUCTURE_FAILURE", code: "NETWORK", message: "Service unreachable" } } }; }
+  let body = null;
+  try { body = await response.json(); } catch (e) { body = null; }
+  return { ok: response.ok, status: response.status, body };
+}
+
+function errorBox(body) {
+  const e = (body && body.error) || { category: "INFRASTRUCTURE_FAILURE", code: "UNKNOWN", message: "Unexpected response" };
+  const titles = {
+    QUALITY_REJECTED: "Image rejected by the quality gate — retake the photo",
+    INVALID_INPUT: "Invalid input", NOT_FOUND: "Not found", CONFLICT: "Conflict",
+    MODEL_FAILURE: "The model failed on this image", MODEL_NOT_READY: "The model is not loaded",
+    INFRASTRUCTURE_FAILURE: "Service or storage problem",
+  };
+  const cls = e.category === "QUALITY_REJECTED" ? "warn" : "err";
+  return `<div class="msg ${cls}"><strong>${esc(titles[e.category] || e.category)}</strong> <span class="tag">${esc(e.code)}</span><br>${esc(e.message)}</div>`;
+}
+
+async function checkReady() {
+  const r = await call("/health/ready");
+  const b = r.body || {};
+  $("ready").innerHTML = r.ok
+    ? `<span class="msg ok">Ready</span> model <span class="tag">${esc(b.model_version)}</span> · schema v${esc(b.schema_version)}`
+    : `<span class="msg err">Not ready</span> model: ${esc(b.model || "?")} · database: ${esc(b.database || "?")}`;
+}
+
+async function loadCases() {
+  const r = await call(`${API}/cases`);
+  if (!r.ok) { $("cases").innerHTML = `<li>${errorBox(r.body)}</li>`; return; }
+  $("cases").innerHTML = r.body.cases.map((c) =>
+    `<li data-id="${esc(c.case_id)}" class="${c.case_id === S.caseId ? "sel" : ""}"><span>${esc(c.label || c.case_id)}</span><span class="tag">${esc(c.identity_status)}</span></li>`
+  ).join("") || `<li class="muted">No cases yet</li>`;
+}
+
+async function selectCase(id) {
+  S.caseId = id; S.examId = null;
+  await loadCases();
+  const r = await call(`${API}/cases/${encodeURIComponent(id)}`);
+  $("examPanel").hidden = false;
+  if (!r.ok) { $("exams").innerHTML = `<li>${errorBox(r.body)}</li>`; return; }
+  renderExams(r.body.examinations);
+  updateTarget();
+  loadTrend();
+}
+
+function renderExams(exams) {
+  $("exams").innerHTML = exams.map((e) =>
+    `<li data-id="${esc(e.examination_id)}" class="${e.examination_id === S.examId ? "sel" : ""}"><span>${esc(e.captured_at ? new Date(e.captured_at).toLocaleString() : "time unknown")}</span><span class="tag">${esc(e.timestamp_source)}</span></li>`
+  ).join("") || `<li class="muted">No examinations</li>`;
+}
+
+function updateTarget() {
+  $("target").textContent = S.examId ? `Linked to examination ${S.examId}` :
+    (S.caseId ? "Select an examination to link the analysis to this case." : "No examination selected — the analysis will not be linked to a case.");
+}
+
+async function selectExam(id) {
+  S.examId = id;
+  for (const li of $("exams").children) li.classList.toggle("sel", li.dataset.id === id);
+  updateTarget();
+  const r = await call(`${API}/examinations/${encodeURIComponent(id)}`);
+  if (r.ok && r.body.analyses.length) renderAnalysis(r.body.analyses[r.body.analyses.length - 1]);
+  else $("result").hidden = true;
+}
+
+function measurementTable(m) {
+  const p = m.pixel || {}, ph = m.physical;
+  const rows = [
+    ["Area", p.area_px, "px²", ph && ph.area_mm2, "mm²"],
+    ["Perimeter", p.perimeter_px, "px", ph && ph.perimeter_mm, "mm"],
+    ["Max Feret (length)", p.max_feret_px, "px", ph && ph.max_feret_mm, "mm"],
+    ["Min Feret (width)", p.min_feret_px, "px", ph && ph.min_feret_mm, "mm"],
+    ["Components", p.component_count, "", null, ""],
+  ];
+  return `<div class="scroll"><table><tr><th>Measure</th><th>Pixels</th><th>Physical</th></tr>${rows.map((r) =>
+    `<tr><td>${r[0]}</td><td>${fmt(r[1], r[2] ? 1 : 0)} ${r[2]}</td><td>${ph && r[3] !== null && r[3] !== undefined ? fmt(r[3], 2) + " " + r[4] : "—"}</td></tr>`).join("")}</table></div>`;
+}
+
+function renderAnalysis(a) {
+  const el = $("result"); el.hidden = false;
+  const m = a.measurement;
+  const calibrated = m && m.measurement_basis === "PHYSICALLY_CALIBRATED";
+  const warnings = (a.warnings || []).map((w) => `<div class="msg warn"><span class="tag">${esc(w.code)}</span> ${esc(w.message)}</div>`).join("");
+  let body = `<h2>Analysis <span class="tag">${esc(a.status)}</span></h2><div class="muted">${esc(a.analysis_id)} · model ${esc(a.model_version || "—")}</div>`;
+  if (a.status === "COMPLETED") {
+    body += `<div class="images"><img alt="Segmentation overlay" src="${esc(a.links.overlay)}?max_side=900"></div>`;
+    body += `<p><strong>Measurement basis:</strong> ${calibrated ? "physically calibrated (user-supplied scale)" : "pixels only — uncalibrated, not comparable to millimetres"}</p>`;
+    body += measurementTable(m);
+  } else if (a.status === "QUALITY_REJECTED") {
+    body += `<div class="msg warn">Rejected by the quality gate: ${esc((a.quality.reason_codes || []).join(", "))}. No segmentation was run.</div>`;
+  }
+  body += warnings;
+  body += `<p class="muted">${esc(a.limitation)}</p>`;
+  body += `<details><summary>Provenance</summary><pre>${esc(JSON.stringify(a.provenance, null, 2))}</pre></details>`;
+  body += `<details><summary>Quality checks</summary><pre>${esc(JSON.stringify(a.quality, null, 2))}</pre></details>`;
+  el.innerHTML = body;
+}
+
+async function loadTrend() {
+  if (!S.caseId) return;
+  const r = await call(`${API}/cases/${encodeURIComponent(S.caseId)}/trend`);
+  $("trendPanel").hidden = false;
+  if (!r.ok) { $("trend").innerHTML = errorBox(r.body); return; }
+  const t = r.body.trend;
+  let html = `<div class="muted">${esc(t.label)}</div>`;
+  if (t.status !== "AVAILABLE") {
+    html += `<div class="msg warn">Trend unavailable: ${esc((t.reason_codes || []).join(", "))}</div>`;
+  } else {
+    html += `<div class="scroll"><table><tr><th>Captured</th><th>Day</th><th>Area (${esc(t.unit && t.unit.area || "")})</th><th>Δ baseline</th><th>Flags</th></tr>` +
+      t.rows.map((row) => {
+        const fb = row.from_baseline && row.from_baseline.area;
+        const pct = fb && fb.percent_change !== null && fb.percent_change !== undefined ? fmt(fb.percent_change) + "%" : (row.is_baseline ? "baseline" : "—");
+        return `<tr><td>${esc(new Date(row.captured_at).toLocaleDateString())}</td><td>${fmt(row.days_since_baseline)}</td><td>${fmt(row.values.area)}</td><td>${pct}</td><td>${esc((row.flags || []).join(", "))}</td></tr>`;
+      }).join("") + `</table></div>`;
+  }
+  html += (t.warnings || []).map((w) => `<div class="msg warn"><span class="tag">${esc(w.code)}</span> ${esc(w.message)}</div>`).join("");
+  if ((t.excluded || []).length) html += `<div class="muted">Excluded: ${t.excluded.map((x) => esc(x.examination_id) + " (" + esc(x.reason_codes.join(", ")) + ")").join("; ")}</div>`;
+  $("trend").innerHTML = html;
+}
+
+$("cases").addEventListener("click", (e) => { const li = e.target.closest("li[data-id]"); if (li) selectCase(li.dataset.id); });
+$("exams").addEventListener("click", (e) => { const li = e.target.closest("li[data-id]"); if (li) selectExam(li.dataset.id); });
+
+$("addCase").addEventListener("click", async () => {
+  const body = { label: $("caseLabel").value || null, identity_status: $("caseIdentity").value };
+  const r = await call(`${API}/cases`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!r.ok) { alert(r.body && r.body.error ? r.body.error.message : "Failed"); return; }
+  $("caseLabel").value = "";
+  selectCase(r.body.case.case_id);
+});
+
+$("addExam").addEventListener("click", async () => {
+  const v = $("examTime").value;
+  const body = v ? { captured_at: new Date(v).toISOString(), timestamp_source: "USER_ENTERED" } : {};
+  const r = await call(`${API}/cases/${encodeURIComponent(S.caseId)}/examinations`,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!r.ok) { alert(r.body && r.body.error ? r.body.error.message : "Failed"); return; }
+  await selectCase(S.caseId);
+  selectExam(r.body.examination.examination_id);
+});
+
+$("deleteCase").addEventListener("click", async () => {
+  if (!S.caseId || !confirm("Delete this case, its examinations, analyses and stored images?")) return;
+  const r = await call(`${API}/cases/${encodeURIComponent(S.caseId)}`, { method: "DELETE" });
+  if (!r.ok) { alert(r.body && r.body.error ? r.body.error.message : "Failed"); return; }
+  S.caseId = null; S.examId = null;
+  $("examPanel").hidden = true; $("trendPanel").hidden = true; $("result").hidden = true;
+  updateTarget(); loadCases();
+});
+
+$("analyze").addEventListener("click", async () => {
+  const file = $("file").files[0];
+  if (!file) { $("analysisMsg").innerHTML = `<div class="msg err">Choose an image first.</div>`; return; }
+  const form = new FormData();
+  form.append("file", file);
+  if (S.examId) form.append("examination_id", S.examId);
+  if ($("ppmm").value) form.append("pixels_per_mm", $("ppmm").value);
+  $("analyze").disabled = true;
+  $("analysisMsg").innerHTML = `<div class="muted">Analysing… (CPU inference can take several seconds)</div>`;
+  const r = await call(`${API}/analyses`, { method: "POST", body: form });
+  $("analyze").disabled = false;
+  if (r.ok) { $("analysisMsg").innerHTML = ""; renderAnalysis(r.body); }
+  else {
+    $("analysisMsg").innerHTML = errorBox(r.body);
+    if (r.body && r.body.analysis) renderAnalysis(r.body.analysis); else $("result").hidden = true;
+  }
+  if (S.caseId) loadTrend();
+});
+
+checkReady(); loadCases();
+</script>
+</body>
+</html>

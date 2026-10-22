@@ -1,0 +1,328 @@
+{
+  "experiment_id": "P02-SPEC-02-03-fuseg2021-resnet34-unet-512-v1",
+  "tuned_on": "internal_val",
+  "num_samples": 118,
+  "frozen": {
+    "threshold": 0.4,
+    "min_component_area": 128
+  },
+  "internal_val_at_default": {
+    "mean_dice": 0.8771817537687593,
+    "mean_iou": 0.8110587015369181,
+    "mean_precision": 0.8885285163582382,
+    "mean_recall": 0.9087922082803512,
+    "std_dice": 0.17963064483058394,
+    "std_iou": 0.19083066685305927,
+    "num_samples": 118,
+    "_aggregation_method": "macro_average (mean of per-sample scores)",
+    "_note": "Why not accuracy: ~15% foreground \u2192 a background-only predictor gets ~85% accuracy. Dice/IoU focus on the foreground class and are appropriate for imbalanced segmentation.",
+    "pooled_dice": 0.928827227695165,
+    "pooled_iou": 0.8671124320090904,
+    "pooled_precision": 0.9333555863090597,
+    "pooled_recall": 0.9243425973737676,
+    "nonempty_num_samples": 115,
+    "empty_num_samples": 3,
+    "nonempty_mean_dice": 0.8913691038670747,
+    "nonempty_mean_iou": 0.8235211024465768,
+    "empty_false_positive_rate": 0.6666666666666666
+  },
+  "internal_val_at_frozen": {
+    "mean_dice": 0.8885531320662822,
+    "mean_iou": 0.8227215479680542,
+    "mean_precision": 0.8915178870498124,
+    "mean_recall": 0.9173748613161555,
+    "std_dice": 0.1537387582690397,
+    "std_iou": 0.17239550220145577,
+    "num_samples": 118,
+    "_aggregation_method": "macro_average (mean of per-sample scores)",
+    "_note": "Why not accuracy: ~15% foreground \u2192 a background-only predictor gets ~85% accuracy. Dice/IoU focus on the foreground class and are appropriate for imbalanced segmentation.",
+    "pooled_dice": 0.930577460501923,
+    "pooled_iou": 0.8701681759379043,
+    "pooled_precision": 0.9279262204031103,
+    "pooled_recall": 0.9332438940820492,
+    "nonempty_num_samples": 115,
+    "empty_num_samples": 3,
+    "nonempty_mean_dice": 0.8943414746419244,
+    "nonempty_mean_iou": 0.8267925448715687,
+    "empty_false_positive_rate": 0.3333333333333333
+  },
+  "selection_metric": "mean_dice",
+  "best": {
+    "threshold": 0.4,
+    "min_component_area": 128,
+    "mean_dice": 0.8885531320662822,
+    "pooled_dice": 0.930577460501923
+  },
+  "grid": [
+    {
+      "threshold": 0.3,
+      "min_component_area": 0,
+      "mean_dice": 0.8788152683084294,
+      "pooled_dice": 0.928844918227787
+    },
+    {
+      "threshold": 0.3,
+      "min_component_area": 64,
+      "mean_dice": 0.8789868291656849,
+      "pooled_dice": 0.928853419720746
+    },
+    {
+      "threshold": 0.3,
+      "min_component_area": 128,
+      "mean_dice": 0.8880275753089937,
+      "pooled_dice": 0.9292180086290351
+    },
+    {
+      "threshold": 0.3,
+      "min_component_area": 256,
+      "mean_dice": 0.863064328366417,
+      "pooled_dice": 0.9281925309692541
+    },
+    {
+      "threshold": 0.3,
+      "min_component_area": 512,
+      "mean_dice": 0.804609220790661,
+      "pooled_dice": 0.9245605380626376
+    },
+    {
+      "threshold": 0.35,
+      "min_component_area": 0,
+      "mean_dice": 0.8790289371953173,
+      "pooled_dice": 0.9295433384500901
+    },
+    {
+      "threshold": 0.35,
+      "min_component_area": 64,
+      "mean_dice": 0.8793387530466258,
+      "pooled_dice": 0.9296701110257446
+    },
+    {
+      "threshold": 0.35,
+      "min_component_area": 128,
+      "mean_dice": 0.8884361392613185,
+      "pooled_dice": 0.9300644368996893
+    },
+    {
+      "threshold": 0.35,
+      "min_component_area": 256,
+      "mean_dice": 0.8567595913753672,
+      "pooled_dice": 0.9288101777011232
+    },
+    {
+      "threshold": 0.35,
+      "min_component_area": 512,
+      "mean_dice": 0.8047826055247905,
+      "pooled_dice": 0.9246869251941734
+    },
+    {
+      "threshold": 0.4,
+      "min_component_area": 0,
+      "mean_dice": 0.8791709634459625,
+      "pooled_dice": 0.9299405624034665
+    },
+    {
+      "threshold": 0.4,
+      "min_component_area": 64,
+      "mean_dice": 0.8795540526004161,
+      "pooled_dice": 0.9301328524195972
+    },
+    {
+      "threshold": 0.4,
+      "min_component_area": 128,
+      "mean_dice": 0.8885531320662822,
+      "pooled_dice": 0.930577460501923
+    },
+    {
+      "threshold": 0.4,
+      "min_component_area": 256,
+      "mean_dice": 0.8569077140951561,
+      "pooled_dice": 0.9293283663061955
+    },
+    {
+      "threshold": 0.4,
+      "min_component_area": 512,
+      "mean_dice": 0.8049746376730628,
+      "pooled_dice": 0.9252094742822394
+    },
+    {
+      "threshold": 0.45,
+      "min_component_area": 0,
+      "mean_dice": 0.8792241643167148,
+      "pooled_dice": 0.9302350254749578
+    },
+    {
+      "threshold": 0.45,
+      "min_component_area": 64,
+      "mean_dice": 0.8794664299841655,
+      "pooled_dice": 0.930361902005475
+    },
+    {
+      "threshold": 0.45,
+      "min_component_area": 128,
+      "mean_dice": 0.8884492636484614,
+      "pooled_dice": 0.9307679034899
+    },
+    {
+      "threshold": 0.45,
+      "min_component_area": 256,
+      "mean_dice": 0.8569592712920601,
+      "pooled_dice": 0.9295533165427525
+    },
+    {
+      "threshold": 0.45,
+      "min_component_area": 512,
+      "mean_dice": 0.8046416969243753,
+      "pooled_dice": 0.9252310774212683
+    },
+    {
+      "threshold": 0.5,
+      "min_component_area": 0,
+      "mean_dice": 0.8771817537687593,
+      "pooled_dice": 0.928827227695165
+    },
+    {
+      "threshold": 0.5,
+      "min_component_area": 64,
+      "mean_dice": 0.8772490125591472,
+      "pooled_dice": 0.9287950699801858
+    },
+    {
+      "threshold": 0.5,
+      "min_component_area": 128,
+      "mean_dice": 0.886251655170473,
+      "pooled_dice": 0.9290459255915873
+    },
+    {
+      "threshold": 0.5,
+      "min_component_area": 256,
+      "mean_dice": 0.8557673374475059,
+      "pooled_dice": 0.9281658369632856
+    },
+    {
+      "threshold": 0.5,
+      "min_component_area": 512,
+      "mean_dice": 0.803634771856211,
+      "pooled_dice": 0.9243537631188073
+    },
+    {
+      "threshold": 0.55,
+      "min_component_area": 0,
+      "mean_dice": 0.8758551088808957,
+      "pooled_dice": 0.9270530382687966
+    },
+    {
+      "threshold": 0.55,
+      "min_component_area": 64,
+      "mean_dice": 0.875960589907432,
+      "pooled_dice": 0.9270299851061703
+    },
+    {
+      "threshold": 0.55,
+      "min_component_area": 128,
+      "mean_dice": 0.884941776362011,
+      "pooled_dice": 0.9272223326459962
+    },
+    {
+      "threshold": 0.55,
+      "min_component_area": 256,
+      "mean_dice": 0.8542218111708002,
+      "pooled_dice": 0.9263420175149316
+    },
+    {
+      "threshold": 0.55,
+      "min_component_area": 512,
+      "mean_dice": 0.79463966563344,
+      "pooled_dice": 0.9218063799268176
+    },
+    {
+      "threshold": 0.6,
+      "min_component_area": 0,
+      "mean_dice": 0.8754179623546237,
+      "pooled_dice": 0.9267722980319337
+    },
+    {
+      "threshold": 0.6,
+      "min_component_area": 64,
+      "mean_dice": 0.8758325505433446,
+      "pooled_dice": 0.9268693870119015
+    },
+    {
+      "threshold": 0.6,
+      "min_component_area": 128,
+      "mean_dice": 0.8845157425661209,
+      "pooled_dice": 0.927006085678728
+    },
+    {
+      "threshold": 0.6,
+      "min_component_area": 256,
+      "mean_dice": 0.8537604833432173,
+      "pooled_dice": 0.926127423429248
+    },
+    {
+      "threshold": 0.6,
+      "min_component_area": 512,
+      "mean_dice": 0.7942300069508916,
+      "pooled_dice": 0.9215432364200444
+    },
+    {
+      "threshold": 0.65,
+      "min_component_area": 0,
+      "mean_dice": 0.8749976317887589,
+      "pooled_dice": 0.926536757346753
+    },
+    {
+      "threshold": 0.65,
+      "min_component_area": 64,
+      "mean_dice": 0.8753943087817249,
+      "pooled_dice": 0.9266381731471451
+    },
+    {
+      "threshold": 0.65,
+      "min_component_area": 128,
+      "mean_dice": 0.8840823277704797,
+      "pooled_dice": 0.9267924343274617
+    },
+    {
+      "threshold": 0.65,
+      "min_component_area": 256,
+      "mean_dice": 0.8533952613124403,
+      "pooled_dice": 0.9259221062401933
+    },
+    {
+      "threshold": 0.65,
+      "min_component_area": 512,
+      "mean_dice": 0.7939339854075746,
+      "pooled_dice": 0.9213061496748214
+    },
+    {
+      "threshold": 0.7,
+      "min_component_area": 0,
+      "mean_dice": 0.8743516912020869,
+      "pooled_dice": 0.9261299393367352
+    },
+    {
+      "threshold": 0.7,
+      "min_component_area": 64,
+      "mean_dice": 0.8746922423400111,
+      "pooled_dice": 0.926223140089492
+    },
+    {
+      "threshold": 0.7,
+      "min_component_area": 128,
+      "mean_dice": 0.8830313291716374,
+      "pooled_dice": 0.9261440022829001
+    },
+    {
+      "threshold": 0.7,
+      "min_component_area": 256,
+      "mean_dice": 0.8527639758915214,
+      "pooled_dice": 0.9256797880859977
+    },
+    {
+      "threshold": 0.7,
+      "min_component_area": 512,
+      "mean_dice": 0.7933303994773808,
+      "pooled_dice": 0.9207368372794958
+    }
+  ]
+}

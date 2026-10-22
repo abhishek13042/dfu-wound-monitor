@@ -1,8 +1,19 @@
-# Phase 02 Debug & Review — Validation Audit Report
+# Phase 02 Historical Demo Debug & Review — Validation Audit Report
+
+> **SUPERSEDED (2026-10-21).** This audit covers only the historical synthetic
+> demo (`P02-DEMO-SYNTHETIC-LEAKED`). Its gate statement in section 8, that
+> the phase is blocked "until verified real DFUC2022 data is supplied", is
+> obsolete:
+>
+> - DFUC2022 is license-blocked.
+> - The real-data baseline uses FUSeg2021 (SPEC-02-01 / SPEC-02-02).
+> - The files `P02-baseline-unet-bce-dice-v1_experiment_record.json` and
+>   `_training_log.json` belong to this synthetic run. They are not real-data
+>   evidence.
 
 **Project:** DFU-WoundMonitor  
 **Repository:** `dfu-wound-monitor`  
-**Audit Target:** Phase 02 Baseline Model Implementation & Results  
+**Audit Target:** Historical synthetic Phase 02 demo only
 **Audit Date:** 2026-10-07  
 **Auditor:** Lead AI/CV Engineering Auditor  
 
@@ -10,7 +21,7 @@
 
 ## 1. Audit Summary
 
-An independent validation audit of the Phase 02 baseline segmentation system was conducted. The reported metrics ($\text{Mean Dice} = 1.0000$, $\text{Mean IoU} = 1.0000$) were audited for data leakage, mathematical accuracy, pipeline integrity, and scientific validity.
+An independent validation audit of the historical synthetic demonstration was conducted. The reported metrics ($\text{Mean Dice} = 1.0000$, $\text{Mean IoU} = 1.0000$) were audited for data leakage, mathematical accuracy, pipeline integrity, and scientific validity. This document is historical evidence, not a real-data baseline report.
 
 ### Key Audit Finding
 The perfect score ($\text{Dice} = 1.0000$) is **code-correct and reproducible**, but is a direct consequence of **checksum leakage in the Phase 01 demo synthetic dataset**, where all 20 images in the demo manifest are bit-for-bit identical files. As a result, the test set images are identical to the training set images.
@@ -162,9 +173,12 @@ python -m pytest tests/unit/ -v
 
 ---
 
-## 17. Spec Traceability Review
+## 17. Historical Spec Traceability Review
 
-- All 54 requirements (P00, P01, P02) verified as **PASS / COMPLETED**.
+- The original audit recorded all 54 requirements as **PASS / COMPLETED**.
+- That historical claim is superseded by the reconciled matrix in
+  `specs/TRACEABILITY.md`, which distinguishes code-level evidence from the
+  blocked real-data gate.
 
 ---
 
@@ -191,17 +205,17 @@ None required in Phase 02 code modules.
 
 ## 21. Phase 02 Gate Recommendation
 
-**Phase 02 Gate Status:** **PASS WITH LIMITATIONS**  
-- Baseline implementation is robust, reproducible, and spec-compliant.  
-- Demonstration data limitation is explicitly documented.  
-- System is ready for Phase 03 setup when instructed.
+**Historical demo status:** **PRESERVED — NOT VALID FOR GENERALIZATION**
+- The implementation audit findings are retained.
+- The synthetic demo contains cross-split checksum leakage.
+- The project Phase 02 gate remains `IMPLEMENTATION COMPLETE / REAL-DATA VALIDATION BLOCKED` until verified real DFUC2022 data is supplied.
 
 ---
 
 ## Audit Status Summary Block
 
 ```
-PHASE 02 DEBUG STATUS: PASS WITH LIMITATIONS
+PHASE 02 HISTORICAL DEMO DEBUG STATUS: PRESERVED / LEAKAGE-CONTAMINATED
 PERFECT SCORE STATUS: VERIFIED (ON DEMO DUPLICATE DATASET)
 DATA LEAKAGE: FOUND (CHECKSUM LEAKAGE IN DEMO DATASET GENERATION)
 METRIC IMPLEMENTATION: CORRECT
@@ -211,5 +225,5 @@ UNIT TESTS: 42 / 42 PASSED
 BUGS FOUND: 0 (CODE), 1 (DEMO DATA DUPLICATION)
 BUGS FIXED: 0
 SCIENTIFIC LIMITATION: Perfect score is due to duplicate synthetic demo samples across splits; does not indicate clinical generalization.
-PHASE 03: READY
+REAL-DATA PHASE 02: BLOCKED (DATASET NOT AVAILABLE LOCALLY)
 ```

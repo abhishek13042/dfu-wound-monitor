@@ -1,9 +1,26 @@
-# DFU-WoundMonitor - Core Dependencies
-# Note: Specific versions will be introduced per Phase Specification requirements.
+# DFU-WoundMonitor - runtime dependencies
+#
+# Exact pins are the versions the test suite was last verified with
+# (Python 3.14, CPU).  torch/torchvision are lower-bounded instead of pinned
+# because the CUDA build differs per platform: on Kaggle use the preinstalled
+# CUDA torch and do NOT reinstall it from this file.
+#   Local CPU: pip install -r requirements.txt
+#   Kaggle:    pip install scipy  (everything else is preinstalled)
 
-# Core build and code quality (baseline)
-setuptools>=61.0
-pytest>=7.0.0
-ruff>=0.1.0
-black>=23.0.0
-mypy>=1.0.0
+numpy==2.4.4
+Pillow==12.0.0
+matplotlib==3.10.8
+scipy==1.17.1            # connected components, HD95 distance transforms, pHash DCT
+torch>=2.4               # verified with 2.14.1; torch.amp.GradScaler("cuda") needs >= 2.3
+torchvision>=0.19        # verified with 0.29.1; ResNet weights enum + transforms.v2
+pydantic==2.12.5         # P04 record schemas, P05 API schemas
+
+# Phase 05 service (API + dashboard)
+fastapi==0.159.1
+uvicorn==0.54.0
+python-multipart==0.0.32 # multipart image uploads
+httpx==0.25.2            # FastAPI TestClient
+
+# Test runner
+pytest==8.3.5
+setuptools==81.0.0

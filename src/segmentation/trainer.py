@@ -1,45 +1,17 @@
-"""
-Baseline Training Engine — DFU-WoundMonitor.
+"""Reproducible train/validation engine for SPEC-02-01."""
 
-Spec: P02-S04 — Baseline Training and Checkpointing.
-
-This module orchestrates the baseline segmentation training loop.
-It manages: random seed setting, device selection, training/validation loops,
-checkpointing, logging, and reproducibility.
-
-SPLIT ISOLATION RULE (REQ-P02-S04-004):
-    Training: Uses ONLY the train split.
-    Validation: Used to select the best checkpoint.
-    Test: NEVER touched until final evaluation (separate script).
-
-CHECKPOINT SELECTION (REQ-P02-S04-006):
-    The checkpoint selection metric is defined BEFORE training begins.
-    It is: best validation Dice score (higher is better).
-    This is documented in the config and not changed based on test results.
-
-RANDOM SEEDS (REQ-P02-S04-002):
-    Seeds are set for: torch, numpy, random.
-    Known nondeterminism: DataLoader with multiple workers may have nondeterministic
-    ordering. We use num_workers=0 (main process only) to eliminate this.
-    CUDA operations may still have minor nondeterminism on some GPUs
-    (cudnn.benchmark=True vs False tradeoff). Not applicable for CPU-only training.
-
-OPTIMIZER (REQ-P02-S04-003):
-    Adam optimizer is selected.
-    Rationale: Adam (Adaptive Moment Estimation) maintains per-parameter learning rate
-    estimates. It converges faster than SGD on small datasets without extensive
-    learning rate tuning. The default betas (0.9, 0.999) work well for most tasks.
-    Weight decay (L2 regularization) provides mild regularization for a tiny dataset.
-
-Coding Style: Beginner-Understandable Python
-"""
+from __future__ import annotations
 
 import json
+import logging
 import os
+import platform
 import random
+import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
@@ -48,76 +20,98 @@ from torch.utils.data import DataLoader
 
 from src.segmentation.metrics import EpochMetricAccumulator, evaluate_batch
 
+LOGGER = logging.getLogger(__name__)
 
-# ============================================================
-# REPRODUCIBILITY: Seed setting
-# ============================================================
 
-def set_random_seeds(seed: int) -> None:
-    """
-    Set random seeds for reproducible training (REQ-P02-S04-002).
+def set_random_seeds(seed: int, deterministic: bool = True) -> None:
+    """Seed Python, NumPy, PyTorch, and CUDA generators where available."""
 
-    WHY WE SET MULTIPLE SEEDS:
-        PyTorch uses its own random number generator (torch.manual_seed).
-        Python's random module is separate (random.seed).
-        NumPy has its own generator (numpy.random.seed).
-        All three must be seeded to ensure reproducible behavior across
-        weight initialization, data augmentation (random flips), and
-        any NumPy-based operations.
-
-    KNOWN NONDETERMINISM:
-        DataLoader shuffling in training will differ between runs even with
-        seeds set, unless we also set the worker_init_fn. For our baseline
-        (num_workers=0), this is not an issue.
-        GPU cuDNN operations may have non-deterministic results. Not applicable
-        for our CPU baseline.
-
-    Inputs:
-        seed: Integer seed value.
-    """
-    random.seed(seed)               # Python built-in random
-    np.random.seed(seed)            # NumPy
-    torch.manual_seed(seed)         # PyTorch CPU RNG
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    if deterministic:
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
     if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)   # PyTorch GPU RNG (if available)
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.benchmark = not deterministic
+        torch.backends.cudnn.deterministic = deterministic
+    try:
+        torch.use_deterministic_algorithms(deterministic)
+    except RuntimeError as error:
+        if deterministic:
+            LOGGER.warning("Deterministic PyTorch algorithms unavailable: %s", error)
 
-    print(f"Random seeds set to: {seed}")
-
-
-# ============================================================
-# DEVICE SELECTION
-# ============================================================
 
 def select_device(preferred: str = "cuda", fallback: str = "cpu") -> torch.device:
-    """
-    Select compute device (REQ-P02-S03-007).
+    """Select the requested available device, otherwise use the configured fallback."""
 
-    Checks if preferred device is available; falls back gracefully.
-    Does not assume GPU availability.
+    def available_device(specification: str) -> Optional[torch.device]:
+        try:
+            candidate = torch.device(specification)
+        except RuntimeError as error:
+            raise ValueError(f"Unsupported device specification '{specification}'") from error
+        if candidate.type == "cpu":
+            return candidate
+        if candidate.type == "cuda":
+            if not torch.cuda.is_available():
+                return None
+            index = 0 if candidate.index is None else candidate.index
+            if index >= torch.cuda.device_count():
+                return None
+            return candidate
+        if candidate.type == "mps":
+            mps_backend = getattr(torch.backends, "mps", None)
+            if mps_backend is not None and mps_backend.is_available():
+                return candidate
+            return None
+        raise ValueError(f"Unsupported device type '{candidate.type}'")
 
-    Inputs:
-        preferred: 'cuda' or 'cpu'.
-        fallback: Device to use if preferred is unavailable.
-
-    Outputs:
-        torch.device object for use in model.to(device) and tensor.to(device).
-    """
-    if preferred == "cuda" and torch.cuda.is_available():
-        device = torch.device("cuda")
-        device_name = torch.cuda.get_device_name(0)
-        print(f"Device selected: CUDA ({device_name})")
-    else:
-        device = torch.device(fallback)
-        if preferred == "cuda":
-            print("Note: CUDA not available. Falling back to CPU.")
-        print(f"Device selected: {device}")
-
-    return device
+    selected = available_device(preferred)
+    if selected is not None:
+        return selected
+    fallback_device = available_device(fallback)
+    if fallback_device is None:
+        raise RuntimeError(
+            f"Neither preferred device '{preferred}' nor fallback device '{fallback}' is available"
+        )
+    LOGGER.info("Device '%s' unavailable; using fallback '%s'", preferred, fallback_device)
+    return fallback_device
 
 
-# ============================================================
-# ONE TRAINING EPOCH
-# ============================================================
+def collect_environment_metadata(device: torch.device) -> Dict[str, Any]:
+    """Collect factual runtime information for a training artifact."""
+
+    metadata: Dict[str, Any] = {
+        "python_version": sys.version,
+        "platform": platform.platform(),
+        "pytorch_version": torch.__version__,
+        "numpy_version": np.__version__,
+        "device": str(device),
+        "cuda_available": bool(torch.cuda.is_available()),
+        "cuda_version": torch.version.cuda,
+        "cpu_count": os.cpu_count(),
+    }
+    if torch.cuda.is_available():
+        cuda_index = device.index if device.type == "cuda" and device.index is not None else torch.cuda.current_device()
+        metadata["cuda_device_index"] = cuda_index
+        metadata["cuda_device_name"] = torch.cuda.get_device_name(cuda_index)
+    return metadata
+
+
+def _metric_probabilities(model_output: torch.Tensor) -> torch.Tensor:
+    """Convert the model's raw logits to probabilities for thresholded metrics."""
+
+    return torch.sigmoid(model_output)
+
+
+def _check_finite_gradients(model: nn.Module, epoch: int, batch_index: int) -> None:
+    for parameter in model.parameters():
+        if parameter.grad is not None and not torch.isfinite(parameter.grad).all():
+            raise RuntimeError(
+                f"Non-finite gradient detected at epoch {epoch}, batch {batch_index}."
+            )
+
 
 def run_training_epoch(
     model: nn.Module,
@@ -128,98 +122,42 @@ def run_training_epoch(
     epoch_number: int,
     prediction_threshold: float = 0.5,
 ) -> Dict[str, float]:
-    """
-    Run one full pass through the training data.
+    """Run one train epoch and return loss plus macro per-sample metrics."""
 
-    This function:
-        1. Sets model to training mode (enables BatchNorm and Dropout updates).
-        2. Iterates all batches in train_loader.
-        3. For each batch: forward pass → compute loss → backward pass → update weights.
-        4. Accumulates loss and metrics.
+    model.train()
+    if hasattr(train_loader.dataset, "set_epoch"):
+        train_loader.dataset.set_epoch(epoch_number)
+    accumulator = EpochMetricAccumulator()
+    if len(train_loader) == 0:
+        raise RuntimeError("Training DataLoader is empty")
 
-    Inputs:
-        model: The segmentation model.
-        train_loader: DataLoader for the training split.
-        loss_fn: Loss function (BCEDiceLoss).
-        optimizer: Optimizer (Adam).
-        device: Compute device.
-        epoch_number: Current epoch index (for logging).
-        prediction_threshold: Threshold to binarize predictions for metric computation.
-
-    Outputs:
-        Dictionary with 'train_loss', 'train_dice', 'train_iou', 'train_precision', 'train_recall'.
-    """
-    model.train()  # Training mode — BatchNorm uses batch statistics, gradients are tracked
-
-    epoch_accumulator = EpochMetricAccumulator()
-
-    num_batches = len(train_loader)
-
-    for batch_index, (image_batch, mask_batch, sample_ids) in enumerate(train_loader):
-        # Move tensors to compute device
-        image_batch = image_batch.to(device)
-        mask_batch = mask_batch.to(device)
-
-        # Zero gradients from previous batch
-        # (PyTorch accumulates gradients; we must reset them each step)
-        optimizer.zero_grad()
-
-        # FORWARD PASS: model makes predictions
-        predictions = model(image_batch)
-
-        # LOSS COMPUTATION: compare predictions to ground truth
-        loss = loss_fn(predictions, mask_batch)
-
-        # Check for non-finite loss (NaN or Inf) — fail clearly (REQ-P02-S04-008)
+    for batch_index, (images, masks, sample_ids) in enumerate(train_loader):
+        images = images.to(device, non_blocking=True)
+        masks = masks.to(device, non_blocking=True)
+        optimizer.zero_grad(set_to_none=True)
+        logits = model(images)
+        loss = loss_fn(logits, masks)
         if not torch.isfinite(loss):
-            raise RuntimeError(
-                f"Non-finite loss detected at epoch {epoch_number}, batch {batch_index}. "
-                f"Loss value: {loss.item()}. "
-                "Check for malformed inputs, label values outside {0, 1}, or very large inputs."
-            )
-
-        # BACKWARD PASS: compute gradients via backpropagation
+            raise RuntimeError(f"Non-finite loss at epoch {epoch_number}, batch {batch_index}")
         loss.backward()
-
-        # WEIGHT UPDATE: optimizer adjusts model parameters using computed gradients
+        _check_finite_gradients(model, epoch_number, batch_index)
         optimizer.step()
 
-        # Accumulate loss (weighted by batch size for correct averaging)
-        batch_size = image_batch.shape[0]
-        epoch_accumulator.update_loss(loss.item(), batch_size=batch_size)
-
-        # Compute per-sample metrics for training monitoring
-        batch_sample_results = evaluate_batch(
-            predictions_batch=predictions,
-            targets_batch=mask_batch,
-            sample_ids=list(sample_ids),
-            prediction_threshold=prediction_threshold,
+        probabilities = _metric_probabilities(logits.detach())
+        accumulator.update_loss(float(loss.item()), images.shape[0])
+        accumulator.update_sample_metrics(
+            evaluate_batch(probabilities, masks, list(sample_ids), prediction_threshold)
         )
-        epoch_accumulator.update_sample_metrics(batch_sample_results)
 
-        # Print batch progress for small datasets
-        if (batch_index + 1) % max(1, num_batches // 3) == 0:
-            print(
-                f"  Epoch {epoch_number} | Batch {batch_index + 1}/{num_batches} "
-                f"| Loss: {loss.item():.4f}"
-            )
-
-    # Compute epoch-level averages
-    average_train_loss = epoch_accumulator.get_average_loss()
-    train_metrics = epoch_accumulator.get_aggregate_metrics()
-
+    metrics = accumulator.get_aggregate_metrics()
     return {
-        "train_loss": average_train_loss,
-        "train_dice": train_metrics.get("mean_dice", 0.0),
-        "train_iou": train_metrics.get("mean_iou", 0.0),
-        "train_precision": train_metrics.get("mean_precision", 0.0),
-        "train_recall": train_metrics.get("mean_recall", 0.0),
+        "train_loss": accumulator.get_average_loss(),
+        "train_dice": metrics.get("mean_dice", 0.0),
+        "train_iou": metrics.get("mean_iou", 0.0),
+        "train_precision": metrics.get("mean_precision", 0.0),
+        "train_recall": metrics.get("mean_recall", 0.0),
     }
 
-
-# ============================================================
-# ONE VALIDATION EPOCH
-# ============================================================
 
 def run_validation_epoch(
     model: nn.Module,
@@ -228,62 +166,34 @@ def run_validation_epoch(
     device: torch.device,
     prediction_threshold: float = 0.5,
 ) -> Dict[str, float]:
-    """
-    Run one full pass through the validation data.
+    """Run deterministic validation without gradients or parameter updates."""
 
-    IMPORTANT: No gradient computation or weight updates here.
-    Validation is read-only — it measures how well the model generalizes
-    to unseen samples from the same dataset (REQ-P02-S04-004).
-
-    Inputs:
-        model: The segmentation model.
-        val_loader: DataLoader for the validation split.
-        loss_fn: Loss function (BCEDiceLoss).
-        device: Compute device.
-        prediction_threshold: Threshold to binarize predictions.
-
-    Outputs:
-        Dictionary with 'val_loss', 'val_dice', 'val_iou', 'val_precision', 'val_recall'.
-    """
-    model.eval()  # Evaluation mode — BatchNorm uses stored statistics, no dropout
-
-    epoch_accumulator = EpochMetricAccumulator()
-
-    with torch.no_grad():  # Disable gradient tracking to save memory and speed up
-        for image_batch, mask_batch, sample_ids in val_loader:
-            image_batch = image_batch.to(device)
-            mask_batch = mask_batch.to(device)
-
-            # Forward pass only (no backward pass for validation)
-            predictions = model(image_batch)
-            loss = loss_fn(predictions, mask_batch)
-
-            batch_size = image_batch.shape[0]
-            epoch_accumulator.update_loss(loss.item(), batch_size=batch_size)
-
-            batch_sample_results = evaluate_batch(
-                predictions_batch=predictions,
-                targets_batch=mask_batch,
-                sample_ids=list(sample_ids),
-                prediction_threshold=prediction_threshold,
+    model.eval()
+    accumulator = EpochMetricAccumulator()
+    if len(val_loader) == 0:
+        raise RuntimeError("Validation DataLoader is empty")
+    with torch.no_grad():
+        for images, masks, sample_ids in val_loader:
+            images = images.to(device, non_blocking=True)
+            masks = masks.to(device, non_blocking=True)
+            logits = model(images)
+            loss = loss_fn(logits, masks)
+            if not torch.isfinite(loss):
+                raise RuntimeError("Non-finite validation loss detected")
+            probabilities = _metric_probabilities(logits)
+            accumulator.update_loss(float(loss.item()), images.shape[0])
+            accumulator.update_sample_metrics(
+                evaluate_batch(probabilities, masks, list(sample_ids), prediction_threshold)
             )
-            epoch_accumulator.update_sample_metrics(batch_sample_results)
-
-    average_val_loss = epoch_accumulator.get_average_loss()
-    val_metrics = epoch_accumulator.get_aggregate_metrics()
-
+    metrics = accumulator.get_aggregate_metrics()
     return {
-        "val_loss": average_val_loss,
-        "val_dice": val_metrics.get("mean_dice", 0.0),
-        "val_iou": val_metrics.get("mean_iou", 0.0),
-        "val_precision": val_metrics.get("mean_precision", 0.0),
-        "val_recall": val_metrics.get("mean_recall", 0.0),
+        "val_loss": accumulator.get_average_loss(),
+        "val_dice": metrics.get("mean_dice", 0.0),
+        "val_iou": metrics.get("mean_iou", 0.0),
+        "val_precision": metrics.get("mean_precision", 0.0),
+        "val_recall": metrics.get("mean_recall", 0.0),
     }
 
-
-# ============================================================
-# CHECKPOINT SAVING AND LOADING
-# ============================================================
 
 def save_checkpoint(
     model: nn.Module,
@@ -292,54 +202,42 @@ def save_checkpoint(
     val_dice: float,
     config: Dict[str, Any],
     checkpoint_path: str,
+    scheduler: Optional[torch.optim.lr_scheduler.LRScheduler] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+    best_metric_name: str = "val_dice",
+    best_metric_value: Optional[float] = None,
+    data_loader: Optional[DataLoader] = None,
 ) -> None:
-    """
-    Save a model checkpoint to disk (REQ-P02-S04-005).
+    """Save weights, optimizer/scheduler state, configuration, and provenance."""
 
-    A checkpoint preserves:
-        - Model state dict (all weights and biases)
-        - Optimizer state dict (Adam's momentum terms — useful for resuming)
-        - Epoch number (to know how far training progressed)
-        - Validation Dice score (the metric used to select this checkpoint)
-        - Configuration (to verify the checkpoint matches the run)
-
-    Inputs:
-        model: The trained model.
-        optimizer: Optimizer (Adam) — state saved for potential resume.
-        epoch: Current epoch number (1-indexed).
-        val_dice: Validation Dice score that triggered this save.
-        config: Training configuration dictionary.
-        checkpoint_path: Full path to save the .pth file.
-    """
-    checkpoint_dir = Path(checkpoint_path).parent
-    os.makedirs(checkpoint_dir, exist_ok=True)
-
+    checkpoint_file = Path(checkpoint_path)
+    checkpoint_file.parent.mkdir(parents=True, exist_ok=True)
     checkpoint_data = {
+        "checkpoint_version": "2.0",
         "epoch": epoch,
-        "val_dice": val_dice,
+        "val_dice": float(val_dice),
+        "best_metric_name": best_metric_name,
+        "best_metric_value": float(best_metric_value if best_metric_value is not None else val_dice),
         "model_state_dict": model.state_dict(),
         "optimizer_state_dict": optimizer.state_dict(),
-        "config_snapshot": {
-            "experiment_id": config.get("experiment_id", "unknown"),
-            "architecture": config.get("model", {}).get("architecture", "unknown"),
-            "encoder_channels": config.get("model", {}).get("encoder_channels"),
-            "num_classes": config.get("model", {}).get("num_classes", 1),
-            "input_height": config.get("preprocessing", {}).get("input_height"),
-            "input_width": config.get("preprocessing", {}).get("input_width"),
-            "loss_name": config.get("loss", {}).get("name", "unknown"),
-            "random_seed": config.get("training", {}).get("random_seed", 42),
-        }
+        "scheduler_state_dict": scheduler.state_dict() if scheduler is not None else None,
+        "config": config,
+        "metadata": metadata or {},
+        "rng_state": _capture_rng_state(),
+        "data_loader_generator_state": (
+            data_loader.generator.get_state()
+            if data_loader is not None and getattr(data_loader, "generator", None) is not None
+            else None
+        ),
     }
-
+    temporary_file = checkpoint_file.with_name(f".{checkpoint_file.name}.tmp")
     try:
-        torch.save(checkpoint_data, checkpoint_path)
-        print(f"  Checkpoint saved: {checkpoint_path} (epoch={epoch}, val_dice={val_dice:.4f})")
-    except Exception as save_error:
-        # Fail clearly on checkpoint-write failures (REQ-P02-S04-008)
-        raise RuntimeError(
-            f"Failed to save checkpoint to '{checkpoint_path}'.\n"
-            f"Error: {save_error}"
-        )
+        torch.save(checkpoint_data, temporary_file)
+        temporary_file.replace(checkpoint_file)
+    except Exception as error:
+        if temporary_file.exists():
+            temporary_file.unlink()
+        raise RuntimeError(f"Failed to save checkpoint to '{checkpoint_file}': {error}") from error
 
 
 def load_checkpoint(
@@ -347,52 +245,142 @@ def load_checkpoint(
     model: nn.Module,
     device: torch.device,
     optimizer: Optional[torch.optim.Optimizer] = None,
+    scheduler: Optional[torch.optim.lr_scheduler.LRScheduler] = None,
+    data_loader: Optional[DataLoader] = None,
+    restore_rng: bool = False,
 ) -> Dict[str, Any]:
-    """
-    Load a saved checkpoint and restore model weights.
+    """Restore a checkpoint and optionally optimizer/scheduler state."""
 
-    Inputs:
-        checkpoint_path: Path to the .pth checkpoint file.
-        model: Model to load weights into (must have matching architecture).
-        device: Target device for loading.
-        optimizer: If provided, also restores optimizer state.
-
-    Outputs:
-        Dictionary with checkpoint metadata (epoch, val_dice, config_snapshot).
-
-    Raises:
-        FileNotFoundError: If checkpoint file does not exist.
-    """
     checkpoint_file = Path(checkpoint_path)
     if not checkpoint_file.exists():
-        raise FileNotFoundError(
-            f"Checkpoint not found: {checkpoint_path}. "
-            "Ensure training has been run and the checkpoint was saved."
+        raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+    try:
+        checkpoint = torch.load(checkpoint_file, map_location=device, weights_only=False)
+    except Exception as error:
+        raise RuntimeError(f"Failed to read checkpoint '{checkpoint_file}': {error}") from error
+    if not isinstance(checkpoint, dict) or "model_state_dict" not in checkpoint:
+        raise RuntimeError(
+            f"Checkpoint '{checkpoint_file}' is malformed: model_state_dict is missing"
         )
-
-    checkpoint_data = torch.load(checkpoint_path, map_location=device, weights_only=False)
-
-    model.load_state_dict(checkpoint_data["model_state_dict"])
-
-    if optimizer is not None and "optimizer_state_dict" in checkpoint_data:
-        optimizer.load_state_dict(checkpoint_data["optimizer_state_dict"])
-
-    print(
-        f"Checkpoint loaded from: {checkpoint_path}\n"
-        f"  Epoch: {checkpoint_data.get('epoch', 'unknown')}\n"
-        f"  Val Dice: {checkpoint_data.get('val_dice', 'unknown')}"
-    )
-
+    model.load_state_dict(checkpoint["model_state_dict"])
+    if optimizer is not None and checkpoint.get("optimizer_state_dict"):
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        for state in optimizer.state.values():
+            for key, value in state.items():
+                if isinstance(value, torch.Tensor):
+                    state[key] = value.to(device)
+    if scheduler is not None and checkpoint.get("scheduler_state_dict"):
+        scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+    if restore_rng:
+        _restore_rng_state(checkpoint.get("rng_state"))
+        generator_state = checkpoint.get("data_loader_generator_state")
+        if generator_state is not None:
+            if data_loader is None or getattr(data_loader, "generator", None) is None:
+                raise ValueError(
+                    "Checkpoint contains a DataLoader generator state but no data_loader was provided"
+                )
+            data_loader.generator.set_state(generator_state)
     return {
-        "epoch": checkpoint_data.get("epoch"),
-        "val_dice": checkpoint_data.get("val_dice"),
-        "config_snapshot": checkpoint_data.get("config_snapshot", {}),
+        "epoch": checkpoint.get("epoch", 0),
+        "val_dice": checkpoint.get("val_dice"),
+        "best_metric_name": checkpoint.get("best_metric_name", "val_dice"),
+        "best_metric_value": checkpoint.get("best_metric_value", checkpoint.get("val_dice")),
+        "config": checkpoint.get("config", {}),
+        "metadata": checkpoint.get("metadata", {}),
     }
 
 
-# ============================================================
-# MAIN TRAINING LOOP
-# ============================================================
+def _capture_rng_state() -> Dict[str, Any]:
+    """Capture all RNG streams used by the training process."""
+
+    state: Dict[str, Any] = {
+        "python": random.getstate(),
+        "numpy": np.random.get_state(),
+        "torch": torch.get_rng_state(),
+    }
+    if torch.cuda.is_available():
+        state["cuda"] = torch.cuda.get_rng_state_all()
+    return state
+
+
+def _restore_rng_state(state: Optional[Dict[str, Any]]) -> None:
+    """Restore RNG streams from a checkpoint when resuming training."""
+
+    if not state:
+        return
+    random.setstate(state["python"])
+    np.random.set_state(state["numpy"])
+    torch.set_rng_state(state["torch"])
+    if torch.cuda.is_available() and state.get("cuda") is not None:
+        torch.cuda.set_rng_state_all(state["cuda"])
+
+
+def _write_progress_log(
+    config: Dict[str, Any],
+    status: str,
+    epoch_logs: List[Dict[str, Any]],
+    checkpoint_path: str,
+    latest_checkpoint_path: str,
+    best_epoch: Optional[int],
+    best_metric: float,
+    best_val_metrics: Optional[Dict[str, float]],
+    environment: Dict[str, Any],
+) -> None:
+    """Persist an interruption-safe structured progress log when configured."""
+
+    output_path_value = config.get("output", {}).get("log_file")
+    if not output_path_value:
+        return
+    output_path = Path(output_path_value)
+    temporary_path = output_path.with_name(f".{output_path.name}.running.tmp")
+    document = {
+        "experiment_id": config.get("experiment_id", "unknown"),
+        "specification": "SPEC-02-01",
+        "status": status,
+        "epoch_logs": epoch_logs,
+        "best_epoch": best_epoch,
+        "best_metric_name": "val_dice",
+        "best_metric_value": None if best_epoch is None else round(best_metric, 7),
+        "best_validation_metrics": best_val_metrics,
+        "checkpoint_path": checkpoint_path,
+        "latest_checkpoint_path": latest_checkpoint_path,
+        "environment": environment,
+        "test_evaluation": "NOT_RUN_BY_SPEC_02_01",
+    }
+    try:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary_path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+        temporary_path.replace(output_path)
+    except (OSError, TypeError, ValueError) as error:
+        # A logging mount failure must not discard a valid checkpoint.
+        LOGGER.warning("Could not write progress log '%s': %s", output_path, error)
+        if temporary_path.exists():
+            temporary_path.unlink()
+
+
+def _create_scheduler(
+    optimizer: torch.optim.Optimizer,
+    scheduler_config: Dict[str, Any],
+) -> Optional[torch.optim.lr_scheduler.LRScheduler]:
+    name = str(scheduler_config.get("name", "none")).lower()
+    if name in {"", "none", "null"}:
+        return None
+    if name == "reducelronplateau":
+        return torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode=scheduler_config.get("mode", "max"),
+            factor=float(scheduler_config.get("factor", 0.5)),
+            patience=int(scheduler_config.get("patience", 3)),
+            min_lr=float(scheduler_config.get("min_lr", 0.0)),
+        )
+    if name == "steplr":
+        return torch.optim.lr_scheduler.StepLR(
+            optimizer,
+            step_size=int(scheduler_config.get("step_size", 10)),
+            gamma=float(scheduler_config.get("gamma", 0.1)),
+        )
+    raise ValueError(f"Unsupported scheduler '{scheduler_config.get('name')}'")
+
 
 def train_baseline_model(
     model: nn.Module,
@@ -402,165 +390,224 @@ def train_baseline_model(
     config: Dict[str, Any],
     device: torch.device,
 ) -> Dict[str, Any]:
-    """
-    Full training loop: train for num_epochs, validate each epoch,
-    save best checkpoint, log all metrics.
+    """Train using only train/validation loaders and select by validation Dice."""
 
-    Split isolation: Only train_loader and val_loader are used here.
-    The test split is never touched (REQ-P02-S04-004).
-
-    Checkpoint selection metric is defined before training starts
-    using config['checkpointing']['checkpoint_selection_metric'] (REQ-P02-S04-006).
-
-    Inputs:
-        model: LightweightUNet model (initialized, moved to device).
-        loss_fn: BCEDiceLoss instance.
-        train_loader: DataLoader for train split only.
-        val_loader: DataLoader for val split only.
-        config: Full training configuration dictionary.
-        device: Compute device.
-
-    Outputs:
-        Training log dict with epoch-by-epoch metrics, best epoch, and paths.
-    """
     training_config = config.get("training", {})
     checkpoint_config = config.get("checkpointing", {})
     evaluation_config = config.get("evaluation", {})
+    num_epochs = int(training_config.get("num_epochs", 20))
+    if num_epochs <= 0:
+        raise ValueError("num_epochs must be positive")
+    seed = int(training_config.get("random_seed", 42))
+    deterministic = bool(training_config.get("deterministic", True))
+    set_random_seeds(seed, deterministic=deterministic)
 
-    num_epochs = training_config.get("num_epochs", 20)
-    learning_rate = training_config.get("learning_rate", 0.001)
-    weight_decay = training_config.get("weight_decay", 0.0001)
-    random_seed = training_config.get("random_seed", 42)
-    prediction_threshold = evaluation_config.get("prediction_threshold", 0.5)
+    model.to(device)
 
-    checkpoint_dir = checkpoint_config.get("checkpoint_dir", "models/checkpoints")
-    checkpoint_filename = checkpoint_config.get(
-        "checkpoint_filename_template", "baseline_best.pth"
-    )
-    checkpoint_path = str(Path(checkpoint_dir) / checkpoint_filename)
-
-    # Set seeds for reproducibility
-    set_random_seeds(seed=random_seed)
-
-    # ---- OPTIMIZER (REQ-P02-S04-003) ----
-    # Adam: Adaptive Moment Estimation.
-    # Maintains per-parameter learning rate using running estimates of
-    # first moment (mean of gradients) and second moment (mean of squared gradients).
-    # lr: global learning rate (scaled per parameter by Adam's adaptive mechanism).
-    # weight_decay: L2 penalty on weights to reduce overfitting.
     optimizer = torch.optim.Adam(
         model.parameters(),
-        lr=learning_rate,
-        weight_decay=weight_decay,
+        lr=float(training_config.get("learning_rate", 1e-3)),
+        weight_decay=float(training_config.get("weight_decay", 1e-4)),
     )
+    if training_config.get("optimizer", "Adam") != "Adam":
+        raise ValueError("SPEC-02-01 supports the Adam optimizer only")
+    scheduler = _create_scheduler(optimizer, training_config.get("scheduler", {}))
+    checkpoint_metric = str(checkpoint_config.get("checkpoint_selection_metric", "val_dice"))
+    checkpoint_mode = str(checkpoint_config.get("checkpoint_selection_mode", "max"))
+    if checkpoint_metric != "val_dice" or checkpoint_mode != "max":
+        raise ValueError("SPEC-02-01 checkpoint selection must use maximum validation Dice")
+    checkpoint_path = str(
+        Path(checkpoint_config.get("checkpoint_dir", "models/checkpoints"))
+        / checkpoint_config.get("checkpoint_filename_template", "baseline_best.pth")
+    )
+    if checkpoint_config.get("save_latest_for_resume", True) is not True:
+        raise ValueError("SPEC-02-01 requires save_latest_for_resume=true")
+    if checkpoint_config.get("save_best_only", True) is not True:
+        raise ValueError("SPEC-02-01 requires save_best_only=true")
+    best_checkpoint_file = Path(checkpoint_path)
+    latest_filename = checkpoint_config.get("latest_checkpoint_filename_template")
+    if not latest_filename:
+        latest_filename = best_checkpoint_file.name.replace("_best_", "_latest_").replace(
+            "_best.", "_latest."
+        )
+    latest_checkpoint_path = str(best_checkpoint_file.parent / latest_filename)
+    if Path(latest_checkpoint_path).resolve() == best_checkpoint_file.resolve():
+        raise ValueError("Latest and best checkpoint paths must be different")
+    environment = collect_environment_metadata(device)
+    best_metric = -float("inf")
+    best_epoch: Optional[int] = None
+    best_val_metrics: Optional[Dict[str, float]] = None
+    start_epoch = 1
+    started_utc = datetime.now(timezone.utc).isoformat()
 
-    # ---- CHECKPOINT SELECTION METRIC ----
-    # Defined BEFORE training starts (REQ-P02-S04-006)
-    checkpoint_metric = checkpoint_config.get("checkpoint_selection_metric", "val_dice")
-    checkpoint_mode = checkpoint_config.get("checkpoint_selection_mode", "max")
-
-    # Initialize best metric value
-    if checkpoint_mode == "max":
-        best_metric_value = -float("inf")
-    else:
-        best_metric_value = float("inf")
-
-    print(f"\nCheckpoint selection: best '{checkpoint_metric}' ({checkpoint_mode})")
-    print(f"Training for {num_epochs} epochs on device: {device}\n")
-
-    # ---- TRAINING LOG ----
-    epoch_logs: List[Dict[str, Any]] = []
-    training_start_time = time.time()
-
-    # ---- EPOCH LOOP ----
-    for epoch in range(1, num_epochs + 1):
-        epoch_start_time = time.time()
-        print(f"Epoch {epoch}/{num_epochs}")
-
-        # Training pass
-        train_metrics = run_training_epoch(
-            model=model,
-            train_loader=train_loader,
-            loss_fn=loss_fn,
+    resume_path = training_config.get("resume_checkpoint")
+    if resume_path:
+        resume_metadata = load_checkpoint(
+            str(resume_path),
+            model,
+            device,
             optimizer=optimizer,
-            device=device,
-            epoch_number=epoch,
-            prediction_threshold=prediction_threshold,
+            scheduler=scheduler,
+            data_loader=train_loader,
+            restore_rng=True,
+        )
+        start_epoch = int(resume_metadata["epoch"]) + 1
+        resume_best = resume_metadata.get("best_metric_value")
+        if resume_best is not None:
+            best_metric = float(resume_best)
+        best_epoch_value = resume_metadata.get("metadata", {}).get("best_epoch")
+        best_epoch = int(best_epoch_value) if best_epoch_value is not None else int(resume_metadata["epoch"])
+        resume_best_metrics = resume_metadata.get("metadata", {}).get("best_validation_metrics")
+        best_val_metrics = dict(resume_best_metrics) if resume_best_metrics else None
+        resume_started_utc = resume_metadata.get("metadata", {}).get("run_started_utc")
+        if isinstance(resume_started_utc, str) and resume_started_utc:
+            started_utc = resume_started_utc
+        LOGGER.info("Resuming from checkpoint %s at epoch %d", resume_path, start_epoch)
+    if start_epoch > num_epochs:
+        raise ValueError(
+            f"Resume checkpoint is at epoch {start_epoch - 1}, but num_epochs={num_epochs}; "
+            "increase num_epochs before resuming"
         )
 
-        # Validation pass (REQ-P02-S04-007)
+    epoch_logs: List[Dict[str, Any]] = []
+    if resume_path:
+        saved_epoch_logs = resume_metadata.get("metadata", {}).get("epoch_logs", [])
+        if isinstance(saved_epoch_logs, list):
+            epoch_logs.extend(item for item in saved_epoch_logs if isinstance(item, dict))
+    _write_progress_log(
+        config,
+        "RUNNING",
+        epoch_logs,
+        checkpoint_path,
+        latest_checkpoint_path,
+        best_epoch,
+        best_metric,
+        best_val_metrics,
+        environment,
+    )
+    start_time = time.monotonic()
+    last_completed_epoch = start_epoch - 1
+    for epoch in range(start_epoch, num_epochs + 1):
+        epoch_start = time.monotonic()
+        train_metrics = run_training_epoch(
+            model, train_loader, loss_fn, optimizer, device, epoch,
+            evaluation_config.get("prediction_threshold", 0.5),
+        )
         val_metrics = run_validation_epoch(
-            model=model,
-            val_loader=val_loader,
-            loss_fn=loss_fn,
-            device=device,
-            prediction_threshold=prediction_threshold,
+            model, val_loader, loss_fn, device,
+            evaluation_config.get("prediction_threshold", 0.5),
         )
-
-        epoch_duration_seconds = time.time() - epoch_start_time
-        current_lr = optimizer.param_groups[0]["lr"]
-
-        # Log epoch metrics
-        epoch_log_entry = {
+        if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+            scheduler.step(val_metrics["val_dice"])
+        elif scheduler is not None:
+            scheduler.step()
+        epoch_log = {
             "epoch": epoch,
-            "train_loss": round(train_metrics["train_loss"], 6),
-            "train_dice": round(train_metrics["train_dice"], 6),
-            "val_loss": round(val_metrics["val_loss"], 6),
-            "val_dice": round(val_metrics["val_dice"], 6),
-            "val_iou": round(val_metrics["val_iou"], 6),
-            "val_precision": round(val_metrics["val_precision"], 6),
-            "val_recall": round(val_metrics["val_recall"], 6),
-            "learning_rate": current_lr,
-            "epoch_duration_seconds": round(epoch_duration_seconds, 2),
+            **{key: round(float(value), 7) for key, value in train_metrics.items()},
+            **{key: round(float(value), 7) for key, value in val_metrics.items()},
+            "learning_rate": float(optimizer.param_groups[0]["lr"]),
+            "epoch_duration_seconds": round(time.monotonic() - epoch_start, 3),
         }
-        epoch_logs.append(epoch_log_entry)
-
-        print(
-            f"  train_loss={train_metrics['train_loss']:.4f} | "
-            f"train_dice={train_metrics['train_dice']:.4f} | "
-            f"val_loss={val_metrics['val_loss']:.4f} | "
-            f"val_dice={val_metrics['val_dice']:.4f} | "
-            f"val_iou={val_metrics['val_iou']:.4f} | "
-            f"lr={current_lr:.6f} | "
-            f"time={epoch_duration_seconds:.1f}s"
+        epoch_logs.append(epoch_log)
+        last_completed_epoch = epoch
+        LOGGER.info(
+            "epoch=%d train_loss=%.5f val_loss=%.5f val_dice=%.5f val_iou=%.5f",
+            epoch,
+            train_metrics["train_loss"],
+            val_metrics["val_loss"],
+            val_metrics["val_dice"],
+            val_metrics["val_iou"],
         )
-
-        # ---- CHECKPOINT SAVING ----
-        current_metric_value = val_metrics.get(checkpoint_metric, 0.0)
-
-        is_new_best = (
-            (checkpoint_mode == "max" and current_metric_value > best_metric_value) or
-            (checkpoint_mode == "min" and current_metric_value < best_metric_value)
-        )
-
-        if is_new_best:
-            best_metric_value = current_metric_value
+        current_metric = float(val_metrics["val_dice"])
+        if current_metric > best_metric or not best_checkpoint_file.exists():
+            best_metric = current_metric
+            best_epoch = epoch
+            best_val_metrics = dict(val_metrics)
             save_checkpoint(
                 model=model,
                 optimizer=optimizer,
                 epoch=epoch,
-                val_dice=val_metrics["val_dice"],
+                val_dice=current_metric,
                 config=config,
                 checkpoint_path=checkpoint_path,
+                scheduler=scheduler,
+                metadata={
+                    "environment": environment,
+                    "best_validation_metrics": best_val_metrics,
+                    "best_epoch": best_epoch,
+                    "epoch_logs": epoch_logs,
+                    "run_started_utc": started_utc,
+                    "run_status": "RUNNING",
+                },
+                best_metric_name=checkpoint_metric,
+                best_metric_value=best_metric,
+                data_loader=train_loader,
             )
 
-    total_training_time = time.time() - training_start_time
+        # The latest checkpoint is the resume point.  It is intentionally
+        # separate from the validation-selected best checkpoint so an
+        # interruption never resumes from an older, better-scoring epoch.
+        save_checkpoint(
+            model=model,
+            optimizer=optimizer,
+            epoch=epoch,
+            val_dice=float(val_metrics["val_dice"]),
+            config=config,
+            checkpoint_path=latest_checkpoint_path,
+            scheduler=scheduler,
+            metadata={
+                "environment": environment,
+                "best_validation_metrics": best_val_metrics,
+                "best_epoch": best_epoch,
+                "epoch_logs": epoch_logs,
+                "run_started_utc": started_utc,
+                "run_status": "RUNNING",
+            },
+            best_metric_name=checkpoint_metric,
+            best_metric_value=best_metric,
+            data_loader=train_loader,
+        )
+        _write_progress_log(
+            config,
+            "RUNNING",
+            epoch_logs,
+            checkpoint_path,
+            latest_checkpoint_path,
+            best_epoch,
+            best_metric,
+            best_val_metrics,
+            environment,
+        )
 
-    print(
-        f"\nTraining complete.\n"
-        f"  Best {checkpoint_metric}: {best_metric_value:.4f}\n"
-        f"  Checkpoint: {checkpoint_path}\n"
-        f"  Total training time: {total_training_time:.1f}s"
-    )
-
-    training_log = {
+    total_duration = time.monotonic() - start_time
+    if best_epoch is None or not Path(checkpoint_path).exists():
+        raise RuntimeError("Training completed without producing a best validation checkpoint")
+    training_result = {
         "experiment_id": config.get("experiment_id", "unknown"),
-        "total_epochs_completed": num_epochs,
+        "status": "COMPLETED_SPEC_02_01",
+        "started_utc": started_utc,
+        "total_epochs_completed": last_completed_epoch,
+        "best_epoch": best_epoch,
         "best_metric_name": checkpoint_metric,
-        "best_metric_value": round(best_metric_value, 6),
+        "best_metric_value": round(best_metric, 7),
+        "best_validation_metrics": best_val_metrics,
         "checkpoint_path": checkpoint_path,
-        "total_training_time_seconds": round(total_training_time, 2),
+        "latest_checkpoint_path": latest_checkpoint_path,
+        "resumed_from": str(resume_path) if resume_path else None,
+        "total_training_time_seconds": round(total_duration, 3),
+        "environment": environment,
         "epoch_logs": epoch_logs,
+        "test_evaluation": "NOT_RUN_BY_SPEC_02_01",
     }
-
-    return training_log
+    _write_progress_log(
+        config,
+        "COMPLETED_SPEC_02_01",
+        epoch_logs,
+        checkpoint_path,
+        latest_checkpoint_path,
+        best_epoch,
+        best_metric,
+        best_val_metrics,
+        environment,
+    )
+    return training_result

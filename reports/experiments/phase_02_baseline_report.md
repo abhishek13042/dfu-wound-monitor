@@ -1,148 +1,135 @@
-# Phase 02 — Baseline Segmentation & Experiment Report
+# SPEC-02-01 — FUSeg2021 Baseline Engineering Report
 
-**Project:** DFU-WoundMonitor (Computer Vision–Based Longitudinal Diabetic Foot Wound Monitoring System)  
-**Spec Reference:** P02-S01 through P02-S07  
-**Experiment ID:** `P02-baseline-unet-bce-dice-v1`  
-**Execution Date:** 2026-10-06  
-**Status:** COMPLETED  
+**Status:** implementation and sanity gate complete; multi-epoch Kaggle training
+is intentionally deferred. No final-test metrics are reported.
 
----
+## Scope
 
-## Executive Summary
+SPEC-02-01 establishes a binary wound-segmentation baseline using only the
+verified FUSeg2021 source. The selected model is an explicit four-level,
+bilinear-upsampled U-Net with random initialization. The public test images are
+not evaluated because the release does not provide usable ground-truth masks.
 
-Phase 02 establishes the foundational baseline model for diabetic foot ulcer (DFU) wound segmentation in the DFU-WoundMonitor system. A lightweight, 4-level Convolutional U-Net with skip connections was implemented, trained, and evaluated following strict spec-driven engineering guidelines. All split boundaries established in Phase 01 were rigorously preserved, ensuring zero data leakage between training, validation, and testing splits.
+No SPEC-02-02 or Phase 03 implementation was started.
 
-Key outcomes:
-- **Baseline Architecture:** Lightweight U-Net with ~3.35M parameters.
-- **Loss Function:** Hybrid BCE + Dice Loss (`BCEDiceLoss`).
-- **Validation Dice Score:** 1.0000 (Epoch 10 checkpoint).
-- **Test Performance (3 test samples):**
-  - **Mean Dice:** 1.0000 ± 0.0000
-  - **Mean IoU:** 1.0000
-  - **Mean Precision:** 1.0000
-  - **Mean Recall:** 1.0000
-  - **Mean Test Loss:** 0.2861
-- **Qualitative Inspection:** 100% overlay alignment on test set samples.
+## Dataset and split contract
 
----
+The source contract is recorded in `configs/data/fuseg2021.json` and the
+manifest is `data/manifests/dataset_manifest.json`.
 
-## 1. Problem Definition & Task Selection (P02-S01)
+| Item | Verified value |
+|---|---|
+| Official split | 810 train / 200 validation / 200 test images |
+| Usable supervised train | 793 |
+| Usable supervised validation | 191 |
+| Public test | 200 images, no usable masks |
+| Source resolution | 512 × 512 RGB |
+| Source masks | binary `{0,255}`; empty masks are valid |
+| Patient/exam identifiers | unavailable; no patient-level claim |
+| Leakage gate | PASS after exact duplicate-image quarantine |
 
-### 1.1 Task Definition
-- **Task:** Binary Wound Segmentation (Foreground: Wound tissue / Background: Surrounding intact skin & background).
-- **Input:** 3-channel RGB image tensor $(B, 3, 256, 256)$, normalized to $[0.0, 1.0]$.
-- **Output:** 1-channel logit tensor $(B, 1, 256, 256)$, thresholded at $p \ge 0.5$ for binary mask generation.
+The manifest preserves the official source assignments. Exact duplicate images
+are quarantined without changing raw files. The one validation mask containing
+value `32` is excluded by the manifest rather than silently thresholded.
 
-### 1.2 Model Selection Rationale
-As documented in [`reports/experiments/phase_02_baseline_decision_record.md`](file:///d:/dfu-wound-monitor/reports/experiments/phase_02_baseline_decision_record.md), a 4-level U-Net was selected over a object detection baseline (e.g. YOLO/Faster-RCNN) or FCN because:
-1. Ground truth pixel masks are directly available in FUSeg2021 / DFUC datasets.
-2. Direct segmentation enables future boundary extraction and area calculation needed for longitudinal area tracking (Phase 05 & Phase 07).
-3. The multi-scale feature synthesis provided by U-Net skip connections is optimal for localized lesion structures.
+## Loader, preprocessing, and alignment
 
----
+`src/segmentation/dataset.py` loads only `VALID` manifest records with
+`wound_segmentation` annotations. It verifies file existence, image/mask source
+dimensions, declared manifest dimensions, grayscale mask channels, and source
+mask values before preprocessing.
 
-## 2. Dataset & Preprocessing Pipeline (P02-S02)
+The tensor contract is:
 
-### 2.1 Split Isolation
-The model was trained exclusively on the manifest defined in Phase 01 (`data/manifests/dataset_manifest.json`):
-- **Train split:** 14 samples (Patient-isolated)
-- **Validation split:** 3 samples (Patient-isolated)
-- **Test split:** 3 samples (Patient-isolated, evaluated ONCE at test time)
+- image: `(B, 3, 256, 256)`, `float32`;
+- target: `(B, 1, 256, 256)`, `float32` in `{0,1}`;
+- model output: `(B, 1, 256, 256)`, raw logits.
 
-### 2.2 Preprocessing Specifications
-1. **Decoding:** Decoded using PIL (`RGB` format).
-2. **Resizing:** Bilinear interpolation for image $(256 \times 256)$, Nearest Neighbor interpolation for binary ground truth mask $(256 \times 256)$.
-3. **Normalization:** Pixel scaling to $[0, 1]$ range (`image / 255.0`).
-4. **Binarization:** Target mask binarized at $> 0$ threshold to produce binary values $\{0.0, 1.0\}$.
+Images are decoded with PIL, converted to RGB, resized with bilinear
+interpolation, scaled to `[0,1]`, and normalized with the configured mean and
+standard deviation. Masks use nearest-neighbor resize and threshold `128`.
+Training flips are deterministic per sample/seed/epoch and synchronized between
+image and mask. Validation has no random augmentation. An optional
+`--data-root` remaps the manifest's recorded source root for Kaggle mounts;
+the manifest split assignments are still used unchanged.
 
----
+## Model and loss
 
-## 3. Architecture & Loss Formulation (P02-S03)
+`src/segmentation/model.py` implements the selected U-Net explicitly:
 
-### 3.1 Network Architecture
-The network consists of:
-- **Encoder:** 4 downsampling blocks using $2 \times 2$ MaxPool, doubling channel dimensions $(32 \to 64 \to 128 \to 256)$.
-- **Bottleneck:** Double $3 \times 3$ Conv block (512 channels) with ReLU activations.
-- **Decoder:** 4 upsampling blocks using ConvTranspose2d ($2 \times 2$, stride 2) concatenated with skip connection feature maps from the encoder.
-- **Head:** $1 \times 1$ Conv layer reducing 32 channels to 1 output logit.
+- channels `[16,32,64,128]` for the real configuration;
+- `DoubleConvBlock` encoder and decoder blocks;
+- max pooling in the encoder;
+- bilinear interpolation and skip concatenation in the decoder;
+- one-channel output convolution with no output sigmoid;
+- Kaiming-normal convolution initialization and standard BatchNorm setup.
 
-**Total Trainable Parameters:** 3,350,273 (~3.35M parameters).
+The configured model has **838,785 total and trainable parameters**. The loss
+is `0.5 * BCEWithLogitsLoss + 0.5 * per-image soft Dice loss`. Raw logits are
+used for numerically stable BCE; sigmoid is used only for Dice and metrics.
+Finite-value, shape, and target-range checks fail clearly.
 
-### 3.2 Loss Function Definition
-The hybrid loss function combines Binary Cross Entropy (BCE) and Soft Dice Loss:
+## Reproducibility, checkpointing, and logging
 
-$$\mathcal{L}_{\text{BCE-Dice}}(P, G) = 0.5 \cdot \mathcal{L}_{\text{BCE}}(P, G) + 0.5 \cdot \mathcal{L}_{\text{Dice}}(P, G)$$
+Configuration is validated by `src/segmentation/config.py` before data loading.
+The trainer records Python, NumPy, PyTorch, CUDA, device, epoch, timing,
+learning rate, train metrics, validation metrics, and configuration snapshots.
+Validation Dice is the predeclared checkpoint-selection metric.
 
-where:
-$$\mathcal{L}_{\text{BCE}}(P, G) = -\frac{1}{N} \sum_{i=1}^N \left[ G_i \log(\sigma(P_i)) + (1 - G_i) \log(1 - \sigma(P_i)) \right]$$
+Each completed epoch writes:
 
-$$\mathcal{L}_{\text{Dice}}(P, G) = 1 - \frac{2 \sum_{i=1}^N \sigma(P_i) G_i + \epsilon}{\sum_{i=1}^N \sigma(P_i)^2 + \sum_{i=1}^N G_i^2 + \epsilon}$$
+- a validation-selected best checkpoint;
+- a separate latest-epoch resume checkpoint;
+- model and optimizer state;
+- scheduler state when configured;
+- configuration and environment metadata;
+- Python/NumPy/PyTorch/CUDA RNG states and the training DataLoader generator
+  state.
 
-with $\epsilon = 10^{-6}$ for numerical stability.
+Checkpoint writes are atomic. Resume restores the latest epoch state and RNG
+streams, while best-checkpoint selection remains validation-only.
 
----
+## Verification performed
 
-## 4. Training Engine & Checkpointing (P02-S04)
+Using a local Python virtual environment with `requirements.txt` installed
+(original run: an ephemeral Linux venv; re-verified on 2026-10-21 on Windows
+with Python 3.14):
 
-- **Optimizer:** Adam ($\text{lr} = 10^{-3}$, $\beta_1 = 0.9$, $\beta_2 = 0.999$, $\text{weight\_decay} = 10^{-4}$).
-- **Batch Size:** 2
-- **Epochs:** 10
-- **Random Seed:** 42 (`torch`, `numpy`, `random`)
-- **Checkpoint Rule:** Best checkpoint selected based on maximum **Validation Dice Score**.
-- **Saved Checkpoint:** `models/checkpoints/P02-baseline-unet-bce-dice-v1_best_val_dice.pth` (Epoch 10, Val Dice = 1.0000).
+```text
+72 passed in tests/unit
+real-data sanity-only run: PASS
+```
 
----
+The real sanity run verified 793/191 manifest-backed train/validation loading,
+`(8,3,256,256)` and `(8,1,256,256)` batch shapes, binary masks, deterministic
+validation preprocessing, one real-batch finite forward/backward pass, finite
+gradients, model output shape, and finite logits-based loss. Evidence is saved
+in `reports/experiments/P02-SPEC-02-01-fuseg2021_sanity_checks.json` and the
+aligned sample panel under `outputs/visualizations/phase_02_fuseg2021_baseline/`.
 
-## 5. Quantitative Test Evaluation (P02-S05)
+No multi-epoch CPU training, final test evaluation, or fabricated performance
+metric was produced in this continuation.
 
-Final evaluation was performed on the test set using the best epoch checkpoint:
+## Kaggle command
 
-| Sample ID | Dice Score | IoU (Jaccard) | Precision | Recall | Target Pixels | Pred Pixels |
-|---|---|---|---|---|---|---|
-| `DFUC22_0009` | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1,842 | 1,842 |
-| `DFUC22_0001` | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 2,104 | 2,104 |
-| `DFUC22_0004` | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 3,456 | 3,456 |
-| **Macro Average** | **1.0000** | **1.0000** | **1.0000** | **1.0000** | — | — |
+From the repository root, after the FUSeg2021 data is mounted or copied and the
+manifest is available, the clean Kaggle wrapper is:
 
-*Test Evaluation Json Artifact:* `reports/evaluation/P02-baseline-unet-bce-dice-v1_test_results.json`
+```bash
+python scripts/run_kaggle_spec_02_01.py \
+  --data-root "/kaggle/input/fuseg2021/Foot Ulcer Segmentation Challenge" \
+  --output-root /kaggle/working/spec-02-01 --sanity-only
+```
 
----
+Use `--train` in place of `--sanity-only` on Kaggle to start the configured
+train/validation job. Add
+`--resume-checkpoint /kaggle/working/spec-02-01/checkpoints/P02-SPEC-02-01-fuseg2021-unet-bce-dice-v1_latest_epoch.pth`
+alongside `--train` to resume an interrupted run. Full training is blocked on
+CPU by default. The entrypoint never evaluates the unlabeled public test split.
 
-## 6. Qualitative Evaluation & Error Review (P02-S06)
+## Remaining work
 
-Qualitative 4-panel inspection images were saved under `outputs/visualizations/phase_02_qualitative/`:
-1. `P02-baseline-unet-bce-dice-v1_rank01_GOOD_DFUC22_0009.png`
-2. `P02-baseline-unet-bce-dice-v1_rank02_GOOD_DFUC22_0001.png`
-3. `P02-baseline-unet-bce-dice-v1_rank03_GOOD_DFUC22_0004.png`
-
-### Observed Patterns & Failure Modes
-- **Good Predictions ($\text{Dice} \ge 0.7$):** 3 / 3 (100%)
-- **Mediocre ($\text{Dice} \in [0.4, 0.7)$):** 0 / 3
-- **Poor ($\text{Dice} < 0.4$):** 0 / 3
-
-*Note on Evaluation:* The 1.0000 score reflects baseline convergence on the small 20-sample demo manifest. On full-scale clinical datasets (e.g. 2,000+ images), challenges such as low contrast, boundary ambiguity, peri-wound erythema, and lighting variations will emerge and be systematically tracked in Phase 03.
-
----
-
-## 7. Limitations & Future Hypotheses (P02-S07)
-
-### Technical Limitations
-1. **Demonstration Dataset Size:** Current manifest utilizes a 20-sample validation subset.
-2. **Fixed Input Scale:** $256 \times 256$ resolution may blur fine peripheral micro-wound structures.
-3. **No Augmentation Pipeline:** Spatial transformations (rotations, flips, color jitter) were intentionally omitted in baseline to establish simple unaugmented reference numbers.
-
-### Hypotheses for Phase 03 (Advanced Segmentation)
-1. **Pretrained Encoders:** Utilizing ResNet34/EfficientNet backbone initialized with ImageNet weights will improve feature representation on complex ulcer textures.
-2. **Data Augmentation:** Random rotation, scaling, and color jittering will improve generalization against varied clinical lighting conditions.
-3. **Boundary Loss (Focal/Tversky):** Incorporating Focal Tversky Loss will improve handling of hard boundary pixels and small lesions.
-
----
-
-## 8. Compliance & Disclaimers
-
-> [!IMPORTANT]
-> **Medical Disclaimer:**  
-> This system is a research decision-support prototype. It does NOT provide clinical diagnosis, medical treatment recommendations, or autonomous surgical/dermatological assessments. All metric results refer to computational benchmark evaluation on benchmark dataset splits.
-
----
-*No Phase 03, Phase 04, FastAPI, Database, Frontend, or Docker code was started during Phase 02.*
+SPEC-02-02 may perform the approved next evaluation work, including any
+independent evaluation protocol for a labeled/authorized test set and associated
+error review. It must use the validation-selected checkpoint and must not treat
+the unlabeled FUSeg2021 public test images as ground truth.

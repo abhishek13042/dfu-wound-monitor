@@ -1,0 +1,91 @@
+{
+  "experiment_id": "P02-baseline-unet-bce-dice-v1",
+  "status": "IMPLEMENTATION_COMPLETE_REAL_DATA_BLOCKED",
+  "date": "2026-10-07",
+  "dataset": "DFUC2022",
+  "dataset_version": null,
+  "source": {
+    "registry": "data/external/dataset_registry.json",
+    "local_data_status": "NOT_AVAILABLE",
+    "expected_structure": "<dataset_root>/images and <dataset_root>/annotations",
+    "acquisition_policy": "No automatic download or unverified mirror fallback"
+  },
+  "manifest": "data/manifests/dataset_manifest.json",
+  "manifest_source_type_required": "real",
+  "split_strategy": {
+    "strategy": "IMAGE_LEVEL_FALLBACK",
+    "random_seed": 42,
+    "patient_level_isolation": "NOT_AVAILABLE",
+    "reason": "Verified patient identifiers are absent from the public DFUC2022 release",
+    "leakage_requirement": "All image, annotation, patient, exam, and exact-path overlaps must be zero"
+  },
+  "counts": {
+    "train": null,
+    "validation": null,
+    "test": null,
+    "patient_counts": null
+  },
+  "model": {
+    "architecture": "LightweightUNet",
+    "encoder_channels": [32, 64, 128, 256],
+    "num_classes": 1,
+    "total_parameters": 3350273,
+    "trainable_parameters": 3350273,
+    "initialization": "PyTorch layer defaults; no custom initialization routine",
+    "pretrained_weights": null,
+    "input_shape": "(B, 3, 256, 256)",
+    "output_shape": "(B, 1, 256, 256)",
+    "output_type": "sigmoid probability"
+  },
+  "preprocessing": {
+    "color": "RGB",
+    "image_resize": "bilinear to 256x256",
+    "mask_resize": "nearest-neighbor to 256x256",
+    "mask_threshold": 128,
+    "normalization_mean": [0.485, 0.456, 0.406],
+    "normalization_std": [0.229, 0.224, 0.225]
+  },
+  "augmentation": {
+    "train_horizontal_flip_probability": 0.5,
+    "validation_and_test": "none",
+    "random_crop": "not implemented"
+  },
+  "training": {
+    "epochs_configured": 20,
+    "epochs_completed": 0,
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "loss": "0.5 * BCELoss(sigmoid probability) + 0.5 * soft Dice loss",
+    "seed": 42,
+    "device": null,
+    "checkpoint_selection": "maximum validation Dice only"
+  },
+  "checkpoint": {
+    "path": null,
+    "best_epoch": null,
+    "best_validation_dice": null
+  },
+  "test_metrics": null,
+  "independent_metric_verification": {
+    "status": "BLOCKED",
+    "path": null,
+    "reason": "No legitimate real-data predictions exist to verify"
+  },
+  "qualitative_evaluation": {
+    "status": "BLOCKED",
+    "path": null,
+    "reason": "No legitimate real-data test evaluation exists"
+  },
+  "prediction_artifacts": {
+    "path": "outputs/predictions/P02-baseline-unet-bce-dice-v1-real",
+    "status": "NOT_GENERATED"
+  },
+  "limitations": [
+    "Real DFUC2022 files are not available in this checkout.",
+    "Patient-level isolation cannot be claimed without verified patient identifiers.",
+    "The historical synthetic demo contains cross-split checksum leakage and is excluded from this record's metrics.",
+    "No clinical validity or generalization claim can be made."
+  ],
+  "notes": "This record is a blocked execution record, not a fabricated training result. Populate actual counts, environment, checkpoint, metrics, and artifact hashes only after the real-data gate passes."
+}

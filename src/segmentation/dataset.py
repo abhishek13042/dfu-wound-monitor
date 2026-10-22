@@ -1,131 +1,145 @@
+"""Reproducible PyTorch input pipeline for manifest-backed wound masks.
+
+The dataset reads split assignments from the Phase 01 manifest.  It never
+discovers files or creates a new split during training.  Spatial operations
+that affect geometry are applied to the image and mask with the same sampled
+parameters.
 """
-Baseline Segmentation Dataset Interface — DFU-WoundMonitor.
 
-Spec: P02-S02 — Baseline Preprocessing and Dataset Interface.
-
-This module bridges Phase 01 manifests to the PyTorch training loop.
-It loads images and masks from the paths recorded in the Phase 01 manifest,
-applies the correct preprocessing per split (train vs val/test), and
-returns batches ready for the model.
-
-IMPORTANT DATA FLOW:
-    Phase 01 manifest (JSON)
-        → load_manifest_samples()        [reads from file, filters by split]
-        → WoundSegmentationDataset       [PyTorch Dataset object]
-        → DataLoader                     [produces batches for training/eval]
-
-Every preprocessing step is explicitly documented below.
-
-Coding Style: Beginner-Understandable Python
-"""
+from __future__ import annotations
 
 import json
+import logging
+import math
 import random
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from pathlib import Path, PurePosixPath, PureWindowsPath
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 import torch
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
+LOGGER = logging.getLogger(__name__)
 
-# ============================================================
-# STEP 1: Load samples from Phase 01 manifest
-# ============================================================
+
+def resolve_manifest_path(path_value: Optional[str], manifest_path: str) -> Path:
+    """Resolve a manifest path relative to the repository containing the manifest.
+
+    Relative paths are preferred.  Legacy absolute Windows paths are accepted
+    only when their ``data/...`` suffix exists in the current repository; this
+    keeps old manifests inspectable without silently accepting a missing path.
+    """
+
+    if not path_value:
+        return Path("")
+
+    manifest_file = Path(manifest_path).resolve()
+    candidate_roots = [manifest_file.parent, *manifest_file.parents]
+    normalized_value = str(path_value).replace("\\", "/")
+    windows_parts = PureWindowsPath(normalized_value).parts
+    posix_parts = PurePosixPath(normalized_value).parts
+    path_parts = windows_parts if len(windows_parts) > 1 else posix_parts
+
+    direct_path = Path(path_value)
+    # A manifest path is authoritative.  Do not let an unrelated file with
+    # the same relative name in the caller's working directory win.
+    if direct_path.is_absolute() or PureWindowsPath(normalized_value).is_absolute():
+        if direct_path.exists():
+            return direct_path
+    else:
+        # Manifests used by tests and portable exports commonly store paths
+        # relative to the directory containing the manifest.
+        manifest_relative = manifest_file.parent / direct_path
+        if manifest_relative.exists():
+            return manifest_relative
+
+    if "data" in path_parts:
+        data_index = path_parts.index("data")
+        relative_data_path = Path(*path_parts[data_index:])
+        # FUSeg manifests store project-relative paths such as data/raw/... .
+        # Prefer the repository-level candidate over data/manifests/... so a
+        # coincidentally named path cannot shadow the source tree.
+        for root in reversed(candidate_roots):
+            candidate = root / relative_data_path
+            if candidate.exists():
+                return candidate
+
+    if not direct_path.is_absolute():
+        for root in candidate_roots:
+            candidate = root / direct_path
+            if candidate.exists():
+                return candidate
+
+    return direct_path
+
 
 def load_manifest_samples(
     manifest_path: str,
     split: str,
     allowed_annotation_types: Optional[List[str]] = None,
+    data_root: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
+    """Load only valid, annotated samples assigned to ``split``.
+
+    The loader preserves the manifest's official split and excludes records
+    marked ``INVALID`` or ``QUARANTINED``.  Public FUSeg test images have the
+    ``unlabeled_test`` annotation type and therefore do not enter this
+    supervised dataset.
     """
-    Load validated samples for a given split from the Phase 01 manifest.
 
-    This function is the bridge between Phase 01 outputs and Phase 02 training.
-    It DOES NOT rediscover or reshuffle data — it reads exactly the splits
-    recorded in the manifest (REQ-P02-S02-001, REQ-P02-S02-009).
-
-    Inputs:
-        manifest_path: Path to dataset_manifest.json (Phase 01 output).
-        split: One of 'train', 'val', 'test'.
-        allowed_annotation_types: If provided, only load samples whose
-            annotation_type is in this list. Defaults to ['wound_segmentation'].
-
-    Outputs:
-        List of sample dictionaries for the requested split.
-        Only VALID samples are returned (REQ-P02-S02-008).
-
-    Raises:
-        FileNotFoundError: If manifest_path does not exist.
-        ValueError: If split is not recognized.
-    """
-    valid_splits = {"train", "val", "test"}
-    if split not in valid_splits:
-        raise ValueError(
-            f"Invalid split '{split}'. Must be one of: {valid_splits}"
-        )
-
+    if split not in {"train", "val", "test"}:
+        raise ValueError(f"Invalid split '{split}'. Must be one of: {{'train', 'val', 'test'}}")
     if allowed_annotation_types is None:
-        # Default to segmentation only — this baseline focuses on segmentation
         allowed_annotation_types = ["wound_segmentation"]
 
     manifest_file = Path(manifest_path)
     if not manifest_file.exists():
-        raise FileNotFoundError(
-            f"Manifest file not found: {manifest_path}. "
-            "Run the Phase 01 pipeline first to generate the manifest."
-        )
-
-    # Read the manifest JSON file
-    with open(manifest_file, "r", encoding="utf-8") as manifest_handle:
+        raise FileNotFoundError(f"Manifest file not found: {manifest_path}")
+    with manifest_file.open("r", encoding="utf-8") as manifest_handle:
         manifest_data = json.load(manifest_handle)
 
-    all_samples = manifest_data.get("samples", [])
-
-    # Filter: keep only samples that match the requested split,
-    # are VALID, and have a supported annotation type.
-    # Phase 01 invalid samples must not enter training (REQ-P02-S02-008).
-    selected_samples = []
-
-    for sample in all_samples:
-        sample_split = sample.get("split", "")
-        sample_validation_status = sample.get("validation_status", "")
-        sample_annotation_type = sample.get("annotation_type", "")
-
-        # Check split match
-        if sample_split != split:
+    selected_samples: List[Dict[str, Any]] = []
+    for sample in manifest_data.get("samples", []):
+        if sample.get("split") != split:
             continue
-
-        # Check validation status — only VALID samples allowed
-        if sample_validation_status != "VALID":
-            print(
-                f"  [SKIP] Sample '{sample.get('source_sample_id')}' "
-                f"has validation_status='{sample_validation_status}' — excluded."
-            )
+        if sample.get("validation_status") != "VALID":
             continue
-
-        # Check annotation type is supported for this task
-        if sample_annotation_type not in allowed_annotation_types:
-            print(
-                f"  [SKIP] Sample '{sample.get('source_sample_id')}' "
-                f"has annotation_type='{sample_annotation_type}' — excluded from segmentation task."
-            )
+        if sample.get("annotation_type") not in allowed_annotation_types:
             continue
+        normalized_sample = dict(sample)
+        for field in ("image_path", "annotation_path"):
+            value = sample.get(field)
+            if not value:
+                raise ValueError(f"Valid supervised sample '{sample.get('source_sample_id')}' is missing {field}")
+            if data_root is None:
+                resolved = resolve_manifest_path(value, manifest_path)
+            else:
+                source_root = PurePosixPath(manifest_data.get("source_root", ""))
+                if not manifest_data.get("source_root"):
+                    raise ValueError("Remapping data_root requires manifest.source_root")
+                try:
+                    relative = PurePosixPath(str(value).replace("\\", "/")).relative_to(source_root)
+                except ValueError as error:
+                    raise ValueError(f"{field} is outside manifest.source_root: {value}") from error
+                if ".." in relative.parts:
+                    raise ValueError(f"{field} must not traverse outside data_root")
+                resolved = Path(data_root).resolve() / Path(*relative.parts)
+            normalized_sample[field] = str(resolved)
+        selected_samples.append(normalized_sample)
 
-        selected_samples.append(sample)
-
-    print(
-        f"Manifest loaded: split='{split}' -> {len(selected_samples)} valid samples "
-        f"(out of {len(all_samples)} total in manifest)."
-    )
-
+    LOGGER.info("Manifest loaded: split=%s, annotated valid samples=%d", split, len(selected_samples))
     return selected_samples
 
 
-# ============================================================
-# STEP 2: Preprocessing helpers
-# ============================================================
+def _validate_normalization(mean: List[float], std: List[float]) -> None:
+    if len(mean) != 3 or len(std) != 3:
+        raise ValueError("normalize_mean and normalize_std must each contain three values")
+    if not all(math.isfinite(value) for value in [*mean, *std]):
+        raise ValueError("Normalization values must be finite")
+    if any(value <= 0 for value in std):
+        raise ValueError("normalize_std values must be positive")
+
 
 def preprocess_image(
     image_pil: Image.Image,
@@ -134,52 +148,20 @@ def preprocess_image(
     normalize_mean: List[float],
     normalize_std: List[float],
 ) -> torch.Tensor:
-    """
-    Convert a PIL Image to a normalized PyTorch tensor.
+    """Convert an image to normalized ``float32`` RGB ``(3,H,W)`` tensor."""
 
-    Preprocessing steps (REQ-P02-S02-003):
-        1. Convert to RGB (ensures 3 channels regardless of source format).
-        2. Resize to (target_height, target_width) using bilinear interpolation.
-        3. Convert pixel values from [0, 255] uint8 to [0.0, 1.0] float32.
-        4. Normalize: subtract mean, divide by std, per channel.
-
-    Inputs:
-        image_pil: PIL Image object loaded from disk.
-        target_height: Target height in pixels.
-        target_width: Target width in pixels.
-        normalize_mean: Per-channel mean for normalization (list of 3 floats).
-        normalize_std: Per-channel std for normalization (list of 3 floats).
-
-    Outputs:
-        Tensor of shape (3, target_height, target_width), dtype=float32.
-
-    Tensor shape documentation (REQ-P02-S02-006):
-        Shape: (C=3, H=target_height, W=target_width)
-        Dtype: torch.float32
-        Value range: approximately [-2, 2] after normalization
-    """
-    # Step 1: Ensure RGB (3 channels)
+    if target_height <= 0 or target_width <= 0:
+        raise ValueError("target_height and target_width must be positive")
+    _validate_normalization(normalize_mean, normalize_std)
     image_rgb = image_pil.convert("RGB")
-
-    # Step 2: Resize to target resolution
-    image_resized = image_rgb.resize((target_width, target_height), Image.BILINEAR)
-
-    # Step 3: Convert to numpy float array in [0, 1]
-    image_array = np.array(image_resized, dtype=np.float32) / 255.0
-
-    # Step 4: Normalize each channel
-    # image_array shape: (H, W, C) — height, width, channels
-    mean_array = np.array(normalize_mean, dtype=np.float32)  # shape: (3,)
-    std_array = np.array(normalize_std, dtype=np.float32)     # shape: (3,)
-
-    # Broadcasting: (H, W, C) - (3,) = (H, W, C)
+    image_resized = image_rgb.resize(
+        (target_width, target_height), resample=Image.Resampling.BILINEAR
+    )
+    image_array = np.asarray(image_resized, dtype=np.float32) / 255.0
+    mean_array = np.asarray(normalize_mean, dtype=np.float32).reshape(1, 1, 3)
+    std_array = np.asarray(normalize_std, dtype=np.float32).reshape(1, 1, 3)
     image_normalized = (image_array - mean_array) / std_array
-
-    # Convert from (H, W, C) to (C, H, W) — PyTorch convention
-    # np.transpose(array, (2, 0, 1)) moves the channel axis from last to first
-    image_chw = np.transpose(image_normalized, (2, 0, 1))
-
-    return torch.tensor(image_chw, dtype=torch.float32)
+    return torch.from_numpy(np.transpose(image_normalized, (2, 0, 1)).copy())
 
 
 def preprocess_mask(
@@ -188,127 +170,53 @@ def preprocess_mask(
     target_width: int,
     threshold: int = 128,
 ) -> torch.Tensor:
-    """
-    Convert a binary mask PIL Image to a PyTorch float tensor.
+    """Convert a source mask to strict binary ``float32`` ``(1,H,W)`` tensor."""
 
-    The DFUC2022 masks use pixel values {0, 255}.
-    We resize then threshold to get a clean binary mask {0.0, 1.0}.
+    if target_height <= 0 or target_width <= 0:
+        raise ValueError("target_height and target_width must be positive")
+    if not 1 <= threshold <= 255:
+        raise ValueError("mask threshold must be in [1, 255]")
+    mask_gray = mask_pil.convert("L").resize(
+        (target_width, target_height), resample=Image.Resampling.NEAREST
+    )
+    binary_mask = (np.asarray(mask_gray, dtype=np.uint8) >= threshold).astype(np.float32)
+    return torch.from_numpy(binary_mask[None, :, :].copy())
 
-    Preprocessing steps (REQ-P02-S02-003):
-        1. Convert to grayscale (L mode) — masks are single-channel.
-        2. Resize to (target_height, target_width) using NEAREST interpolation
-           to avoid interpolation artifacts on binary masks.
-        3. Threshold: pixels >= threshold → 1.0 (wound), else → 0.0 (background).
-
-    Inputs:
-        mask_pil: PIL Image of binary mask ({0, 255}).
-        target_height: Target height in pixels.
-        target_width: Target width in pixels.
-        threshold: Binarization threshold (default: 128).
-
-    Outputs:
-        Tensor of shape (1, target_height, target_width), dtype=float32.
-        Values are exactly {0.0, 1.0}.
-
-    Tensor shape documentation (REQ-P02-S02-006):
-        Shape: (C=1, H=target_height, W=target_width)
-        Dtype: torch.float32
-        Values: {0.0 = background, 1.0 = wound}
-
-    IMPORTANT: We use NEAREST interpolation for masks, NOT bilinear.
-    Reason: Bilinear interpolation on a binary {0, 255} mask would create
-    intermediate gray pixel values (e.g., 127) which are ambiguous and
-    introduce artificial uncertainty at boundaries.
-    NEAREST interpolation preserves the original binary labels.
-    """
-    # Step 1: Convert to grayscale (single channel)
-    mask_gray = mask_pil.convert("L")
-
-    # Step 2: Resize using NEAREST to preserve binary label integrity
-    mask_resized = mask_gray.resize((target_width, target_height), Image.NEAREST)
-
-    # Step 3: Convert to numpy array
-    mask_array = np.array(mask_resized, dtype=np.float32)
-
-    # Step 4: Threshold to strict binary {0.0, 1.0}
-    # Pixels >= threshold are wound (1.0), others are background (0.0)
-    binary_mask = (mask_array >= threshold).astype(np.float32)
-
-    # Add channel dimension: (H, W) → (1, H, W)
-    binary_mask_with_channel = binary_mask[np.newaxis, :, :]  # shape: (1, H, W)
-
-    return torch.tensor(binary_mask_with_channel, dtype=torch.float32)
-
-
-# ============================================================
-# STEP 3: Augmentation helpers (train-only)
-# ============================================================
 
 def apply_random_horizontal_flip(
     image_tensor: torch.Tensor,
     mask_tensor: torch.Tensor,
     flip_probability: float,
+    random_source: Optional[random.Random] = None,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
-    """
-    Apply random horizontal flip consistently to both image and mask.
+    """Apply the same horizontal flip decision to image and mask."""
 
-    WHY consistent transforms matter (REQ-P02-S02-004, REQ-P02-S02-007):
-        If we flip the image but NOT the mask, the wound location in the image
-        will be on the opposite side from the mask label → the model learns
-        from corrupted supervision signals.
-        ALWAYS apply the same spatial transform to both image and mask.
-
-    Inputs:
-        image_tensor: Image tensor (C, H, W).
-        mask_tensor: Mask tensor (1, H, W).
-        flip_probability: Probability of flipping (0.0 to 1.0).
-
-    Outputs:
-        Tuple of (image_tensor, mask_tensor) — either both flipped or both unchanged.
-    """
-    if random.random() < flip_probability:
-        # torch.flip(tensor, dims) reverses the specified dimension
-        # dim=2 is the width dimension (C, H, W) — horizontal flip
-        image_flipped = torch.flip(image_tensor, dims=[2])
-        mask_flipped = torch.flip(mask_tensor, dims=[2])
-        return image_flipped, mask_flipped
-
+    if not 0.0 <= flip_probability <= 1.0:
+        raise ValueError("flip_probability must be in [0, 1]")
+    random_source = random_source or random
+    if random_source.random() < flip_probability:
+        return torch.flip(image_tensor, dims=[-1]), torch.flip(mask_tensor, dims=[-1])
     return image_tensor, mask_tensor
 
 
-# ============================================================
-# STEP 4: PyTorch Dataset class
-# ============================================================
+def apply_random_vertical_flip(
+    image_tensor: torch.Tensor,
+    mask_tensor: torch.Tensor,
+    flip_probability: float,
+    random_source: Optional[random.Random] = None,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Apply the same vertical flip decision to image and mask."""
 
-class WoundSegmentationDataset(Dataset):
-    """
-    PyTorch Dataset for wound segmentation from Phase 01 manifests.
+    if not 0.0 <= flip_probability <= 1.0:
+        raise ValueError("flip_probability must be in [0, 1]")
+    random_source = random_source or random
+    if random_source.random() < flip_probability:
+        return torch.flip(image_tensor, dims=[-2]), torch.flip(mask_tensor, dims=[-2])
+    return image_tensor, mask_tensor
 
-    This class bridges the Phase 01 data foundation to the PyTorch
-    training pipeline. It loads images and masks from paths recorded
-    in the Phase 01 manifest, applies preprocessing, and returns
-    tensors ready for the model.
 
-    WHAT THIS CLASS DOES:
-        - Reads image paths and annotation paths from the Phase 01 manifest
-        - Applies preprocessing to normalize images for the model
-        - Applies augmentations to training samples only (REQ-P02-S02-004)
-        - Ensures image/mask spatial alignment is preserved (REQ-P02-S02-002)
-
-    WHAT THIS CLASS DOES NOT DO:
-        - Reshuffle or re-split samples (that was done in Phase 01)
-        - Include invalid samples (they were filtered in load_manifest_samples)
-
-    Parameters:
-        samples: List of sample dicts from load_manifest_samples().
-        input_height: Target image height.
-        input_width: Target image width.
-        normalize_mean: Normalization mean per channel.
-        normalize_std: Normalization std per channel.
-        mask_threshold: Threshold for binarizing masks.
-        is_training: If True, apply training augmentations.
-        horizontal_flip_prob: Probability of horizontal flip augmentation.
-    """
+class WoundSegmentationDataset(Dataset[Tuple[torch.Tensor, torch.Tensor, str]]):
+    """Manifest-backed supervised segmentation dataset."""
 
     def __init__(
         self,
@@ -320,119 +228,210 @@ class WoundSegmentationDataset(Dataset):
         mask_threshold: int = 128,
         is_training: bool = False,
         horizontal_flip_prob: float = 0.5,
-    ):
-        self.samples = samples
+        vertical_flip_prob: float = 0.0,
+        random_seed: int = 42,
+        require_annotations: bool = True,
+        expected_source_mask_values: Optional[Sequence[int]] = (0, 255),
+        augmenter: Optional[Callable[[torch.Tensor, torch.Tensor, torch.Generator], Tuple[torch.Tensor, torch.Tensor]]] = None,
+    ) -> None:
+        self.samples = list(samples)
+        # SPEC-02-03 synchronized augmentation; replaces the flip-only path
+        # for training samples when provided.
+        self.augmenter = augmenter
         self.input_height = input_height
         self.input_width = input_width
-        self.normalize_mean = normalize_mean
-        self.normalize_std = normalize_std
+        self.normalize_mean = list(normalize_mean)
+        self.normalize_std = list(normalize_std)
         self.mask_threshold = mask_threshold
         self.is_training = is_training
         self.horizontal_flip_prob = horizontal_flip_prob
-
-        # Validate that all image/annotation files exist on disk at init time
-        # This catches missing files early, not mid-training (REQ-P02-S02-008)
+        self.vertical_flip_prob = vertical_flip_prob
+        self.random_seed = random_seed
+        self._epoch = torch.zeros((), dtype=torch.int64).share_memory_()
+        self.require_annotations = require_annotations
+        self.expected_source_mask_values = (
+            {int(value) for value in expected_source_mask_values}
+            if expected_source_mask_values is not None
+            else None
+        )
+        if self.expected_source_mask_values is not None and not self.expected_source_mask_values:
+            raise ValueError("expected_source_mask_values cannot be empty")
+        if self.expected_source_mask_values is not None and any(
+            value < 0 or value > 255 for value in self.expected_source_mask_values
+        ):
+            raise ValueError("expected_source_mask_values must contain byte values")
+        _validate_normalization(self.normalize_mean, self.normalize_std)
+        if type(input_height) is not int or type(input_width) is not int or min(input_height, input_width) <= 0:
+            raise ValueError("input_height and input_width must be positive integers")
+        if not 1 <= mask_threshold <= 255:
+            raise ValueError("mask_threshold must be in [1, 255]")
+        if not 0 <= horizontal_flip_prob <= 1 or not 0 <= vertical_flip_prob <= 1:
+            raise ValueError("Flip probabilities must be in [0, 1]")
+        if not require_annotations:
+            raise ValueError("WoundSegmentationDataset is supervised and requires annotations")
         self._validate_file_paths()
 
     def _validate_file_paths(self) -> None:
-        """
-        Check that all image and annotation paths exist on disk.
-
-        Fail loudly here (at Dataset creation time) rather than silently
-        during training (REQ-P02-S04-008).
-        """
-        missing_files = []
-
+        missing: List[str] = []
         for sample in self.samples:
+            sample_id = sample.get("source_sample_id", "unknown")
+            if sample.get("validation_status") not in (None, "VALID"):
+                raise ValueError(f"{sample_id}: invalid manifest validation_status {sample.get('validation_status')!r}")
             image_path = Path(sample.get("image_path", ""))
-            annotation_path = Path(sample.get("annotation_path", ""))
+            annotation_value = sample.get("annotation_path")
+            annotation_path = Path(annotation_value) if annotation_value else None
+            if not image_path.is_file():
+                missing.append(f"{sample_id}: image missing: {image_path}")
+            if self.require_annotations and (annotation_path is None or not annotation_path.is_file()):
+                missing.append(f"{sample_id}: annotation missing: {annotation_path}")
+        if missing:
+            preview = "\n".join(missing[:20])
+            suffix = "" if len(missing) <= 20 else f"\n... and {len(missing) - 20} more"
+            raise FileNotFoundError(f"Invalid manifest paths ({len(missing)}):\n{preview}{suffix}")
 
-            if not image_path.exists():
-                missing_files.append(f"Image missing: {image_path}")
+    def set_epoch(self, epoch: int) -> None:
+        """Set the epoch used by deterministic per-sample augmentation."""
 
-            if annotation_path and not annotation_path.exists():
-                missing_files.append(f"Annotation missing: {annotation_path}")
+        self._epoch.fill_(int(epoch))
 
-        if missing_files:
-            error_message = "\n".join(missing_files)
-            raise FileNotFoundError(
-                f"Found {len(missing_files)} missing files in dataset:\n{error_message}\n"
-                "Ensure the Phase 01 pipeline has been run and paths are correct."
-            )
+    @property
+    def epoch(self) -> int:
+        """Shared epoch is visible to persistent DataLoader worker copies."""
+        return int(self._epoch.item())
 
     def __len__(self) -> int:
-        """Return the number of samples in this split."""
         return len(self.samples)
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, str]:
-        """
-        Load and preprocess a single sample by index.
-
-        Inputs:
-            index: Integer index into self.samples.
-
-        Outputs:
-            Tuple of (image_tensor, mask_tensor, sample_id):
-                image_tensor: shape (3, H, W), dtype float32, normalized
-                mask_tensor:  shape (1, H, W), dtype float32, values {0.0, 1.0}
-                sample_id:    string identifier for this sample (for error tracking)
-        """
+        if not 0 <= index < len(self.samples):
+            raise IndexError(f"Sample index {index} is outside dataset length {len(self.samples)}")
         sample = self.samples[index]
-        sample_id = sample.get("source_sample_id", f"sample_{index}")
-
-        # Load image from disk
+        sample_id = str(sample.get("source_sample_id", f"sample_{index}"))
         image_path = Path(sample["image_path"])
+        annotation_value = sample.get("annotation_path")
+        if self.require_annotations and not annotation_value:
+            raise RuntimeError(f"Sample '{sample_id}' has no annotation_path")
+        if not annotation_value:
+            raise RuntimeError("WoundSegmentationDataset requires annotations for every sample")
+        annotation_path = Path(annotation_value)
         try:
-            image_pil = Image.open(image_path)
-        except Exception as load_error:
+            with Image.open(image_path) as image_file:
+                image_file.load()
+                image_pil = image_file.copy()
+            with Image.open(annotation_path) as mask_file:
+                mask_file.load()
+                mask_pil = mask_file.copy()
+        except Exception as error:
+            raise RuntimeError(f"Failed to decode sample '{sample_id}': {error}") from error
+
+        expected_size = (sample.get("width"), sample.get("height"))
+        if expected_size[0] is not None and expected_size[1] is not None:
+            declared_size = (int(expected_size[0]), int(expected_size[1]))
+            if image_pil.size != declared_size:
+                raise RuntimeError(
+                    f"Sample '{sample_id}' image size {image_pil.size} does not match "
+                    f"manifest size {declared_size}"
+                )
+        if image_pil.size != mask_pil.size:
             raise RuntimeError(
-                f"Failed to load image: {image_path}\n"
-                f"Error: {load_error}"
+                f"Sample '{sample_id}' image/mask size mismatch: "
+                f"{image_pil.size} vs {mask_pil.size}"
             )
+        raw_mask_array = np.asarray(mask_pil)
+        if raw_mask_array.ndim == 3 and not np.all(raw_mask_array == raw_mask_array[:, :, :1]):
+            raise RuntimeError(f"Sample '{sample_id}' contains a non-grayscale mask")
+        source_mask_array = raw_mask_array[:, :, 0] if raw_mask_array.ndim == 3 else raw_mask_array
+        if self.expected_source_mask_values is not None:
+            observed_values = {int(value) for value in np.unique(source_mask_array)}
+            if not observed_values.issubset(self.expected_source_mask_values):
+                raise RuntimeError(
+                    f"Sample '{sample_id}' contains invalid source mask values "
+                    f"{sorted(observed_values)}; expected a subset of "
+                    f"{sorted(self.expected_source_mask_values)}"
+                )
 
-        # Load annotation mask from disk
-        annotation_path = Path(sample["annotation_path"])
-        try:
-            mask_pil = Image.open(annotation_path)
-        except Exception as load_error:
-            raise RuntimeError(
-                f"Failed to load mask: {annotation_path}\n"
-                f"Error: {load_error}"
-            )
-
-        # Apply preprocessing to image (decode, convert, resize, normalize)
-        image_tensor = preprocess_image(
-            image_pil=image_pil,
-            target_height=self.input_height,
-            target_width=self.input_width,
-            normalize_mean=self.normalize_mean,
-            normalize_std=self.normalize_std,
-        )
-
-        # Apply preprocessing to mask (convert, resize, binarize)
         mask_tensor = preprocess_mask(
-            mask_pil=mask_pil,
-            target_height=self.input_height,
-            target_width=self.input_width,
-            threshold=self.mask_threshold,
+            mask_pil,
+            self.input_height,
+            self.input_width,
+            self.mask_threshold,
         )
-
-        # Apply training augmentations (REQ-P02-S02-004)
-        # Augmentations are train-only; val/test preprocessing is deterministic
-        # (REQ-P02-S02-005)
-        if self.is_training:
-            image_tensor, mask_tensor = apply_random_horizontal_flip(
-                image_tensor=image_tensor,
-                mask_tensor=mask_tensor,
-                flip_probability=self.horizontal_flip_prob,
+        if self.is_training and self.augmenter is not None:
+            image_unit = preprocess_image(
+                image_pil, self.input_height, self.input_width, [0.0, 0.0, 0.0], [1.0, 1.0, 1.0]
+            )
+            generator = torch.Generator()
+            generator.manual_seed(self.random_seed + self.epoch * max(len(self), 1) + index)
+            image_unit, mask_tensor = self.augmenter(image_unit, mask_tensor, generator)
+            mean = torch.tensor(self.normalize_mean, dtype=torch.float32).view(3, 1, 1)
+            std = torch.tensor(self.normalize_std, dtype=torch.float32).view(3, 1, 1)
+            image_tensor = (image_unit - mean) / std
+        else:
+            image_tensor = preprocess_image(
+                image_pil,
+                self.input_height,
+                self.input_width,
+                self.normalize_mean,
+                self.normalize_std,
             )
 
+        if self.is_training and self.augmenter is None:
+            # A local generator avoids dependence on global random state and
+            # makes a sample's transform reproducible for a seed and epoch.
+            source = random.Random(self.random_seed + self.epoch * max(len(self), 1) + index)
+            image_tensor, mask_tensor = apply_random_horizontal_flip(
+                image_tensor, mask_tensor, self.horizontal_flip_prob, source
+            )
+            image_tensor, mask_tensor = apply_random_vertical_flip(
+                image_tensor, mask_tensor, self.vertical_flip_prob, source
+            )
+
+        unique_mask_values = torch.unique(mask_tensor)
+        if not torch.all((unique_mask_values == 0) | (unique_mask_values == 1)):
+            raise RuntimeError(f"Sample '{sample_id}' produced a non-binary mask")
         return image_tensor, mask_tensor, sample_id
 
 
-# ============================================================
-# STEP 5: DataLoader factory function
-# ============================================================
+def _seed_worker(worker_id: int) -> None:
+    """Seed Python and NumPy in each DataLoader worker."""
+
+    worker_seed = torch.initial_seed() % (2**32)
+    random.seed(worker_seed)
+    np.random.seed(worker_seed)
+
+
+def _make_loader(
+    dataset: WoundSegmentationDataset,
+    batch_size: int,
+    shuffle: bool,
+    num_workers: int,
+    seed: int,
+    pin_memory: bool,
+    persistent_workers: bool,
+) -> DataLoader:
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
+    if num_workers < 0:
+        raise ValueError("num_workers must be non-negative")
+    if persistent_workers and num_workers == 0:
+        raise ValueError("persistent_workers requires num_workers > 0")
+    generator = torch.Generator()
+    generator.manual_seed(seed)
+    loader_kwargs: Dict[str, Any] = {
+        "dataset": dataset,
+        "batch_size": batch_size,
+        "shuffle": shuffle,
+        "num_workers": num_workers,
+        "drop_last": False,
+        "pin_memory": pin_memory,
+        "worker_init_fn": _seed_worker,
+        "generator": generator,
+    }
+    if num_workers > 0:
+        loader_kwargs["persistent_workers"] = persistent_workers
+        loader_kwargs["prefetch_factor"] = 2
+    return DataLoader(**loader_kwargs)
+
 
 def create_dataloaders(
     manifest_path: str,
@@ -444,100 +443,101 @@ def create_dataloaders(
     batch_size: int,
     horizontal_flip_prob: float,
     num_workers: int = 0,
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    vertical_flip_prob: float = 0.0,
+    random_seed: int = 42,
+    pin_memory: bool = False,
+    persistent_workers: bool = False,
+    test_batch_size: int = 1,
+    expected_source_mask_values: Optional[Sequence[int]] = (0, 255),
+    data_root: Optional[str] = None,
+    include_test: bool = True,
+) -> Tuple[DataLoader, DataLoader, Optional[DataLoader]]:
+    """Create train/validation loaders and an optional labeled test loader.
+
+    FUSeg2021 public test images are intentionally returned as ``None`` here
+    because no usable ground-truth masks are distributed.
     """
-    Create train, validation, and test DataLoaders from the Phase 01 manifest.
 
-    This is the top-level factory that ties everything together.
+    train_samples = load_manifest_samples(manifest_path, split="train", data_root=data_root)
+    val_samples = load_manifest_samples(manifest_path, split="val", data_root=data_root)
+    test_samples = load_manifest_samples(manifest_path, split="test", data_root=data_root) if include_test else []
+    if not train_samples or not val_samples:
+        raise RuntimeError(
+            f"Manifest must provide non-empty annotated train and val splits; "
+            f"got train={len(train_samples)}, val={len(val_samples)}"
+        )
 
-    Inputs:
-        manifest_path: Path to Phase 01 dataset_manifest.json.
-        input_height: Target image and mask height.
-        input_width: Target image and mask width.
-        normalize_mean: Per-channel normalization mean.
-        normalize_std: Per-channel normalization std.
-        mask_threshold: Binarization threshold for masks.
-        batch_size: Number of samples per batch.
-        horizontal_flip_prob: Probability of horizontal flip in training.
-        num_workers: Number of DataLoader worker processes (0 = main process).
-
-    Outputs:
-        Tuple of (train_loader, val_loader, test_loader).
-
-    DataLoader characteristics:
-        train_loader: shuffle=True (different order each epoch), augmentations active
-        val_loader:   shuffle=False (deterministic), no augmentations
-        test_loader:  shuffle=False (deterministic), no augmentations
-    """
-    # Load samples for each split from the Phase 01 manifest
-    train_samples = load_manifest_samples(manifest_path, split="train")
-    val_samples = load_manifest_samples(manifest_path, split="val")
-    test_samples = load_manifest_samples(manifest_path, split="test")
-
-    # Create Dataset objects for each split
     train_dataset = WoundSegmentationDataset(
-        samples=train_samples,
-        input_height=input_height,
-        input_width=input_width,
-        normalize_mean=normalize_mean,
-        normalize_std=normalize_std,
-        mask_threshold=mask_threshold,
+        train_samples,
+        input_height,
+        input_width,
+        normalize_mean,
+        normalize_std,
+        mask_threshold,
         is_training=True,
         horizontal_flip_prob=horizontal_flip_prob,
+        vertical_flip_prob=vertical_flip_prob,
+        random_seed=random_seed,
+        expected_source_mask_values=expected_source_mask_values,
     )
-
     val_dataset = WoundSegmentationDataset(
-        samples=val_samples,
-        input_height=input_height,
-        input_width=input_width,
-        normalize_mean=normalize_mean,
-        normalize_std=normalize_std,
-        mask_threshold=mask_threshold,
-        is_training=False,  # No augmentations for validation
+        val_samples,
+        input_height,
+        input_width,
+        normalize_mean,
+        normalize_std,
+        mask_threshold,
+        is_training=False,
         horizontal_flip_prob=0.0,
+        vertical_flip_prob=0.0,
+        random_seed=random_seed,
+        expected_source_mask_values=expected_source_mask_values,
     )
+    test_loader: Optional[DataLoader] = None
+    if test_samples:
+        test_dataset = WoundSegmentationDataset(
+            test_samples,
+            input_height,
+            input_width,
+            normalize_mean,
+            normalize_std,
+            mask_threshold,
+            is_training=False,
+            require_annotations=True,
+            expected_source_mask_values=expected_source_mask_values,
+        )
+        test_loader = _make_loader(
+            test_dataset,
+            test_batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+            seed=random_seed + 2,
+            pin_memory=pin_memory,
+            persistent_workers=persistent_workers,
+        )
 
-    test_dataset = WoundSegmentationDataset(
-        samples=test_samples,
-        input_height=input_height,
-        input_width=input_width,
-        normalize_mean=normalize_mean,
-        normalize_std=normalize_std,
-        mask_threshold=mask_threshold,
-        is_training=False,  # No augmentations for test
-        horizontal_flip_prob=0.0,
-    )
-
-    # Create DataLoaders — wrap datasets so training loop can iterate batches
-    train_loader = DataLoader(
-        dataset=train_dataset,
-        batch_size=batch_size,
-        shuffle=True,          # Shuffle training to randomize batch composition
+    train_loader = _make_loader(
+        train_dataset,
+        batch_size,
+        shuffle=True,
         num_workers=num_workers,
-        drop_last=False,       # Keep last incomplete batch (small dataset)
+        seed=random_seed,
+        pin_memory=pin_memory,
+        persistent_workers=persistent_workers,
     )
-
-    val_loader = DataLoader(
-        dataset=val_dataset,
-        batch_size=batch_size,
-        shuffle=False,         # Deterministic evaluation order (REQ-P02-S02-005)
-        num_workers=num_workers,
-        drop_last=False,
-    )
-
-    test_loader = DataLoader(
-        dataset=test_dataset,
-        batch_size=1,          # Batch size 1 for test to keep per-sample results easy
+    val_loader = _make_loader(
+        val_dataset,
+        batch_size,
         shuffle=False,
         num_workers=num_workers,
-        drop_last=False,
+        seed=random_seed + 1,
+        pin_memory=pin_memory,
+        persistent_workers=persistent_workers,
     )
-
-    print(
-        f"DataLoaders created:\n"
-        f"  train: {len(train_dataset)} samples, batch_size={batch_size}\n"
-        f"  val:   {len(val_dataset)} samples, batch_size={batch_size}\n"
-        f"  test:  {len(test_dataset)} samples, batch_size=1"
+    LOGGER.info(
+        "DataLoaders created: train=%d, val=%d, labeled_test=%s",
+        len(train_dataset),
+        len(val_dataset),
+        len(test_samples) if test_samples else "none",
     )
-
     return train_loader, val_loader, test_loader

@@ -185,7 +185,8 @@ def validate_segmentation_mask(
 def run_dataset_quality_validation(
     ingestion_report: Dict[str, Any],
     raw_images_dir: Path,
-    raw_annotations_dir: Optional[Path]
+    raw_annotations_dir: Optional[Path],
+    require_annotation: bool = False,
 ) -> Dict[str, Any]:
     """
     Perform full data quality and annotation validation across all ingested samples.
@@ -194,6 +195,8 @@ def run_dataset_quality_validation(
         ingestion_report: Output dictionary from P01-S02 ingestion.
         raw_images_dir: Path to directory containing raw image files.
         raw_annotations_dir: Optional path to raw annotations directory.
+        require_annotation: If True, samples without a paired annotation are
+            invalid. This is required for the Phase 02 wound-segmentation task.
 
     Outputs:
         Dictionary report containing validation statistics and issue categorization.
@@ -212,6 +215,7 @@ def run_dataset_quality_validation(
         "invalid_mask": 0,
         "empty_mask": 0,
         "missing_annotation": 0,
+        "missing_file": 0,
         "unusual_dimensions": 0,
         "duplicate": 0
     }
@@ -248,7 +252,10 @@ def run_dataset_quality_validation(
         mask_meta = None
         sample_issue = None
 
-        if annotation_name is not None and raw_annotations_dir is not None:
+        if annotation_name is None and require_annotation:
+            sample_issue = "missing_annotation"
+            issue_summary[sample_issue] += 1
+        elif annotation_name is not None and raw_annotations_dir is not None:
             mask_path = raw_annotations_dir / annotation_name
             mask_valid, mask_meta, mask_issue = validate_segmentation_mask(mask_path, width, height)
 

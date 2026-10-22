@@ -1,5 +1,8 @@
 # P02-S06 — Qualitative Evaluation and Error Review
 
+> **Status: DEFERRED → SPEC-02-02.** The figure generator is implemented. The
+> review needs predictions from the real run.
+
 ## Purpose
 Understand baseline behavior rather than treating a single aggregate score as the whole result.
 

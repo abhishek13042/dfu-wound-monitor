@@ -1,5 +1,9 @@
 # P02-S04 — Baseline Training and Checkpointing
 
+> **Status: DEFERRED → SPEC-02-02.** The mechanisms are implemented and tested
+> under SPEC-02-01. The real GPU run is executed and accepted under
+> `SPEC-02-02-baseline-completion.md`.
+
 ## Purpose
 Train the baseline reproducibly and create the first trustworthy reference result.
 

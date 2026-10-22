@@ -1,5 +1,9 @@
 # P02-S07 — Experiment, Reproducibility and Baseline Report
 
+> **Status: DEFERRED → SPEC-02-02.** The existing
+> `P02-baseline-unet-bce-dice-v1_*` records describe the historical synthetic
+> run only.
+
 ## Purpose
 Turn the baseline run into a durable artifact that future models can be compared against.
 

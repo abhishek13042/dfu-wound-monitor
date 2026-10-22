@@ -1,5 +1,5 @@
 {
-  "_comment": "Phase 02 Baseline Segmentation Training Configuration",
+  "_comment": "Historical synthetic-demo configuration. The Phase 02 training gate rejects this manifest for final claims.",
   "_spec": "P02-S04 REQ-P02-S04-001",
   "_decision_record": "reports/experiments/phase_02_baseline_decision_record.md",
 
@@ -9,6 +9,7 @@
   "data": {
     "manifest_path": "data/manifests/dataset_manifest.json",
     "dataset_name": "DFUC2022",
+    "dataset_source_type": "synthetic_demo",
     "annotation_type": "wound_segmentation",
     "manifest_version": "1.0.0"
   },

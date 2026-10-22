@@ -165,69 +165,187 @@ Acceptance
 
 ### Phase 02 Requirements
 
-| Requirement ID | Spec ID | Implementation / Artifact | Test / Validation | Evidence | Status |
-|---|---|---|---|---|---|
-| REQ-P02-S01-001 | P02-S01 | reports/experiments/phase_02_baseline_decision_record.md | Task definition review | Decision Record | COMPLETED |
-| REQ-P02-S01-002 | P02-S01 | reports/experiments/phase_02_baseline_decision_record.md | Candidate trade-off evaluation | Decision Record | COMPLETED |
-| REQ-P02-S01-003 | P02-S01 | reports/experiments/phase_02_baseline_decision_record.md | Evidence-based selection audit | Decision Record | COMPLETED |
-| REQ-P02-S01-004 | P02-S01 | src/segmentation/model.py | Baseline vs Advanced complexity check | Lightweight 4-level U-Net | COMPLETED |
-| REQ-P02-S01-005 | P02-S01 | src/segmentation/model.py | Weight initialization policy check | Kaiming Normal init | COMPLETED |
-| REQ-P02-S01-006 | P02-S01 | src/data/dataset.py | Mask annotation verification | dataset_manifest.json | COMPLETED |
-| REQ-P02-S01-007 | P02-S01 | scripts/run_phase_02_training.py | Zero test-set leak policy | Split isolation audit | COMPLETED |
-| REQ-P02-S02-001 | P02-S02 | src/segmentation/dataset.py | test_phase_01_split_isolation | dataset_manifest.json | COMPLETED |
-| REQ-P02-S02-002 | P02-S02 | src/segmentation/dataset.py | test_dataset_item_alignment | Image-Mask alignment | COMPLETED |
-| REQ-P02-S02-003 | P02-S02 | src/segmentation/dataset.py | Preprocessing pipeline doc | dataset.py docstrings | COMPLETED |
-| REQ-P02-S02-004 | P02-S02 | src/segmentation/dataset.py | Train-only augmentation policy | dataset.py implementation | COMPLETED |
-| REQ-P02-S02-005 | P02-S02 | src/segmentation/dataset.py | Deterministic eval transforms | dataset.py implementation | COMPLETED |
-| REQ-P02-S02-006 | P02-S02 | src/segmentation/dataset.py | test_batch_shapes | Batch shape verification | COMPLETED |
-| REQ-P02-S02-007 | P02-S02 | src/segmentation/dataset.py | Spatial transform correctness | Mask alignment audit | COMPLETED |
-| REQ-P02-S02-008 | P02-S02 | src/segmentation/dataset.py | Invalid sample filter check | manifest valid filter | COMPLETED |
-| REQ-P02-S02-009 | P02-S02 | src/segmentation/dataset.py | Split preservation check | dataset_manifest.json | COMPLETED |
-| REQ-P02-S02-010 | P02-S02 | scripts/run_phase_02_training.py | Visual sample loading check | Initial verification log | COMPLETED |
-| REQ-P02-S03-001 | P02-S03 | src/segmentation/model.py | UNet baseline architecture | model.py implementation | COMPLETED |
-| REQ-P02-S03-002 | P02-S03 | src/segmentation/model.py | Explicit block definition | Encoder/Decoder layers | COMPLETED |
-| REQ-P02-S03-003 | P02-S03 | src/segmentation/model.py | test_model_forward_pass | Shape & range test | COMPLETED |
-| REQ-P02-S03-004 | P02-S03 | src/segmentation/metrics.py | BCEDiceLoss formulation | metrics.py math docs | COMPLETED |
-| REQ-P02-S03-005 | P02-S03 | src/segmentation/model.py | Parameter count reporter | count_parameters() | COMPLETED |
-| REQ-P02-S03-006 | P02-S03 | tests/unit/test_phase_02_baseline.py | test_model_forward_pass | Pytest execution | COMPLETED |
-| REQ-P02-S03-007 | P02-S03 | src/segmentation/trainer.py | Device agnostic execution | CPU/CUDA auto-select | COMPLETED |
-| REQ-P02-S03-008 | P02-S03 | src/segmentation/model.py | Pure PyTorch architecture | No complex abstractions | COMPLETED |
-| REQ-P02-S04-001 | P02-S04 | configs/training/baseline_segmentation.json | Config schema validation | JSON config file | COMPLETED |
-| REQ-P02-S04-002 | P02-S04 | src/segmentation/trainer.py | Seed setting function | seed=42 reproducibilty | COMPLETED |
-| REQ-P02-S04-003 | P02-S04 | src/segmentation/trainer.py | Adam optimizer selection | trainer.py config | COMPLETED |
-| REQ-P02-S04-004 | P02-S04 | scripts/run_phase_02_training.py | Strict split isolation | Split verification log | COMPLETED |
-| REQ-P02-S04-005 | P02-S04 | src/segmentation/trainer.py | Checkpoint saving | models/checkpoints/*.pth | COMPLETED |
-| REQ-P02-S04-006 | P02-S04 | src/segmentation/trainer.py | Val Dice selection criterion | Best checkpoint logic | COMPLETED |
-| REQ-P02-S04-007 | P02-S04 | src/segmentation/trainer.py | Per-epoch loss/metric logging | Training log execution | COMPLETED |
-| REQ-P02-S04-008 | P02-S04 | src/segmentation/trainer.py | Non-finite loss checks | Loss finite assert | COMPLETED |
-| REQ-P02-S04-009 | P02-S04 | src/segmentation/trainer.py | Resume training support | trainer.py resume logic | COMPLETED |
-| REQ-P02-S04-010 | P02-S04 | configs/training/baseline_segmentation.json | Fixed single-run config | Baseline hyperparams | COMPLETED |
-| REQ-P02-S05-001 | P02-S05 | scripts/run_phase_02_evaluation.py | Final test set evaluation | Evaluation script log | COMPLETED |
-| REQ-P02-S05-002 | P02-S05 | src/segmentation/evaluator.py | Evaluates best checkpoint | Val-selected weight file | COMPLETED |
-| REQ-P02-S05-003 | P02-S05 | src/segmentation/metrics.py | Dice, IoU, Precision, Recall | metrics.py math logic | COMPLETED |
-| REQ-P02-S05-004 | P02-S05 | src/segmentation/metrics.py | Metric math definitions | metrics.py docstrings | COMPLETED |
-| REQ-P02-S05-005 | P02-S05 | reports/evaluation/P02-baseline-unet-bce-dice-v1_test_results.json | Per-sample result JSON | Evaluation result file | COMPLETED |
-| REQ-P02-S05-006 | P02-S05 | src/segmentation/metrics.py | Macro-averaging aggregation | metrics.py aggregate | COMPLETED |
-| REQ-P02-S05-007 | P02-S05 | src/segmentation/metrics.py | Imbalance rationale docs | metrics.py module doc | COMPLETED |
-| REQ-P02-S05-008 | P02-S05 | reports/evaluation/P02-baseline-unet-bce-dice-v1_test_results.json | Empirical numbers | Evaluation report JSON | COMPLETED |
-| REQ-P02-S05-009 | P02-S05 | scripts/run_phase_02_evaluation.py | Reproducible test eval script | Script execution log | COMPLETED |
-| REQ-P02-S05-010 | P02-S05 | src/segmentation/evaluator.py | Qualitative visualization hook | Overlay PNG artifacts | COMPLETED |
-| REQ-P02-S06-001 | P02-S06 | src/segmentation/evaluator.py | Rank-sorted sample selector | Visual PNG generator | COMPLETED |
-| REQ-P02-S06-002 | P02-S06 | src/segmentation/evaluator.py | 4-panel figure generator | image/GT/pred/overlay | COMPLETED |
-| REQ-P02-S06-003 | P02-S06 | src/segmentation/evaluator.py | Failure pattern collector | Failure taxonomy dict | COMPLETED |
-| REQ-P02-S06-004 | P02-S06 | reports/experiments/phase_02_baseline_report.md | Failure pattern analysis | Baseline Report | COMPLETED |
-| REQ-P02-S06-005 | P02-S06 | reports/experiments/phase_02_baseline_report.md | Medical disclaimer check | Disclaimer in Report | COMPLETED |
-| REQ-P02-S06-006 | P02-S06 | reports/experiments/phase_02_baseline_report.md | Baseline limitation section | Baseline Report | COMPLETED |
-| REQ-P02-S06-007 | P02-S06 | reports/experiments/phase_02_baseline_report.md | Phase 03 hypothesis record | Baseline Report | COMPLETED |
-| REQ-P02-S07-001 | P02-S07 | reports/experiments/phase_02_baseline_report.md | Unique experiment ID | `P02-baseline-unet-bce-dice-v1` | COMPLETED |
-| REQ-P02-S07-002 | P02-S07 | configs/training/baseline_segmentation.json | Full execution config | training config JSON | COMPLETED |
-| REQ-P02-S07-003 | P02-S07 | reports/experiments/phase_02_baseline_report.md | Manifest provenance record | Manifest path in report | COMPLETED |
-| REQ-P02-S07-004 | P02-S07 | reports/experiments/phase_02_baseline_report.md | Checkpoint provenance | Checkpoint path in report | COMPLETED |
-| REQ-P02-S07-005 | P02-S07 | reports/evaluation/P02-baseline-unet-bce-dice-v1_test_results.json | Metric path linking | Evaluation JSON | COMPLETED |
-| REQ-P02-S07-006 | P02-S07 | reports/experiments/phase_02_baseline_report.md | Execution commands logged | Command docs in report | COMPLETED |
-| REQ-P02-S07-007 | P02-S07 | reports/experiments/phase_02_baseline_report.md | Complete baseline report | Baseline report file | COMPLETED |
-| REQ-P02-S07-008 | P02-S07 | reports/experiments/phase_02_baseline_report.md | No unsupported claims | Report disclaimers | COMPLETED |
-| REQ-P02-S07-009 | P02-S07 | specs/TRACEABILITY.md | Traceability matrix update | TRACEABILITY.md | COMPLETED |
-| REQ-P02-S07-010 | P02-S07 | specs/MASTER_TRACKER.md | Master tracker update | MASTER_TRACKER.md | COMPLETED |
-| REQ-P02-S07-011 | P02-S07 | specs/MASTER_TRACKER.md | Phase boundary verification | No Phase 03+ code audit | COMPLETED |
+Status values in this section are `PASS`, `PARTIAL`, `BLOCKED`, or `NOT VERIFIABLE`.
+`PASS` means the code-level requirement has executable evidence; it does not
+claim that a real-data experiment occurred.
 
+| Requirement ID | Spec ID | Implementation | Test / Validation | Evidence | Status |
+|---|---|---|---|---|---|
+| REQ-P02-S01-001 | P02-S01 | `reports/experiments/phase_02_baseline_decision_record.md` | Decision review | Decision record | PASS |
+| REQ-P02-S01-002 | P02-S01 | Decision record candidate table | Document review | Decision record | PASS |
+| REQ-P02-S01-003 | P02-S01 | Decision rationale | Document review | Decision record | PASS |
+| REQ-P02-S01-004 | P02-S01 | `src/segmentation/model.py` | Architecture review | Lightweight U-Net | PASS |
+| REQ-P02-S01-005 | P02-S01 | Explicit Kaiming-normal (fan_out, ReLU) conv init; BatchNorm weight=1, bias=0 | Model unit tests | `src/segmentation/model.py` and real config | PASS |
+| REQ-P02-S01-006 | P02-S01 | Phase 01 mask/task evidence | Manifest review | `data/external/dataset_registry.json` | PARTIAL |
+| REQ-P02-S01-007 | P02-S01 | Test-independent selection record | Decision review | Decision record | PASS |
+| REQ-P02-S02-001 | P02-S02 | `src/segmentation/dataset.py` | Manifest loader tests | Real FUSeg2021 manifest gate | PASS |
+| REQ-P02-S02-002 | P02-S02 | Dataset image/mask loader | Dataset alignment tests | `tests/unit/test_phase_02_baseline.py` | PASS |
+| REQ-P02-S02-003 | P02-S02 | Explicit preprocessing helpers | Preprocessing tests | Dataset docstrings/tests | PASS |
+| REQ-P02-S02-004 | P02-S02 | Synchronized train flip | Flip alignment test | Dataset implementation | PASS |
+| REQ-P02-S02-005 | P02-S02 | Deterministic val/test datasets | Determinism test | Dataset implementation | PASS |
+| REQ-P02-S02-006 | P02-S02 | Tensor shape contracts | Shape tests | Dataset tests/report | PASS |
+| REQ-P02-S02-007 | P02-S02 | Nearest-neighbor mask path | Mask tests | Dataset tests | PASS |
+| REQ-P02-S02-008 | P02-S02 | VALID status filtering and path checks | Invalid/missing sample tests | Dataset implementation | PASS |
+| REQ-P02-S02-009 | P02-S02 | Manifest split preservation | Split tests | Dataset implementation | PASS |
+| REQ-P02-S02-010 | P02-S02 | Training batch sanity assertion | Real-data sanity-only run | FUSeg2021 sanity report | PASS |
+| REQ-P02-S03-001 | P02-S03 | `LightweightUNet` | Forward-pass tests | `src/segmentation/model.py` | PASS |
+| REQ-P02-S03-002 | P02-S03 | Explicit encoder/decoder/head | Architecture review | Model source | PASS |
+| REQ-P02-S03-003 | P02-S03 | Raw-logit output/loss contract | Shape/range/loss tests | Model source/tests | PASS |
+| REQ-P02-S03-004 | P02-S03 | `BCEDiceLoss` | Loss tests | Model source/tests | PASS |
+| REQ-P02-S03-005 | P02-S03 | Parameter counter | Parameter test | 838,785 real-config parameters | PASS |
+| REQ-P02-S03-006 | P02-S03 | Forward-pass verifier | Forward-pass test | Test suite | PASS |
+| REQ-P02-S03-007 | P02-S03 | Device selection | CPU model tests | Trainer source | PASS |
+| REQ-P02-S03-008 | P02-S03 | Plain PyTorch blocks | Source review | Model source | PASS |
+| REQ-P02-S04-001 | P02-S04 | Real training config | JSON/config review | `configs/training/baseline_segmentation_real.json` | PASS |
+| REQ-P02-S04-002 | P02-S04 | Seed setup | Trainer/source review | Trainer source | PASS |
+| REQ-P02-S04-003 | P02-S04 | Adam configuration | Config review | Real config | PASS |
+| REQ-P02-S04-004 | P02-S04 | Real manifest gate before training | Gate test and sanity-only run | `validate_manifest_for_training` | PASS |
+| REQ-P02-S04-005 | P02-S04 | Checkpoint save/load | Checkpoint code review | Trainer source | PASS |
+| REQ-P02-S04-006 | P02-S04 | Validation Dice selection | Trainer code review | Trainer source/config | PASS |
+| REQ-P02-S04-007 | P02-S04 | Per-epoch log structure | Training code review | Trainer source | PASS |
+| REQ-P02-S04-008 | P02-S04 | Explicit data/loss/write errors | Source review | Dataset/trainer source | PASS |
+| REQ-P02-S04-009 | P02-S04 | Latest-checkpoint resume with RNG state | Checkpoint round-trip test | Trainer source/tests | PASS |
+| REQ-P02-S04-010 | P02-S04 | Single-run config | Config review | Real config | PASS |
+| REQ-P02-S05-001 | P02-S05 | Test evaluator | Real-data execution | No real test set | BLOCKED |
+| REQ-P02-S05-002 | P02-S05 | Checkpoint loader | Code review | Evaluator/trainer source | PARTIAL |
+| REQ-P02-S05-003 | P02-S05 | Dice/IoU/precision/recall | Controlled metric tests | Metrics source/tests | PASS |
+| REQ-P02-S05-004 | P02-S05 | Mathematical definitions/edge rules | Metric tests | Metrics source | PASS |
+| REQ-P02-S05-005 | P02-S05 | Per-sample JSON writer | Code review | Evaluator source | PARTIAL |
+| REQ-P02-S05-006 | P02-S05 | Macro aggregation | Aggregation tests | Metrics source/tests | PASS |
+| REQ-P02-S05-007 | P02-S05 | Imbalance rationale | Documentation review | Metrics/report | PASS |
+| REQ-P02-S05-008 | P02-S05 | Actual-run-only policy | Gate/report review | Real report | BLOCKED |
+| REQ-P02-S05-009 | P02-S05 | Reproducible evaluator command | Code/config review | Evaluation script | PARTIAL |
+| REQ-P02-S05-010 | P02-S05 | Visualization hook | Code review | Evaluator source | PARTIAL |
+| REQ-P02-S06-001 | P02-S06 | Rank-based selector | Code review | Evaluator source | PARTIAL |
+| REQ-P02-S06-002 | P02-S06 | Seven-panel figure generator | Code review | Evaluator source | PASS |
+| REQ-P02-S06-003 | P02-S06 | Observed failure collector | Code review | Evaluator source | PARTIAL |
+| REQ-P02-S06-004 | P02-S06 | Evidence-based report section | Report review | Final report | BLOCKED |
+| REQ-P02-S06-005 | P02-S06 | Medical boundary language | Report review | Final report | PASS |
+| REQ-P02-S06-006 | P02-S06 | Limitations section | Report review | Final report | PASS |
+| REQ-P02-S06-007 | P02-S06 | Later hypotheses without implementation | Report review | Final report | PASS |
+| REQ-P02-S07-001 | P02-S07 | Experiment ID/config | Record review | `reports/experiments/spec-02-03/kaggle/spec-02-03/experiment_record.json` (real run). The `P02-baseline-unet-bce-dice-v1_*` record is the historical synthetic run. | PASS |
+| REQ-P02-S07-002 | P02-S07 | Full real-data config | JSON review | Real config | PASS |
+| REQ-P02-S07-003 | P02-S07 | Dataset/manifest provenance | Record/report review | FUSeg2021 config/manifest/report | PASS |
+| REQ-P02-S07-004 | P02-S07 | Checkpoint provenance fields | Record/trainer review | Trainer source/config | PASS |
+| REQ-P02-S07-005 | P02-S07 | Metric-to-output links | Report/evaluator review | reports/experiments/spec_02_03_report.md links every metric to its JSON output | PASS |
+| REQ-P02-S07-006 | P02-S07 | Commands documented | Report review | Final report | PASS |
+| REQ-P02-S07-007 | P02-S07 | Required report sections | Report review | Final report | PASS |
+| REQ-P02-S07-008 | P02-S07 | No unsupported real claims | Audit review | Final report | PASS |
+| REQ-P02-S07-009 | P02-S07 | Reconciled traceability matrix | Matrix review | This matrix | PASS |
+| REQ-P02-S07-010 | P02-S07 | Accurate phase tracker | Tracker review | `MASTER_TRACKER.md` | PASS |
+| REQ-P02-S07-011 | P02-S07 | Phase boundary preserved | Repository audit | Phase 03 started only after Phase 02 closed (2026-10-22) | PASS |
+
+### Phase 02 Gate Summary
+
+The SPEC-02-01 engineering gate is **PASS** for the verified FUSeg2021 data
+contract, loader/model/loss implementation, sanity evidence, reproducibility
+controls, and Kaggle-ready entrypoint. Multi-epoch GPU training is intentionally
+deferred. SPEC-02-02 owns any later authorized labeled-test evaluation and error
+review; the unlabeled public FUSeg2021 test images are not a result set.
+
+**Reconciliation note (2026-10-21).** Rows marked PASS for P02-S04..S07 mean
+the *mechanism* exists and is tested. They do not mean the spec is complete.
+In `MASTER_TRACKER.md`:
+
+- P02-S04 to P02-S07 are marked `DEFERRED → SPEC-02-02`.
+- They become `COMPLETED` only when SPEC-02-02 delivers the real run, the
+  held-out evaluation and the final record.
+
+The evaluation-split decision is implemented (SPEC-02-03): internal val is
+carved from train, with near-duplicate grouping, and the official val is the
+held-out test set. REQ-P02-S05-001 becomes COMPLETED once the Kaggle
+evaluation produces `heldout_test_evaluation.json`.
+
+**Closure (2026-10-22).** SPEC-02-02 and SPEC-02-03 are COMPLETED. The Kaggle
+run produced `heldout_test_evaluation.json`, and every metric was re-computed
+independently on CPU (`reports/experiments/spec_02_03_report.md` §6).
+P02-S04 to P02-S07 are now COMPLETED via SPEC-02-02/03.
+
+## SPEC-02-03 Traceability
+
+| Requirement | Implementation | Verification | Status |
+|---|---|---|---|
+| REQ-SPEC-02-03-001 held-out split | `src/data/heldout_split.py`, `scripts/build_fuseg2021_heldout_manifest.py` | `test_derive_heldout_manifest_*`, split report | PASS |
+| REQ-SPEC-02-03-002 near-duplicate grouping | `src/data/near_duplicates.py` | `test_phash_*`, `test_near_duplicate_groups_are_transitive` | PASS |
+| REQ-SPEC-02-03-003 test-neighbour quarantine | `derive_heldout_manifest` | `test_derive_heldout_manifest_roles_and_guards` | PASS (7 quarantined) |
+| REQ-SPEC-02-03-004 selection isolation | `strong_trainer.py`, `config_strong.py`, `scripts/run_spec_02_03.py` | `test_strong_config_rejects_unsafe_values`, train smoke test | PASS |
+| REQ-SPEC-02-03-005 native-resolution scoring | `src/segmentation/inference.py` | `test_tune_postprocessing_prefers_cleanup_and_scores`, CLI smoke run | PASS |
+| REQ-SPEC-02-03-006 metrics | `src/segmentation/metrics.py` | `test_pooled_and_nonempty_metrics`, `test_hd95_edge_cases` | PASS |
+| REQ-SPEC-02-03-007 external check | `scripts/build_lowerlimb_external_manifest.py`, `run_spec_02_03.py --external` | CLI smoke run | PASS |
+| REQ-SPEC-02-03-008 reproducibility record | `run_spec_02_03.py` experiment record | CLI smoke run | PASS |
+| Real held-out and external results | Kaggle T4 run, CPU re-verification | `reports/experiments/spec-02-03/*.json` | PASS |
+
+## Revised Future Roadmap Traceability
+
+The future work has been consolidated into `specs/REVISED_ROADMAP.md`:
+
+| Consolidated phase | Specifications | Current traceability state |
+|---|---|---|
+| Phase 02 engineering | SPEC-02-01 | COMPLETED — `specs/phase-02/SPEC-02-01-baseline-engineering.md` |
+| Phase 02 completion | SPEC-02-02, SPEC-02-03 | COMPLETED 2026-10-22; metrics independently re-computed on CPU |
+| Phase 03 CV core | P03-S01–P03-S03 | COMPLETED — matrix below |
+| Phase 04 longitudinal workflow | P04-S01–P04-S03 | COMPLETED — matrix below |
+| Phase 05 product integration | P05-S01–P05-S03 | COMPLETED — matrix below |
+| Phase 06 validation and release | P06-S01–P06-S03 | COMPLETED — matrix below (one PARTIAL item) |
+
+## Phases 03–06 Requirement Matrix
+
+Test files: S01i = `tests/integration/test_p03_s01_inference.py`, PIPE = `tests/integration/test_p03_pipeline.py`,
+QG = `tests/quality/test_p03_s02_quality_gate.py`, MS = `tests/measurement/test_p03_s03_measurement.py`,
+LG = `tests/longitudinal/test_p04_longitudinal.py`, API = `tests/api/test_p05_api.py`,
+ST = `tests/api/test_p05_storage.py`, REL = `tests/release/test_p06_release.py`.
+
+| Requirement | Implementation | Verification | Status |
+|---|---|---|---|
+| REQ-P03-S01-001 training preprocessing reused | `src/inference/engine.py` | S01i `test_shipped_config_reads_preprocessing_from_training_config`, `test_engine_matches_training_evaluation_path`; P06 cross-check against Phase 02 per-sample Dice | PASS |
+| REQ-P03-S01-002 provenance in output | `engine.py` provenance | S01i `test_result_shapes_values_and_provenance`, `test_threshold_override_is_recorded` | PASS |
+| REQ-P03-S01-003 typed input/artifact errors | `src/inference/errors.py` | S01i `test_input_errors_are_typed`, `test_checkpoint_errors_are_typed`, `test_malformed_config_is_rejected` | PASS |
+| REQ-P03-S01-004 repeatable inference | `engine.py` (deterministic CPU) | S01i `test_repeated_inference_is_bit_identical`; P06 benchmark repeatability | PASS |
+| REQ-P03-S02-001 status + reason codes | `src/quality/gate.py` | QG `test_each_reason_code_is_produced`, `test_multiple_reasons_are_all_reported` | PASS |
+| REQ-P03-S02-002 config-driven, recorded thresholds | `configs/quality/` | QG `test_stricter_config_changes_the_decision`, `test_invalid_configs_are_refused`; `reports/quality/quality_gate_calibration.json` | PASS |
+| REQ-P03-S02-003 rejects bypass inference | `src/inference/pipeline.py` | PIPE `test_rejected_image_never_reaches_the_model` | PASS |
+| REQ-P03-S02-004 quality distinct from model failure | pipeline status; API 422 vs 500 | API `test_quality_rejection_is_distinct_and_stored`, `test_model_failure_is_stored_as_failed` | PASS |
+| REQ-P03-S03-001 deterministic geometry | `src/measurement/engine.py` | MS `test_square_geometry_is_exact`, `test_disc_perimeter_and_shape_within_documented_tolerance`, `test_measurement_is_deterministic` | PASS |
+| REQ-P03-S03-002 PIXEL_BASED / CALIBRATED | measurement basis | MS `test_calibrated_measurements_convert_lengths_and_areas`; API `test_uncalibrated_analysis_is_pixel_based` | PASS |
+| REQ-P03-S03-003 physical units only with valid scale | calibration validation | MS `test_invalid_calibration_is_refused` | PASS |
+| REQ-P03-S03-004 empty/disconnected/low-confidence | warnings, components | MS `test_empty_mask_is_explicit_not_zero_geometry`, `test_multiple_components_are_listed_largest_first`, `test_border_small_and_low_confidence_warnings`, `test_malformed_masks_raise` | PASS |
+| REQ-P03-S03-005 provenance preserved | result serialisation | MS `test_result_serialises_and_round_trips_with_provenance` | PASS |
+| REQ-P04-S01-001 case, examination, image distinct | `src/longitudinal/records.py` | LG `test_case_examination_image_are_distinct_records` | PASS |
+| REQ-P04-S01-002 unknown identifiers stay unknown | records | LG `test_unknown_identifiers_stay_unknown_and_filenames_are_not_parsed` | PASS |
+| REQ-P04-S01-003 provenance preserved | records | LG `test_completed_analysis_requires_full_provenance`, `test_pipeline_outcome_maps_to_records_with_provenance` | PASS |
+| REQ-P04-S01-004 structured validation errors | `RecordValidationError` | LG `test_invalid_records_raise_structured_errors`; API `test_case_crud_and_validation` | PASS |
+| REQ-P04-S02-001 explicit compatibility policy | `src/longitudinal/comparison.py` | LG `test_policy_is_mandatory`, `test_incompatible_pairs_are_unavailable` | PASS |
+| REQ-P04-S02-002 missing info gives UNAVAILABLE | comparison reason codes | LG `test_unknown_case_on_examination_is_unavailable`, `test_calibrated_pair_uses_mm_and_warns_on_scale_change`; API `test_compare_unlinked_analyses_is_unavailable` | PASS |
+| REQ-P04-S02-003 source references preserved | comparison output | LG `test_valid_pair_gives_deterministic_changes` | PASS |
+| REQ-P04-S02-004 no cross-dataset patient links | identity policy | LG `test_unknown_identity_and_cross_dataset_are_never_linked` | PASS |
+| REQ-P04-S03-001 trends from stored compatible results | `src/longitudinal/trends.py` | LG `test_known_series_gives_expected_trend`, `test_mixed_cases_are_refused`; API `test_trend_and_compare_end_to_end` | PASS |
+| REQ-P04-S03-002 zero-denominator / missing data | trend exclusions | LG `test_zero_baseline_trend`, `test_zero_baseline_has_no_percentage`, `test_missing_and_incompatible_points_are_excluded_with_reasons`, `test_no_baseline_or_single_point_is_unavailable` | PASS |
+| REQ-P04-S03-003 technical-only wording | `TREND_LABEL`, `TECHNICAL_LABEL` | REL `test_no_unqualified_clinical_claims` | PASS |
+| REQ-P04-S03-004 reproducible trend artifacts | trends | LG `test_trend_is_reproducible` | PASS |
+| REQ-P05-S01-001 versioned typed schemas | `src/api/schemas.py`, `/api/v1` | API `test_openapi_documents_versioned_routes`, `test_completed_analysis_contract` | PASS |
+| REQ-P05-S01-002 distinct failure categories | `src/api/app.py` error envelope | API `test_every_error_has_a_failure_class`, `test_invalid_images_are_input_errors`, `test_storage_failure_is_infrastructure_error`, `test_readiness_reports_missing_model` | PASS |
+| REQ-P05-S01-003 provenance in results | `AnalysisResponse` | API `test_completed_analysis_contract`, `test_model_info_exposes_versions_and_limitations` | PASS |
+| REQ-P05-S01-004 testable without live dependencies | injectable engine, tiny random model | whole API suite runs in-process | PASS |
+| REQ-P05-S02-001 distinct stored entities | `src/storage/database.py` | ST `test_round_trip_of_all_record_types`, `test_foreign_keys_are_enforced` | PASS |
+| REQ-P05-S02-002 traceable to input and config | stored analysis, content-addressed blobs | ST `test_blob_store_is_content_addressed_and_blocks_traversal`, `test_mismatched_image_and_analysis_rejected`, `test_model_version_conflict` | PASS |
+| REQ-P05-S02-003 transactional invalid writes | `save_analysis` transaction | ST `test_failed_write_rolls_back_whole_analysis`, `test_database_constraints_exist_at_sql_level`, `test_duplicate_case_is_a_conflict` | PASS |
+| REQ-P05-S02-004 reproducible migrations/setup | schema migrations | ST `test_migrations_are_idempotent`; API `test_records_survive_restart`; smoke test on an empty data dir | PASS |
+| REQ-P05-S03-001 dashboard uses API only | `src/dashboard/index.html` | API `test_dashboard_is_served_and_only_uses_the_api` | PASS |
+| REQ-P05-S03-002 failures shown distinctly | dashboard error boxes | browser check against the real model; API failure-class tests | PASS (manual UI check) |
+| REQ-P05-S03-003 units/calibration status shown | dashboard measurement table | browser check (5 px/mm uploads) | PASS (manual UI check) |
+| REQ-P05-S03-004 honest missing longitudinal data | dashboard trend table with UNAVAILABLE reasons | API `test_unverified_case_trend_is_unavailable`; browser check | PASS |
+| REQ-P06-S01-001 per-component metrics | `scripts/evaluation/run_phase_06_validation.py` | `reports/final/p06_validation_*.json` | PASS |
+| REQ-P06-S01-002 split/dataset/artifact provenance | validation report provenance | manifest checksum verified before the run | PASS |
+| REQ-P06-S01-003 observed errors vs hypotheses | `reports/final/phase_06_validation_report.md` | report review | PASS |
+| REQ-P06-S01-004 distributions, not one score | histograms, quantiles, size terciles | `reports/figures/p06/*.png` | PASS |
+| REQ-P06-S02-001 repeatability | benchmark repeatability block | `reports/final/p06_benchmark.json` | PASS |
+| REQ-P06-S02-002 latency/memory with hardware | `scripts/evaluation/run_phase_06_benchmark.py` | `reports/final/p06_benchmark.json` | PASS |
+| REQ-P06-S02-003 five failure classes | `failure_class` in the error envelope | API `test_every_error_has_a_failure_class`; benchmark boundary inputs | PASS |
+| REQ-P06-S02-004 optimisation needs a measured bottleneck | benchmark `optimisation_decision` | none applied (no latency requirement) | PASS |
+| REQ-P06-S03-001 clean install and start | `docs/release/RELEASE.md` | smoke test on an empty data dir; fresh-venv install on a second machine **not exercised** | PARTIAL |
+| REQ-P06-S03-002 health: service vs model | `/health/live`, `/health/ready` | REL `test_health_separates_service_from_model`; API `test_readiness_reports_missing_model` | PASS |
+| REQ-P06-S03-003 versions/configs/limitations/commands | `scripts/deployment/build_release_manifest.py` | REL `test_release_manifest_builds`; `reports/final/release_manifest.json` | PASS |
+| REQ-P06-S03-004 no clinical implication | limitations, labels, dashboard, RELEASE.md | REL `test_no_unqualified_clinical_claims` | PASS |
+
+No future requirement is considered implemented or complete merely because the
+architecture document contains a conceptual module boundary.

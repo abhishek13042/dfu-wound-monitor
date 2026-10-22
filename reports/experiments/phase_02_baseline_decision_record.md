@@ -1,156 +1,92 @@
-# Phase 02 Baseline Decision Record
+# SPEC-02-01 Baseline Decision Record
 
-**Spec:** P02-S01 — Baseline Task and Model Selection  
-**Date:** 2026-10-07  
-**Status:** ACCEPTED  
+**Project:** DFU-WoundMonitor  
+**Specification:** SPEC-02-01 — Baseline Segmentation Pipeline  
+**Date:** 2026-10-08  
+**Status:** ACCEPTED AND IMPLEMENTED ON REAL FUSeg2021 DATA
 
----
+## Problem and clinical boundary
 
-## 1. Problem Statement
+Establish a reproducible binary wound-segmentation reference for image-derived
+monitoring. The system is a research prototype and does not diagnose, make
+treatment recommendations, or establish clinical validity.
 
-Develop a computer vision baseline for the DFU-WoundMonitor prototype.  
-The system monitors diabetic foot ulcers (DFU) over time.  
-This phase establishes the first reproducible quantitative reference point.
+## Dataset evidence
 
-**Clinical boundary:** This baseline is a monitoring prototype only.  
-It does NOT diagnose, treat, or make clinical claims about individual wounds.
+FUSeg2021 is the primary and only dataset used by SPEC-02-01. The verified
+source is the official FUSeg challenge/UWM repository snapshot recorded in
+`configs/data/fuseg2021.json` and `data/manifests/dataset_manifest.json`.
 
----
-
-## 2. Phase 01 Evidence Summary
-
-| Evidence Item | Value |
+| Contract item | Verified value |
 |---|---|
-| Dataset | DFUC2022 |
-| Annotation type in manifest | `wound_segmentation` |
-| Canonical label in manifest | `wound_tissue` |
-| Number of samples | 20 (14 train / 3 val / 3 test) |
-| Image resolution | 512 × 512 pixels (all samples) |
-| Mask convention | Binary PNG, pixel values {0, 255} |
-| Valid samples | 20 / 20 (zero invalid) |
-| Wound area ratio (sample DFUC22_0001) | 15.26% of image area |
-| Foreground background imbalance | Foreground ≈ 15% → background dominant |
-| Patient IDs | Not present in public release (image-level split used) |
-| Split mode | IMAGE_LEVEL_FALLBACK (documented limitation) |
+| Official source split | 810 train, 200 validation, 200 public test images |
+| Labeled training data | 793 usable train samples after exact duplicate-image quarantine |
+| Labeled validation data | 191 usable validation samples after duplicate/invalid-mask quarantine |
+| Public test data | 200 images, no usable public ground-truth masks |
+| Image format/shape | RGB PNG, 512 × 512 |
+| Mask contract | Grayscale binary values `{0,255}`; one validation mask containing `32` was excluded |
+| Patient/examination IDs | Not available; no identifiers were inferred |
+| Split policy | Official train/validation/test assignments preserved; no re-split |
+| Leakage result | PASS after exact duplicate image quarantine; repeated empty-mask checksum is explicitly allowed |
 
-**Key observation:** All 20 samples carry `annotation_type = "wound_segmentation"` and binary PNG masks.  
-No bounding-box annotations exist in the current manifest.  
-Detection/localization would require creating bounding boxes from masks — an extra, unvalidated step.  
-Segmentation uses the annotations exactly as validated in Phase 01.
+Empty masks are valid FUSeg annotations and remain in the supervised data. Raw
+files are unchanged. All exclusions and quality observations are recorded in
+`data/manifests/fuseg2021_quality_report.json`.
 
----
+## Task selection
 
-## 3. Candidate Task Comparison
+Binary wound segmentation is directly supported by the released pixel masks and
+produces the boundary representation needed by later measurement work.
+Detection/localization was not selected because validated bounding boxes are not
+provided and deriving them would add an unvalidated annotation conversion.
 
-| Criterion | Wound Segmentation | Wound Detection (Bounding Box) |
-|---|---|---|
-| **Data support** | ✅ Binary masks present and verified for all 20 samples | ⚠️ No validated bbox annotations — would need synthetic derivation from masks |
-| **Task complexity** | Medium — pixel-level binary classification | Lower output complexity, but requires bbox format conversion |
-| **Compute** | Moderate (UNet-scale forward pass on 512×512) | Comparable per-image cost |
-| **Interpretability** | ✅ High — pixel mask directly shows wound boundary | Moderate — bounding box only gives rough region |
-| **Deployment relevance** | ✅ Pixel mask enables area measurement downstream (Phase 05) | Bbox insufficient for area measurement |
-| **Longitudinal monitoring** | ✅ Mask area enables wound progression tracking | Bbox area proxy is unreliable for small wounds |
-| **Limitations** | Sensitive to boundary annotation quality; foreground imbalance present | Bbox format not present; would introduce unvalidated assumptions |
-| **Alignment with Phase 00 architecture** | ✅ segmentation module is primary MVP component | Detection is secondary; explicitly listed as Phase 04 |
+## Model selection
 
-**Decision: Wound Segmentation is the clearly supported task.**
+The selected model is an explicit lightweight four-level U-Net. A U-Net was
+preferred to a simple fully convolutional classifier because skip connections
+retain boundary detail while remaining understandable and CPU-runnable. It is
+materially simpler than later pretrained or attention-based models.
 
-Rationale: All Phase 01 annotations are binary masks. Detection would require converting masks to bounding boxes, introducing an extra, unvalidated step not backed by Phase 01 evidence. Segmentation is also directly required for the downstream measurement and longitudinal modules.
+### Architecture contract
 
----
+- Input: `(B, 3, H, W)` normalized RGB tensor; SPEC-02-01 run uses `256 × 256`.
+- Encoder: four `DoubleConvBlock` levels with channels `[16, 32, 64, 128]`, each followed by `2 × 2` max pooling.
+- Bottleneck: `DoubleConvBlock` at 128 channels.
+- Decoder: four bilinear interpolation + skip concatenation + `DoubleConvBlock` levels.
+- Output: `1 × 1` convolution producing `(B, 1, H, W)` raw logits.
+- Activations: ReLU in convolution blocks; sigmoid is applied only for Dice/metrics/inference.
+- Initialization: Kaiming-normal convolution weights; BatchNorm weights one and biases zero.
+- Pretrained weights: none.
+- Parameter count: recorded in the run model metadata artifact.
 
-## 4. Candidate Architecture Comparison
+## Loss selection
 
-| Criterion | UNet (Encoder-Decoder with Skip Connections) | FCN-8s (Fully Convolutional Network) |
-|---|---|---|
-| **Simplicity** | ✅ Well-documented, explicit encoder-decoder layout | Moderate — VGG-based, older design |
-| **Complexity vs intent** | ✅ Simpler than Transformer or attention-based models | Comparable |
-| **Skip connections** | ✅ Preserve spatial/boundary information — important for wound boundary | ❌ Limited spatial preservation |
-| **Output quality** | ✅ Better boundary delineation for small/irregular objects | Coarser predictions |
-| **Baseline defensibility** | ✅ UNet is the standard, literature-accepted baseline for medical segmentation | FCN-8s is outdated by modern standards |
-| **Compute** | ✅ CPU-runnable at 256×256 or 512×512 with small encoder | Comparable but larger VGG backbone |
-| **Literature alignment** | ✅ DFUC2022 leaderboard uses UNet and variants | Less common in recent DFU literature |
-| **Understandability** | ✅ Explicit skip connection logic is teachable | More implicit in FCN |
+The final loss is `0.5 * BCEWithLogitsLoss + 0.5 * soft Dice loss`. Raw logits
+are passed to `BCEWithLogitsLoss` for numerical stability. Dice uses sigmoid
+probabilities, computes a per-image score, averages over the batch, and uses an
+epsilon for empty-mask stability. Targets are validated to be in `[0,1]`.
 
-**Decision: UNet with a lightweight encoder (4 levels, no pretrained weights initially) is selected.**
+## Preprocessing and augmentation
 
----
+- Decode with PIL and fail clearly on unreadable files.
+- Convert images to RGB.
+- Resize images bilinearly and masks with nearest-neighbor interpolation to configurable `H × W`.
+- Normalize RGB values with mean `[0.485, 0.456, 0.406]` and standard deviation `[0.229, 0.224, 0.225]`.
+- Threshold masks at 128 to strict `{0,1}` tensors.
+- Apply deterministic, seeded horizontal flips only to training image/mask pairs.
+- Validation preprocessing is deterministic and has no random augmentation.
 
-## 5. Selected Baseline
+## Training and selection
 
-| Field | Value |
-|---|---|
-| **Task** | Binary wound segmentation |
-| **Dataset** | DFUC2022 (demo split, 20 samples) |
-| **Annotation type** | Binary segmentation masks (PNG, {0, 255}) |
-| **Input** | RGB image, 256 × 256 (resized from 512 × 512 for CPU feasibility) |
-| **Output** | Binary probability map: shape (1, 256, 256), sigmoid-activated |
-| **Model** | Lightweight UNet — 4 encoder levels, 4 decoder levels, skip connections |
-| **Loss** | Binary Cross-Entropy + Dice Loss (combined) |
-| **Pretrained weights** | None (randomly initialized) — see rationale below |
-| **Checkpoint selection** | Best validation Dice score |
-| **Primary metric** | Dice coefficient on test split |
+The run configuration is `configs/training/baseline_segmentation_real.json`.
+Adam, the configured learning rate/weight decay, deterministic seed controls,
+optional scheduler, CPU fallback, per-epoch train/validation logging, and
+maximum validation Dice checkpoint selection are all configuration-controlled.
+The public unlabeled test split is never passed to the training loop.
 
----
+## Historical separation and later scope
 
-## 6. Pretrained Weights Decision (REQ-P02-S01-005)
-
-**Decision: No pretrained weights for this baseline.**
-
-**Rationale:**
-- The baseline must be "materially simpler" than later advanced models (REQ-P02-S01-004).
-- Using pretrained ImageNet weights from a large backbone would make the baseline less interpretable and closer to an advanced model.
-- Random initialization on 20 samples will overfit, which is expected and documentable behavior for a baseline.
-- Phase 03+ will introduce pretrained encoders (e.g., ResNet-34 ImageNet backbone) as an explicit improvement.
-- This allows clean attribution of improvement: random init → pretrained weights.
-
-**If pretrained weights were to be used:** Source would be `torchvision.models.resnet34(pretrained=True)` (ImageNet weights, MIT-compatible), frozen encoder, fine-tuned decoder.
-
----
-
-## 7. Baseline Limitations
-
-1. **Very small dataset (20 samples):** Meaningful generalization is impossible. Results are for system validation only.
-2. **Image-level split (not patient-level):** Some data leakage risk exists. Documented in Phase 01 manifest.
-3. **Demo images are synthetic/uniform:** DFUC22_0001–DFUC22_0020 all have the same checksum for images, meaning they are likely template/demo files. Metric numbers reflect model behavior on this toy data, NOT real DFUC2022.
-4. **CPU-only training:** Small batch size and fewer epochs; may not converge fully.
-5. **No augmentation complexity:** Minimal augmentation to keep baseline simple.
-6. **Wound area imbalance:** ~15% foreground. Standard BCE will tend toward predicting background. Dice loss component mitigates this.
-
----
-
-## 8. Later Improvement Path
-
-1. **More data:** Use full DFUC2022 dataset (real images, ~4,000 samples) when available.
-2. **Pretrained encoder:** Replace random init with ImageNet-pretrained ResNet-34 encoder.
-3. **Advanced loss:** Focal loss or combined Dice+Focal for stronger imbalance handling.
-4. **Augmentation:** Add elastic deformation, color jitter, rotation for medical image augmentation.
-5. **Post-processing:** Connected components filtering to remove small spurious predictions.
-6. **Patient-level split:** When patient metadata is available, enforce patient-level isolation.
-
----
-
-## 9. Open Questions Resolution
-
-| OQ ID | Question | Resolution |
-|---|---|---|
-| OQ-P02-001 | Best baseline task? | RESOLVED: Wound segmentation — all Phase 01 annotations are binary masks |
-| OQ-P02-002 | Best baseline architecture? | RESOLVED: Lightweight UNet — standard medical segmentation baseline |
-| OQ-P02-003 | Pretrained weights? | RESOLVED: None for baseline — allows clean Phase 03 improvement attribution |
-| OQ-P02-004 | Input resolution? | RESOLVED: 256×256 — reasonable for CPU training; downsampled from 512×512 |
-| OQ-P02-005 | Augmentation? | RESOLVED: Horizontal flip + random crop (train only); none for val/test |
-| OQ-P02-006 | Class imbalance strategy? | RESOLVED: Dice loss component in combined BCE+Dice loss handles imbalance |
-| OQ-P02-007 | Metric aggregation? | RESOLVED: Macro-average per-sample Dice/IoU across test set |
-| OQ-P02-008 | Failure modes? | OPEN — to be filled after baseline training run |
-
----
-
-## 10. REQ-P02-S01-007 Compliance
-
-No test-set performance was inspected to make this decision.  
-The architecture, preprocessing, and hyperparameter choices are based solely on:
-- Phase 01 annotation evidence (manifest, quality report, EDA summary)
-- Engineering rationale (compute budget, simplicity requirement, literature consensus)
-- The spec requirement that the baseline be materially simpler than later models
-
-**No test split was examined.**
+The former synthetic DFUC2022 smoke experiment remains historical and is not
+used as real-data evidence. Complete labeled test evaluation, independent test
+metric verification, and later improvements belong to SPEC-02-02 or later and
+are not started by this specification.

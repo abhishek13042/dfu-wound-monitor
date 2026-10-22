@@ -1,36 +1,56 @@
 # Dataset Source Verification Report (P01-S01)
 
-## Executive Summary
+> **Revision 2 — 2026-10-21.** Revision 1 (2026-10-06) marked all five
+> candidate datasets as VERIFIED, named DFUC2022 as the primary segmentation
+> dataset, and contained incorrect sources, counts and classes for FUSeg2021
+> and DFUTissueSegNet. Those statements were not supported by acquired data.
+> This revision is aligned with `reports/dataset_acquisition_report.md`
+> (2026-10-08) and `data/external/dataset_registry.json` v2.0.0. The old text
+> remains in git history.
 
-This report establishes the verified status, access routes, licenses, annotation types, candidate roles, and limitations for all 5 candidate datasets evaluated for **DFU-WoundMonitor**.
+## Status vocabulary
 
-All facts are classified as **VERIFIED**, **INFERRED**, or **UNKNOWN** per project governance rules.
+| Status | Meaning |
+|---|---|
+| VERIFIED | Checked against acquired files or the official source. |
+| PARTIAL | Acquired, but with documented defects. |
+| BLOCKED | Access route known; data not acquired. |
+| NOT_VERIFIED | Not checked against the official source. |
+| UNKNOWN | Not available from the official source. |
 
----
+## Dataset table
 
-## Dataset Audit & Verification Table
+| Dataset | Source / citation | Version | Contents (verified) | Annotation | Patient IDs | Role | Status |
+|---|---|---|---|---|---|---|---|
+| **FUSeg2021** | Wang et al., Sci Rep 2020; FUSeg 2021 challenge; github.com/uwm-bigdata/wound-segmentation | commit `42a272d` | 810 train + 200 val pairs; 200 unlabeled test; 512×512 PNG | Binary wound mask | UNKNOWN | **Primary segmentation** | VERIFIED (license terms NOT_VERIFIED) |
+| **DFUTissueSegNet** | Dhar et al. 2024, arXiv:2406.16012; github.com/uwm-bigdata/DFUTissueSegNet | commit `d2f6e72` | 110 labeled (94 train/val + 16 test); 600 unlabeled | Tissue masks (granulation, callus, fibrin focus) | UNKNOWN | Optional tissue extension | VERIFIED (license NOT_VERIFIED) |
+| **LowerLimbFeetWound V3** | Mendeley Data DOI 10.17632/hsj38fwnvr.3 | V3, 2026-02-11 | 8,129 JPG; 2,686 wound/mask pairs | Binary wound mask | UNKNOWN | Candidate external evaluation | PARTIAL (322 mask dimension mismatches) |
+| **Medetec** | medetec.co.uk | snapshot 2026-10-08 | 610 JPG | None | UNKNOWN | Qualitative OOD / quality-gate fixtures | VERIFIED |
+| **DFUC2022** | DFUC2022 challenge, MMU | — | not acquired | Binary mask (per challenge, NOT_VERIFIED) | UNKNOWN | Blocked candidate | BLOCKED |
+| **DFUC2020** | DFUC2020 challenge, MMU | — | not acquired | Bounding boxes (NOT_VERIFIED) | UNKNOWN | Blocked candidate (detection optional) | BLOCKED |
+| **DFUC2021** | DFUC2021 challenge, MMU | — | not acquired | Image-level classes (NOT_VERIFIED) | UNKNOWN | Out of MVP scope | BLOCKED |
 
-| Dataset Name | Stated Source & Citation | Access Route | License Terms | Image Count & Format | Annotation Type & Classes | Patient Metadata | Proposed Project Role | Status |
-|---|---|---|---|---|---|---|---|---|
-| **DFUC2020** | MICCAI 2020 / IEEE TMI (Cassidy et al., 2020) | Grand Challenge / Kaggle | CC BY 4.0 (Open Research) | 4,000 JPEG (~2000x2000 px) | Bounding Box (`wound`) | UNKNOWN (Omitted for privacy) | Primary Detection (Phase 04) | VERIFIED |
-| **DFUC2021** | MICCAI 2021 / Grand Challenge (Cassidy et al., 2021) | Grand Challenge / Kaggle | Research Use Only | 15,684 JPEG (~640x480 px) | Multi-class Classification (`Infection`, `Ischemia`, `Both`, `None`) | UNKNOWN (Omitted for privacy) | Auxiliary Classification Experiment | VERIFIED |
-| **DFUC2022** | MICCAI 2022 / MedIA (Yap et al., 2022) | Grand Challenge / GitHub / Figshare | CC BY-NC 4.0 (Research Use Only) | 4,000 PNG/JPEG (512x512 px) | Binary Segmentation Mask (`wound`, `background`) | UNKNOWN (Omitted for privacy) | Primary Segmentation (Phase 02 / 03) | VERIFIED |
-| **DFUTissueSegNet** | Academic Publication (Wang et al., 2021) | GitHub Repository | Academic Research | ~1,000 PNG (512x512 px) | Multi-class Tissue Mask (`granulation`, `slough`, `eschar`) | UNKNOWN (Not released) | Optional Research Extension | VERIFIED |
-| **FUSeg2021** | Academic Benchmark (Wang et al., 2021) | GitHub Repository | Academic Research | 1,210 PNG (512x512 px) | Binary Segmentation Mask (`wound`, `background`) | UNKNOWN (Not released) | External Generalization (Phase 10) | VERIFIED |
+## Dataset mapping (current)
 
----
+1. **Primary segmentation:** FUSeg2021.
+   - The official train split is used for training.
+   - The official validation split is used for checkpoint selection.
+   - The public test split has no labels, so no test metric can be reported. See SPEC-02-02.
+2. **External / out-of-distribution evaluation (planned):** LowerLimbFeetWound V3 for quantitative evaluation, after the preprocessing decision. Medetec for qualitative review.
+3. **Optional extension:** DFUTissueSegNet. It shares the AZH clinical source with FUSeg2021, so it is *not* an independent external set.
+4. **Blocked:** DFUC2020, DFUC2021 and DFUC2022, until the DFU license application is approved.
 
-## Strategic Dataset Mapping
+## Governance notes
 
-1. **Primary Segmentation Dataset**: `DFUC2022` (4,000 images with pixel-level binary masks).
-2. **Primary Detection Dataset**: `DFUC2020` (4,000 images with bounding box annotations).
-3. **External Generalization Dataset**: `FUSeg2021` (1,210 images kept completely isolated for out-of-distribution evaluation).
-4. **Auxiliary Experiment Datasets**: `DFUC2021` (multi-class clinical flags) and `DFUTissueSegNet` (tissue sub-types).
-
----
-
-## Key Findings & Governance Notes
-
-- **Patient Metadata Limitation**: Public releases of DFUC2020, DFUC2021, and DFUC2022 omit explicit patient identifiers to preserve anonymity. Patient-aware splitting is classified as `UNKNOWN` for public challenge releases. Fallback image-level splits will be documented explicitly in P01-S05 without claiming patient-level isolation.
-- **Physical Scale Limitation**: No public dataset currently provides calibrated pixel-to-millimeter scale rulers (`OQ-P01-007`). All image measurement outputs must explicitly state `PIXEL_BASED` until calibrated scale targets are introduced.
-- **Semantic Independence**: Datasets retain separate canonical schema definitions to prevent invalid label merging.
+- **Patient metadata:**
+  - No acquired dataset provides patient identifiers.
+  - All splits are image-level, and no patient-level isolation is claimed.
+- **Physical scale:**
+  - No dataset provides calibration markers.
+  - All measurements are `PIXEL_BASED` until a calibration specification exists.
+- **Semantic independence:**
+  - Datasets keep separate schemas.
+  - No label merging is performed.
+- **Overlap:**
+  - Byte-identical duplicates were checked with SHA-256.
+  - Near-duplicate checks (perceptual hash) are still open (OQ-P01-010).

@@ -1,0 +1,8 @@
+{
+  "measurement_config_version": "p03-s03-v1",
+  "description": "Geometry measurement settings. Connectivity matches the inference post-processing (8-connected). The low-confidence rule needs the probability map: it flags masks whose mean probability inside the mask is below the threshold.",
+  "connectivity": 8,
+  "low_confidence_mean_probability": 0.70,
+  "min_reliable_area_px": 128,
+  "max_reported_components": 20
+}

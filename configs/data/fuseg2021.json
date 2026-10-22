@@ -1,0 +1,29 @@
+{
+  "dataset_name": "FUSeg2021",
+  "dataset_version": "FUSeg2021-official-source-commit-42a272d",
+  "source_type": "real",
+  "source_root": "data/raw/FUSeg2021/source/data/Foot Ulcer Segmentation Challenge",
+  "official_source": "https://fusc.grand-challenge.org/FUSeg-2021/",
+  "source_repository": "https://github.com/uwm-bigdata/wound-segmentation",
+  "source_commit": "42a272dfe0679f20675e826385925cb7562934b6",
+  "source_content_digest": "6631246d6128a8d0167d9fb63abbbb2ec1fae4c4b19b4917caf2f94625972b17",
+  "official_splits": {
+    "train": "train/images + train/labels",
+    "validation": "validation/images + validation/labels",
+    "test": "test/images; public masks unavailable"
+  },
+  "annotation_type": "wound_segmentation",
+  "annotation_pairing": "same_stem_image_and_label",
+  "expected_image": {
+    "color": "RGB",
+    "width": 512,
+    "height": 512,
+    "channels": 3
+  },
+  "expected_mask_values": [0, 255],
+  "patient_id_policy": "Do not infer patient or examination identifiers; the public release does not provide usable IDs.",
+  "split_policy": "Preserve official train/validation/test assignments; quarantine exact duplicate image collisions.",
+  "kaggle_data_root_contract": "Optional --data-root contains train/, validation/, and test/ below manifest.source_root.",
+  "manifest_path": "data/manifests/dataset_manifest.json",
+  "quality_report_path": "data/manifests/fuseg2021_quality_report.json"
+}

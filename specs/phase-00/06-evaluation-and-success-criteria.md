@@ -167,4 +167,5 @@ Technical metrics do not establish clinical safety or efficacy.
 
 ## 17. Traceability
 
-Evaluation requirements SHALL be linked to Phase 02–11 evaluation and acceptance criteria.
+Evaluation requirements SHALL be linked to Phase 02 and the consolidated Phase
+06 validation and acceptance criteria.

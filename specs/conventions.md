@@ -11,6 +11,16 @@ Specifications follow the format:
 
 *Example:* `P01-S03` denotes **Phase 01, Specification 03**.
 
+#### Consolidated specification IDs (Phase 02 exception)
+Phase 02 uses two consolidated execution specifications, `SPEC-02-01` and
+`SPEC-02-02`, in the form `SPEC-PP-NN`.
+
+- `SPEC-02-01` implements P02-S01 to P02-S03 on real data.
+- `SPEC-02-02` absorbs P02-S04 to P02-S07.
+
+Their requirements use `REQ-SPEC-02-0N-XXX`. The granular `P02-SXX` IDs remain
+valid for traceability. All phases from Phase 03 onward use `PXX-SXX` again.
+
 ### Requirement IDs
 Requirements within specifications follow the format:
 `REQ-PXX-SXX-XXX`

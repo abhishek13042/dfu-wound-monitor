@@ -1,0 +1,103 @@
+{
+  "_comment": "SPEC-02-01 real-data baseline on verified FUSeg2021. The public test images have no labels and are not evaluated.",
+  "_spec": "SPEC-02-01",
+  "_decision_record": "reports/experiments/phase_02_baseline_decision_record.md",
+  "experiment_id": "P02-SPEC-02-01-fuseg2021-unet-bce-dice-v1",
+  "experiment_description": "Reproducible lightweight U-Net wound segmentation baseline using only verified FUSeg2021 train and validation data.",
+  "data": {
+    "manifest_path": "data/manifests/dataset_manifest.json",
+    "dataset_name": "FUSeg2021",
+    "dataset_source_type": "real",
+    "annotation_type": "wound_segmentation",
+    "manifest_version": "2.0.0",
+    "data_root": null,
+    "dataset_config": "configs/data/fuseg2021.json",
+    "official_test_policy": "Public test images have no usable ground truth; do not evaluate in SPEC-02-01."
+  },
+  "preprocessing": {
+    "input_height": 256,
+    "input_width": 256,
+    "normalize_mean": [0.485, 0.456, 0.406],
+    "normalize_std": [0.229, 0.224, 0.225],
+    "mask_resize": "nearest",
+    "image_resize": "bilinear",
+    "mask_threshold": 128,
+    "source_mask_values": [0, 255],
+    "mask_output_values": [0.0, 1.0]
+  },
+  "augmentation": {
+    "train_horizontal_flip_prob": 0.5,
+    "train_vertical_flip_prob": 0.0,
+    "validation_and_test": "none",
+    "synchronization": "same sampled spatial decision for image and mask",
+    "deterministic_seeded_sample_transform": true
+  },
+  "model": {
+    "architecture": "LightweightUNet",
+    "encoder_channels": [16, 32, 64, 128],
+    "num_classes": 1,
+    "input_shape": "(B, 3, 256, 256)",
+    "output_shape": "(B, 1, 256, 256) raw logits",
+    "upsampling": "bilinear interpolation with align_corners=false",
+    "activation": "ReLU in convolution blocks; no output sigmoid",
+    "initialization": "Kaiming normal convolution weights; BatchNorm weight=1 and bias=0",
+    "pretrained_weights": null,
+    "freeze_encoder": false
+  },
+  "loss": {
+    "name": "BCEDiceLoss",
+    "bce_weight": 0.5,
+    "dice_weight": 0.5,
+    "epsilon": 1e-6,
+    "output_contract": "Raw logits to BCEWithLogitsLoss; sigmoid logits used for soft Dice."
+  },
+  "training": {
+    "random_seed": 42,
+    "deterministic": true,
+    "num_epochs": 12,
+    "batch_size": 8,
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "scheduler": {
+      "name": "ReduceLROnPlateau",
+      "mode": "max",
+      "factor": 0.5,
+      "patience": 3,
+      "min_lr": 1e-6
+    },
+    "num_workers": 0,
+    "pin_memory": false,
+    "persistent_workers": false,
+    "resume_checkpoint": null
+  },
+  "checkpointing": {
+    "checkpoint_dir": "models/checkpoints",
+    "checkpoint_selection_metric": "val_dice",
+    "checkpoint_selection_mode": "max",
+    "save_best_only": true,
+    "save_latest_for_resume": true,
+    "checkpoint_filename_template": "P02-SPEC-02-01-fuseg2021-unet-bce-dice-v1_best_val_dice.pth",
+    "latest_checkpoint_filename_template": "P02-SPEC-02-01-fuseg2021-unet-bce-dice-v1_latest_epoch.pth"
+  },
+  "evaluation": {
+    "primary_metric": "dice",
+    "validation_metrics": ["dice", "iou", "precision", "recall"],
+    "prediction_threshold": 0.5,
+    "aggregation": "macro_average_per_sample",
+    "test_evaluation": "deferred; public test masks unavailable"
+  },
+  "device": {
+    "preferred": "cuda",
+    "fallback": "cpu"
+  },
+  "output": {
+    "log_file": "reports/experiments/P02-SPEC-02-01-fuseg2021_training_log.json",
+    "model_metadata": "reports/experiments/P02-SPEC-02-01-fuseg2021_model_metadata.json",
+    "sanity_report": "reports/experiments/P02-SPEC-02-01-fuseg2021_sanity_checks.json",
+    "sanity_panel": "outputs/visualizations/phase_02_fuseg2021_baseline/sanity_real_samples.png",
+    "prediction_output_dir": "outputs/predictions/P02-SPEC-02-01-fuseg2021-validation",
+    "representative_prediction_count": 8,
+    "experiment_record": "reports/experiments/P02-SPEC-02-01-fuseg2021_experiment_record.json"
+  }
+}

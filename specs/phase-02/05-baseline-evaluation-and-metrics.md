@@ -1,5 +1,13 @@
 # P02-S05 — Baseline Evaluation and Metrics
 
+> **Status: DEFERRED → SPEC-02-02.** REQ-001 ("test evaluator") cannot be
+> satisfied with the current split, for two reasons:
+>
+> - The FUSeg2021 public test masks are unreleased.
+> - The official validation split is used for model selection.
+>
+> See *Evaluation split* in `SPEC-02-02-baseline-completion.md`.
+
 ## Purpose
 Measure actual baseline performance as a trustworthy reference point for later improvements.
 

@@ -9,10 +9,9 @@ Coding Style: Beginner-Understandable Python
 """
 
 import hashlib
-import json
-import os
+import shutil
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 
 def compute_sha256_checksum(file_path: Path, buffer_size: int = 65536) -> str:
@@ -100,83 +99,118 @@ def ingest_dataset_directory(
     """
     print(f"Starting deterministic ingestion for dataset: {dataset_name}")
 
-    # Define target raw directory for this dataset
+    if not source_images_dir.exists() or not source_images_dir.is_dir():
+        raise FileNotFoundError(
+            f"Source images directory does not exist: {source_images_dir}. "
+            "Provide a verified local dataset directory; no download fallback is used."
+        )
+
+    # Raw files are copied without changing their bytes. If the source already is
+    # the configured raw directory, the copy step is safely skipped.
     target_dataset_dir = destination_raw_dir / dataset_name
     target_images_dir = target_dataset_dir / "images"
     target_annotations_dir = target_dataset_dir / "annotations"
-
-    # Create target directories if they do not exist
-    os.makedirs(target_images_dir, exist_ok=True)
+    target_images_dir.mkdir(parents=True, exist_ok=True)
     if source_annotations_dir is not None:
-        os.makedirs(target_annotations_dir, exist_ok=True)
+        target_annotations_dir.mkdir(parents=True, exist_ok=True)
 
-    # Initialize tracking lists
     accepted_samples: List[Dict[str, Any]] = []
     unsupported_files: List[str] = []
-    discovered_checksums: Dict[str, str] = {}  # sha256 -> sample_id
+    errors: List[Dict[str, str]] = []
+    discovered_checksums: Dict[str, str] = {}
     duplicate_files: List[Dict[str, str]] = []
 
-    # 1. Discover and process image files deterministically
-    if not source_images_dir.exists():
-        print(f"Error: Source images directory does not exist: {source_images_dir}")
-        return {"dataset_name": dataset_name, "error": "Source images directory missing"}
-
-    # Get sorted list of files for deterministic ordering
-    sorted_image_files = sorted(list(source_images_dir.iterdir()))
+    sorted_image_files = sorted(source_images_dir.iterdir(), key=lambda path: path.name)
 
     for image_path in sorted_image_files:
         if not image_path.is_file():
             continue
 
-        # Check format
         if not is_supported_image_format(image_path):
             unsupported_files.append(str(image_path.name))
             continue
 
-        # Compute SHA-256 checksum
         checksum = compute_sha256_checksum(image_path)
         sample_id = image_path.stem
 
-        # Check for duplicates using checksum
         if checksum in discovered_checksums:
-            duplicate_files.append({
-                "file_name": image_path.name,
-                "original_sample_id": discovered_checksums[checksum],
-                "checksum": checksum
-            })
+            duplicate_files.append(
+                {
+                    "file_name": image_path.name,
+                    "original_sample_id": discovered_checksums[checksum],
+                    "checksum": checksum,
+                }
+            )
+        else:
+            discovered_checksums[checksum] = sample_id
 
-        discovered_checksums[checksum] = sample_id
-
-        # Determine annotation path if present
-        annotation_file_name = None
+        annotation_path: Optional[Path] = None
         if source_annotations_dir is not None and source_annotations_dir.exists():
-            # Try matching annotation file with same stem
-            for ext in [".png", ".jpg", ".txt", ".xml", ".json", ".csv"]:
-                candidate_ann_path = source_annotations_dir / f"{sample_id}{ext}"
-                if candidate_ann_path.exists():
-                    annotation_file_name = candidate_ann_path.name
+            for extension in [".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"]:
+                candidate_path = source_annotations_dir / f"{sample_id}{extension}"
+                if candidate_path.exists():
+                    annotation_path = candidate_path
                     break
 
-        accepted_samples.append({
-            "sample_id": sample_id,
-            "dataset_name": dataset_name,
-            "original_image_name": image_path.name,
-            "annotation_name": annotation_file_name,
-            "sha256": checksum,
-            "file_size_bytes": image_path.stat().st_size
-        })
+        target_image_path = target_images_dir / image_path.name
+        target_annotation_path = (
+            target_annotations_dir / annotation_path.name if annotation_path else None
+        )
 
-    # Summary report structure
+        try:
+            if image_path.resolve() != target_image_path.resolve():
+                shutil.copy2(image_path, target_image_path)
+            if annotation_path is not None and target_annotation_path is not None:
+                if annotation_path.resolve() != target_annotation_path.resolve():
+                    shutil.copy2(annotation_path, target_annotation_path)
+        except OSError as copy_error:
+            errors.append(
+                {
+                    "sample_id": sample_id,
+                    "error": f"raw_copy_failed: {copy_error}",
+                }
+            )
+            continue
+
+        annotation_checksum = (
+            compute_sha256_checksum(annotation_path) if annotation_path is not None else None
+        )
+        accepted_samples.append(
+            {
+                "sample_id": sample_id,
+                "dataset_name": dataset_name,
+                "original_image_name": image_path.name,
+                "annotation_name": annotation_path.name if annotation_path else None,
+                "source_image_path": str(image_path),
+                "source_annotation_path": str(annotation_path) if annotation_path else None,
+                "raw_image_path": str(target_image_path),
+                "raw_annotation_path": (
+                    str(target_annotation_path) if target_annotation_path else None
+                ),
+                "sha256": checksum,
+                "annotation_sha256": annotation_checksum,
+                "file_size_bytes": image_path.stat().st_size,
+            }
+        )
+
     report = {
         "dataset_name": dataset_name,
+        "source_images_dir": str(source_images_dir),
+        "source_annotations_dir": str(source_annotations_dir) if source_annotations_dir else None,
+        "destination_raw_dir": str(target_dataset_dir),
         "total_discovered": len(sorted_image_files),
         "total_accepted": len(accepted_samples),
         "total_unsupported": len(unsupported_files),
         "total_duplicates": len(duplicate_files),
         "unsupported_files": unsupported_files,
         "duplicates": duplicate_files,
-        "samples": accepted_samples
+        "errors": errors,
+        "samples": accepted_samples,
     }
 
-    print(f"Ingestion finished for {dataset_name}: {len(accepted_samples)} samples accepted.")
+    print(
+        f"Ingestion finished for {dataset_name}: "
+        f"{len(accepted_samples)} samples accepted, "
+        f"{len(duplicate_files)} duplicate image checksums."
+    )
     return report

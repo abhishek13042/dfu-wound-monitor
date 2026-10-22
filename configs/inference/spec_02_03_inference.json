@@ -1,0 +1,28 @@
+{
+  "inference_config_version": "p03-s01-v1",
+  "description": "Frozen inference contract for the SPEC-02-03 ResNet34 U-Net. Preprocessing is read from the training config (no overrides); post-processing values were frozen on internal validation before the held-out test was scored.",
+  "model": {
+    "model_version": "spec-02-03-resnet34-unet-512-v1",
+    "experiment_id": "P02-SPEC-02-03-fuseg2021-resnet34-unet-512-v1",
+    "architecture": "ResNetUNet",
+    "checkpoint_path": "models/checkpoints/spec-02-03/resnet34_unet_512_best.pth",
+    "checkpoint_sha256": "26aca52e401f23b5781d2596d74c1fd7fa86a6af0ab9fb3db9fa17dcffb5cf04",
+    "training_config_path": "configs/training/segmentation_resnet34_unet_512.json"
+  },
+  "postprocessing": {
+    "threshold": 0.40,
+    "min_component_area": 128,
+    "tta": true,
+    "frozen_from": "reports/experiments/spec-02-03/kaggle/spec-02-03/postprocessing_tuning.json"
+  },
+  "input": {
+    "allowed_formats": ["PNG", "JPEG", "BMP", "TIFF", "WEBP"],
+    "max_pixels": 50000000,
+    "apply_exif_orientation": true
+  },
+  "runtime": {
+    "device": "cpu",
+    "num_threads": null,
+    "determinism_policy": "Same checkpoint, config, input bytes, device type and thread count give a bit-identical binary mask and probability map. Across devices or thread counts, probabilities agree to about 1e-5 and binary masks can differ only at pixels within that distance of the threshold."
+  }
+}
