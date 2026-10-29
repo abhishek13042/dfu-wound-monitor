@@ -24,10 +24,11 @@ def test_release_config_pins_existing_training_config():
     assert config.model_version == "spec-02-03-resnet34-unet-512-v1"
 
 
-def test_release_manifest_builds():
-    result = subprocess.run([sys.executable, "scripts/deployment/build_release_manifest.py"], cwd=PROJECT_ROOT,
-                            capture_output=True, text=True, timeout=600)
-    manifest = json.loads((PROJECT_ROOT / "reports/final/release_manifest.json").read_text(encoding="utf-8"))
+def test_release_manifest_builds(tmp_path):
+    output = tmp_path / "release_manifest.json"
+    result = subprocess.run([sys.executable, "scripts/deployment/build_release_manifest.py", "--output", str(output)],
+                            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=600)
+    manifest = json.loads(output.read_text(encoding="utf-8"))
     assert set(manifest["versions"]) >= {"service", "api", "model", "database_schema", "record_schema"}
     assert all(re.fullmatch(r"[0-9a-f]{64}", digest) for digest in manifest["configs"].values())
     assert manifest["limitations"] and set(manifest["commands"]) >= {"install", "serve", "smoke_test"}

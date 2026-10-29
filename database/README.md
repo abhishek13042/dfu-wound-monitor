@@ -1,13 +1,8 @@
-# Database Structure
+# Database (reserved)
 
-This directory contains database schema definitions, data migration scripts, and seed fixtures.
+Persistence is implemented in `src/storage/database.py`: SQLite with versioned schema migrations, plus a
+content-addressed blob store for images and masks (P05-S02, `specs/phase-05/02-persistence-and-results.md`).
 
-## Directory Layout
-
-- `migrations/`: Schema migration scripts (e.g., Alembic / SQL migrations).
-- `schemas/`: Relational data models, table schemas, and indexing strategies.
-- `seeds/`: Initial reference data, fixture seeds for development/testing.
-
-## Status
-
-Database models and persistence layers are not implemented yet. Design and implementation will occur in Phase 08 (Backend & Database) under formal specifications.
+This folder is reserved for the planned PostgreSQL + Alembic migration (Phase 07, step B in
+`docs/roadmap/PRODUCTION_ROADMAP.md`). Its subfolders (`migrations/`, `schemas/`, `seeds/`) are empty until
+that specification is approved.

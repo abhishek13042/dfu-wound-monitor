@@ -17,7 +17,8 @@
 
 `reports/final/release_manifest.json` lists every version string, the SHA-256 of each config, the git
 commit and the evidence files. Rebuild it with
-`python scripts/deployment/build_release_manifest.py`.
+`python scripts/deployment/build_release_manifest.py` (add `--output PATH` to write elsewhere; the tests do this).
+`git.dirty` ignores the manifest file itself, so rebuild after committing everything else and it records `false`.
 
 ## 1. Install
 
@@ -112,3 +113,4 @@ Quality-rejected and failed analyses are still stored, so they can be audited. T
 - [ ] `python scripts/deployment/build_release_manifest.py` exits 0 (model verified, evidence present)
 - [ ] `python scripts/deployment/smoke_test.py` reports all checks passed
 - [ ] Limitations are shown in `/api/v1/model` and on the dashboard
+- [ ] All other changes are committed, then the manifest is rebuilt (`git.dirty: false`), committed and the release tagged

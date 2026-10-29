@@ -1,15 +1,8 @@
-# Frontend Dashboard
+# Frontend (reserved)
 
-This directory contains the user interface and visualization dashboard for the DFU-WoundMonitor decision-support prototype.
+The current user interface is the static dashboard in `src/dashboard/index.html`, served by the API at
+`/dashboard/`. It uses only the public `/api/v1` endpoints.
 
-## Directory Layout
-
-- `components/`: Modular, reusable UI components (e.g., wound canvas, timeline slider, measurement cards).
-- `pages/`: Application views and page-level routes (e.g., Patient Overview, Visit Comparison, Quality QA).
-- `services/`: API client services for backend communication.
-- `hooks/`: Reusable state and interaction hooks.
-- `types/`: TypeScript/type definitions and domain schemas.
-
-## Status
-
-Frontend development has not started. Interface design, component implementation, and state management will be developed in Phase 09 (Dashboard) under approved specifications.
+This folder is reserved for the planned Next.js frontend (Phase 07, step C in
+`docs/roadmap/PRODUCTION_ROADMAP.md`). Its subfolders (`components/`, `pages/`, `services/`, `hooks/`,
+`types/`) are empty until that specification is approved.

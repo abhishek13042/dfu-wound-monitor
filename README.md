@@ -22,6 +22,10 @@
 - A fresh-machine install has not been exercised (REQ-P06-S03-001 is PARTIAL).
 - There is no stated latency requirement, so no optimisation has been applied. Measured: about 5.8 s per image on a 2-core CPU; 97% of that is segmentation.
 - Real longitudinal patient series are not available. Trends were exercised with constructed examination sequences only.
+- The Hugging Face Space is packaged but not yet published, so there is no public URL yet.
+
+**Next:** a multi-user production platform (Next.js, PostgreSQL, job queue, ONNX) is planned, not built:
+[docs/roadmap/PRODUCTION_ROADMAP.md](docs/roadmap/PRODUCTION_ROADMAP.md). Release history: [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -177,7 +181,7 @@ dfu-wound-monitor/
 ├── src/                  # Core Python package source code
 │   ├── data/             # Ingestion, validation, splitting, FUSeg loader, EDA
 │   ├── segmentation/     # Dataset, U-Net + ResNet U-Net, augmentation, trainers, inference, metrics
-│   ├── preprocessing/    # (placeholder)
+│   ├── preprocessing/    # image decoding and input validation
 │   ├── detection/        # (placeholder; optional backlog)
 │   ├── inference/        # P03-S01 engine (pinned checkpoint, typed errors) + end-to-end pipeline
 │   ├── quality/          # P03-S02 image quality gate
@@ -201,6 +205,8 @@ dfu-wound-monitor/
 ├── models/               # Model checkpoints, exports, and metadata
 ├── outputs/              # Model predictions, benchmark artifacts, and visualizations
 ├── reports/              # Detailed evaluation, error analysis, and milestone reports
-├── api/, database/, frontend/, docker/   # (placeholders; the service lives in src/api, src/storage, src/dashboard)
-└── docs/                 # In-depth architectural, dataset, and design documentation
+├── docker/production/    # Dockerfile, entrypoint and Hugging Face Space README
+├── api/, database/, frontend/   # (reserved for Phase 07; the service lives in src/api, src/storage, src/dashboard)
+├── CHANGELOG.md          # Release history
+└── docs/                 # Architecture, deployment, release, model card, production roadmap
 ```

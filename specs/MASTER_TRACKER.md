@@ -3,7 +3,9 @@
 ## Project Status
 
 **Phase:** Phase 06 — System Validation & Release (all planned phases complete)  
-**Overall Status:** Phases 00–06 COMPLETED. Model: held-out pooled Dice 0.922, macro 0.841 (independently verified). Service, dashboard, validation, benchmark and release are in `reports/final/` and `docs/release/RELEASE.md`. One partial item: REQ-P06-S03-001 fresh-machine install was not exercised.
+**Overall Status:** Phases 00–06 COMPLETED. Model: held-out pooled Dice 0.922, macro 0.841 (independently verified). Service, dashboard, validation, benchmark and release are in `reports/final/` and `docs/release/RELEASE.md`. One partial item: REQ-P06-S03-001 fresh-machine install was not exercised.  
+**Release:** v1.0.0 on `main` (see `CHANGELOG.md`). Last full check 2026-10-29: 265 tests passed, smoke test 8/8.  
+**Deployment:** Docker image and Hugging Face Space bundle are built (`docs/deployment/HUGGINGFACE.md`); the Space is not yet published.
 
 ---
 
@@ -19,6 +21,7 @@
 | phase-05 | Product Integration | 3 | 3 | COMPLETED |
 | phase-06 | System Validation & Release | 3 | 3 | COMPLETED |
 | phase-07–12 | Legacy granular roadmap (folders removed) | Replaced | 0 | DEFERRED — mapped into phases 03–06 |
+| phase-07 (new) | Production platform (multi-user web app) | Not yet specified | 0 | PLANNED — `docs/roadmap/PRODUCTION_ROADMAP.md` |
 
 ---
 
