@@ -1,9 +1,9 @@
 {
   "release": "DFU-WoundMonitor research prototype",
-  "generated_utc": "2026-10-22T10:59:35+00:00",
+  "generated_utc": "2026-10-29T13:18:56+00:00",
   "git": {
-    "commit": "d177ada34f00a5976e3a67a70643f8ac6b63eb4b",
-    "dirty": true
+    "commit": "f0a83e049fef58f964c7751b284653d543fc55da",
+    "dirty": false
   },
   "versions": {
     "service": "p05-1.0",
@@ -24,21 +24,21 @@
     "in_git": false
   },
   "configs": {
-    "configs/inference/spec_02_03_inference.json": "12de1d332413b86779f81e3b8e02a3403f01aa420e11e86101ca1c440ba0cb0d",
-    "configs/training/segmentation_resnet34_unet_512.json": "d37ac08c0babcc403a86c920ee4a643d04e7c6449b2c0ea843879a6ff4e4cb35",
-    "configs/quality/quality_gate_v1.json": "0e61ab319db8433d1967d2e38deaa86934ae4e18d21886260f6cc527d3dad4ec",
-    "configs/measurement/measurement_v1.json": "c00dabe45273de236403045ff5e1d5be224c98f397cbdfb7989fdf5b0a05b6aa",
+    "configs/inference/spec_02_03_inference.json": "ce6884dcb6f3cb5e08ebaf132f7ef1e8cace6df24dcf8884a90717ad006b31a4",
+    "configs/training/segmentation_resnet34_unet_512.json": "e34d4e6b8362d2c2f56088482a56e905f8ffadf63ac274717d49c87a1ab0e0e0",
+    "configs/quality/quality_gate_v1.json": "8f539e09fa21d197c55c93b6e23399ce4f27d80e0f3b5a259301c88c9abcf69f",
+    "configs/measurement/measurement_v1.json": "65ba62cb3ae2150f4ccdd8cdefdd2009ed75ed2653bd4788404b22d8ee830d1a",
     "requirements.txt": "57e0392887dc05a7248b8f2b83bacdf3020878807004ecde4a7afabf1e6211a3"
   },
   "evidence": {
-    "reports/experiments/spec_02_03_report.md": "d7468b88020148e93a4a23ea820c7226eda9f5ef86e7b6d6caa33c2232989044",
+    "reports/experiments/spec_02_03_report.md": "cd34ac717d030e989469c1e285a31d5e13ab36d22ce9657a54c907a9a7bff807",
     "reports/experiments/spec-02-03/cpu_verification/heldout_test_evaluation.json": "4ec3ded3352a95e65cf4a9130fbfa8f5f89ef096a10957c3626536ba40d3a15b",
     "reports/quality/quality_gate_calibration.json": "1a5e47a9b4f566b023febfe6fe11bfdcb1cc864916afc7611f35d54e1b531a2b",
     "reports/final/p06_validation_fuseg2021_test.json": "b933183accca8fff9b9678a14f9a94912d7fc485bda92b2800ef78c00968eb56",
     "reports/final/p06_validation_lowerlimb_external.json": "b8b3f0301542622c5391a68a1e0ca8032f01a77781271a60857b5c65dae898a8",
     "reports/final/p06_benchmark.json": "7baacee8405ad1eddda8e780ed9b09d7ada0bb1478587ef54396917108e9c4e8",
     "reports/final/phase_06_validation_report.md": "da9be03cece006d28c6c18693dfb73c0aa7e68d6274ec6e02bff31f3d5089fdb",
-    "docs/release/RELEASE.md": "d6fec4ed77d6391cb78d49f042a55e20a29c2ac6804daa7a32c2ec08dc842f10"
+    "docs/release/RELEASE.md": "bf974013827e0eb5c8654be008275270fe202ae4e6945e2afbcb6da7c792b2ba"
   },
   "build_environment": {
     "python": "3.14.0",
