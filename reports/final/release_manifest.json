@@ -1,8 +1,8 @@
 {
   "release": "DFU-WoundMonitor research prototype",
-  "generated_utc": "2026-10-29T13:18:56+00:00",
+  "generated_utc": "2026-10-30T14:42:03+00:00",
   "git": {
-    "commit": "f0a83e049fef58f964c7751b284653d543fc55da",
+    "commit": "ca0898f50b6808b484a8c3538035b480da0da643",
     "dirty": false
   },
   "versions": {
@@ -11,7 +11,7 @@
     "inference_engine": "p03-s01-1.0",
     "measurement_engine": "p03-s03-1.0",
     "record_schema": "p04-s01-v1",
-    "database_schema": 1,
+    "database_schema": 4,
     "comparison_policy": "p04-s02-v1",
     "trend": "p04-s03-v1",
     "model": "spec-02-03-resnet34-unet-512-v1"
@@ -28,10 +28,10 @@
     "configs/training/segmentation_resnet34_unet_512.json": "e34d4e6b8362d2c2f56088482a56e905f8ffadf63ac274717d49c87a1ab0e0e0",
     "configs/quality/quality_gate_v1.json": "8f539e09fa21d197c55c93b6e23399ce4f27d80e0f3b5a259301c88c9abcf69f",
     "configs/measurement/measurement_v1.json": "65ba62cb3ae2150f4ccdd8cdefdd2009ed75ed2653bd4788404b22d8ee830d1a",
-    "requirements.txt": "57e0392887dc05a7248b8f2b83bacdf3020878807004ecde4a7afabf1e6211a3"
+    "requirements.txt": "72fe626dcfbba1f37a1b97966e1dd244242b9f86abf728e1bfe8df68343a2e4d"
   },
   "evidence": {
-    "reports/experiments/spec_02_03_report.md": "cd34ac717d030e989469c1e285a31d5e13ab36d22ce9657a54c907a9a7bff807",
+    "reports/experiments/spec_02_03_report.md": "6f3521079ab40e598ae58b60d439fbe5051d4dbce4914054fbc3b4ed35fa8b9a",
     "reports/experiments/spec-02-03/cpu_verification/heldout_test_evaluation.json": "4ec3ded3352a95e65cf4a9130fbfa8f5f89ef096a10957c3626536ba40d3a15b",
     "reports/quality/quality_gate_calibration.json": "1a5e47a9b4f566b023febfe6fe11bfdcb1cc864916afc7611f35d54e1b531a2b",
     "reports/final/p06_validation_fuseg2021_test.json": "b933183accca8fff9b9678a14f9a94912d7fc485bda92b2800ef78c00968eb56",
