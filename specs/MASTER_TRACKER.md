@@ -4,9 +4,9 @@
 
 **Phase:** Phase 07 — Production Platform (in progress; Phases 08–10 specified)  
 **Overall Status:** Phases 00–06 COMPLETED. Model: held-out pooled Dice 0.922, macro 0.841 (independently verified). Service, dashboard, validation, benchmark and release are in `reports/final/` and `docs/release/RELEASE.md`. One partial item: REQ-P06-S03-001 fresh-machine install was not exercised.  
-**Release:** v1.0.0 on `main` (see `CHANGELOG.md`). Check at release 2026-10-29: 265 tests passed, smoke test 8/8. Latest local check 2026-10-30, uncommitted: 395 passed on SQLite, and 171 passed on PostgreSQL 16 (`tests/storage`, `tests/api`, `tests/worker`).  
+**Release:** v1.0.0 on `main` (see `CHANGELOG.md`). Check at release 2026-10-29: 265 tests passed, smoke test 8/8. Latest local check 2026-10-30: 395 passed on SQLite, and 171 passed on PostgreSQL 16 (`tests/storage`, `tests/api`, `tests/worker`).  
 **Deployment:** Docker image and Hugging Face Space bundle are built (`docs/deployment/HUGGINGFACE.md`); the Space is not yet published.  
-**Phase 07:** P07-S01 to P07-S05 are `IN_PROGRESS`. Their code and tests pass locally and are uncommitted. Each one waits on proof that needs outside access: a CI run, a hosted service, or a real sign-in provider.  
+**Phase 07:** P07-S01 to P07-S05 are `IN_PROGRESS`. Their code and tests pass locally. Each one waits on proof that needs outside access: a CI run, a hosted service, or a real sign-in provider.  
 **Next:** P07-S06 and Phases 08–10 are `NOT_STARTED`. Each specification needs approval before implementation.
 
 ---

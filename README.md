@@ -14,8 +14,8 @@ compares it with earlier examinations.
 
 ## Status
 
-Phases 00–06 are COMPLETED and released as v1.0.0. Phase 07 work on `main` is uncommitted: PostgreSQL, object
-storage, sign-in and background workers pass locally, but they have not yet run in CI or a hosted deployment.
+Phases 00–06 are COMPLETED and released as v1.0.0. Phase 07 work (PostgreSQL, object storage, sign-in and
+background workers) passes locally, but it has not yet run in CI or a hosted deployment.
 Phases 08–10 are specified but not built.
 
 | Measure | Result | Evidence |
