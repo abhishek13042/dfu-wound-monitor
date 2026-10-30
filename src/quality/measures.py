@@ -21,8 +21,6 @@ on the camera resolution.
 
 from __future__ import annotations
 
-from typing import Dict
-
 import numpy as np
 from PIL import Image
 from scipy import ndimage
@@ -51,12 +49,12 @@ def _padding_mask(rgb: np.ndarray) -> np.ndarray:
     return np.isin(labels, border)
 
 
-def measure_quality(image: Image.Image, analysis_size: int = 512) -> Dict[str, float]:
+def measure_quality(image: Image.Image, analysis_size: int = 512) -> dict[str, float]:
     rgb = _working_copy(image, analysis_size)
     luminance = rgb @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
     content = ~_padding_mask(rgb)
     content_fraction = float(content.mean())
-    measures: Dict[str, float] = {
+    measures: dict[str, float] = {
         "width": float(image.width),
         "height": float(image.height),
         "content_fraction": content_fraction,

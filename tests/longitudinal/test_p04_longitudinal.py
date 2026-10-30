@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import numpy as np
 import pytest
@@ -22,7 +22,7 @@ from src.longitudinal.records import (
 from src.longitudinal.trends import TREND_LABEL, build_trend
 from src.measurement.engine import Calibration, measure
 
-T0 = datetime(2026, 1, 5, 9, 30, tzinfo=timezone.utc)
+T0 = datetime(2026, 1, 5, 9, 30, tzinfo=UTC)
 SHA = "a" * 64
 POLICY = CompatibilityPolicy()
 
@@ -88,7 +88,7 @@ def test_unknown_identifiers_stay_unknown_and_filenames_are_not_parsed():
         (ExaminationRecord, {"captured_at": datetime(2026, 1, 1), "timestamp_source": "EXIF"}, "captured_at"),
         (ExaminationRecord, {"captured_at": T0}, "__root__"),
         (ExaminationRecord, {"timestamp_source": "EXIF"}, "__root__"),
-        (ExaminationRecord, {"captured_at": datetime.now(timezone.utc) + timedelta(days=2),
+        (ExaminationRecord, {"captured_at": datetime.now(UTC) + timedelta(days=2),
                              "timestamp_source": "USER_ENTERED"}, "__root__"),
         (ExaminationRecord, {"case_id": "has space"}, "case_id"),
         (ExaminationRecord, {"unexpected": 1}, "unexpected"),

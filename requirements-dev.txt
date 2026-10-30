@@ -1,5 +1,5 @@
 # Optional code-quality tools (not required to run or test the pipeline).
 -r requirements.txt
+moto[server]==5.2.5
 ruff>=0.6
-black>=24.0
 mypy>=1.10

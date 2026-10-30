@@ -32,7 +32,7 @@ import hashlib
 import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from src.inference.errors import ConfigError, InputError
 from src.preprocessing.decode import DecodedImage, ImageSource, decode_image
@@ -56,10 +56,10 @@ class QualityConfig:
     version: str
     sha256: str
     analysis_size: int
-    checks: Dict[str, float]
+    checks: dict[str, float]
 
     @classmethod
-    def load(cls, path: Union[str, Path] = DEFAULT_QUALITY_CONFIG) -> "QualityConfig":
+    def load(cls, path: str | Path = DEFAULT_QUALITY_CONFIG) -> QualityConfig:
         path = Path(path)
         if not path.is_file():
             raise ConfigError(f"Quality config not found: {path}")
@@ -84,32 +84,32 @@ class QualityConfig:
         return cls(str(path), str(version), hashlib.sha256(data).hexdigest(), int(raw.get("analysis_size", 512)),
                    {key: float(checks[key]) for key in REQUIRED_CHECKS})
 
-    def reference(self) -> Dict[str, Any]:
+    def reference(self) -> dict[str, Any]:
         return {"path": self.path, "version": self.version, "sha256": self.sha256}
 
 
 @dataclass
 class QualityResult:
     status: str
-    reason_codes: List[str]
-    measurements: Dict[str, float]
-    thresholds: Dict[str, float]
-    config_reference: Dict[str, Any]
-    details: Dict[str, Any] = field(default_factory=dict)
+    reason_codes: list[str]
+    measurements: dict[str, float]
+    thresholds: dict[str, float]
+    config_reference: dict[str, Any]
+    details: dict[str, Any] = field(default_factory=dict)
 
     @property
     def accepted(self) -> bool:
         return self.status == ACCEPTED
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
 class QualityGate:
-    def __init__(self, config: Optional[QualityConfig] = None) -> None:
+    def __init__(self, config: QualityConfig | None = None) -> None:
         self.config = config or QualityConfig.load()
 
-    def evaluate(self, source: Union[ImageSource, DecodedImage], **decode_kwargs: Any) -> QualityResult:
+    def evaluate(self, source: ImageSource | DecodedImage, **decode_kwargs: Any) -> QualityResult:
         if not isinstance(source, DecodedImage):
             try:
                 source = decode_image(source, **decode_kwargs)
@@ -120,9 +120,9 @@ class QualityGate:
         status, reasons, rounded = self._decide(measures)
         return QualityResult(status, reasons, rounded, dict(self.config.checks), self.config.reference())
 
-    def _decide(self, m: Dict[str, float]):
+    def _decide(self, m: dict[str, float]):
         c = self.config.checks
-        reasons: List[str] = []
+        reasons: list[str] = []
         short, long = min(m["width"], m["height"]), max(m["width"], m["height"])
         if short < c["min_side_px"]:
             reasons.append("TOO_SMALL")

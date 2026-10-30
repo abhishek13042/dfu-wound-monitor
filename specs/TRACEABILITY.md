@@ -51,7 +51,7 @@ Acceptance
 | REQ-P00-S04-002 | P00-S04 | docs/architecture/system-architecture.md | Quality gate design check | System Architecture Doc | COMPLETED |
 | REQ-P00-S04-003 | P00-S04 | src/quality/__init__.py & docs/architecture/system-architecture.md | Quality module architecture check | System Architecture Doc | COMPLETED |
 | REQ-P00-S04-004 | P00-S04 | docs/architecture/system-architecture.md | Error handling specification | System Architecture Doc | COMPLETED |
-| REQ-P00-S04-005 | P00-S04 | src/detection/__init__.py & docs/architecture/system-architecture.md | Detection module boundary check | System Architecture Doc | COMPLETED |
+| REQ-P00-S04-005 | P00-S04 | docs/architecture/system-architecture.md (optional stage; empty package removed 2026-10-30) | Detection module boundary check | System Architecture Doc | COMPLETED |
 | REQ-P00-S04-006 | P00-S04 | docs/architecture/system-architecture.md | Bounding box schema check | System Architecture Doc | COMPLETED |
 | REQ-P00-S04-007 | P00-S04 | src/segmentation/__init__.py & docs/architecture/system-architecture.md | Segmentation module boundary check | System Architecture Doc | COMPLETED |
 | REQ-P00-S04-008 | P00-S04 | specs/phase-00/06-evaluation-and-success-criteria.md | Metric protocol review | Evaluation Spec | COMPLETED |
@@ -61,13 +61,13 @@ Acceptance
 | REQ-P00-S04-012 | P00-S04 | docs/architecture/system-architecture.md | Record provenance check | System Architecture Doc | COMPLETED |
 | REQ-P00-S04-013 | P00-S04 | src/longitudinal/__init__.py & docs/architecture/system-architecture.md | Longitudinal boundary check | System Architecture Doc | COMPLETED |
 | REQ-P00-S04-014 | P00-S04 | specs/phase-00/01-project-definition.md & README.md | Clinical boundary audit | README Disclaimer | COMPLETED |
-| REQ-P00-S04-015 | P00-S04 | api/ & docs/architecture/system-architecture.md | API layer layout check | API Directory Layout | COMPLETED |
+| REQ-P00-S04-015 | P00-S04 | src/api/ & docs/architecture/system-architecture.md | API layer layout check | API package layout | COMPLETED |
 | REQ-P00-S04-016 | P00-S04 | docs/architecture/system-architecture.md | Error handling specification | System Architecture Doc | COMPLETED |
-| REQ-P00-S04-017 | P00-S04 | database/README.md & docs/architecture/system-architecture.md | Database architecture review | Database README | COMPLETED |
+| REQ-P00-S04-017 | P00-S04 | src/storage/database.py & docs/architecture/system-architecture.md | Database architecture review | Storage module | COMPLETED |
 | REQ-P00-S04-018 | P00-S04 | docs/architecture/system-architecture.md | Model versioning contract | System Architecture Doc | COMPLETED |
-| REQ-P00-S04-019 | P00-S04 | frontend/README.md & docs/architecture/system-architecture.md | Frontend dashboard design check | Frontend README | COMPLETED |
-| REQ-P00-S04-020 | P00-S04 | experiments/README.md | Experiment tracking rules | Experiments README | COMPLETED |
-| REQ-P00-S04-021 | P00-S04 | tests/ & scripts/verify_phase_00.py | Integrity test execution | Test Execution Output | COMPLETED |
+| REQ-P00-S04-019 | P00-S04 | src/dashboard/index.html & docs/architecture/system-architecture.md | Frontend dashboard design check | Dashboard source | COMPLETED |
+| REQ-P00-S04-020 | P00-S04 | docs/development/EXPERIMENTS.md | Experiment tracking rules | Experiment record guide | COMPLETED |
+| REQ-P00-S04-021 | P00-S04 | tests/ & scripts/verification/verify_phase_00.py | Integrity test execution | Test Execution Output | COMPLETED |
 | REQ-P00-S04-022 | P00-S04 | docker/README.md & README.md | Deployment structure review | Docker README | COMPLETED |
 | REQ-P00-S05-001 | P00-S05 | docs/architecture/system-architecture.md | Pipeline separation check | System Architecture Doc | COMPLETED |
 | REQ-P00-S05-002 | P00-S05 | docs/architecture/system-architecture.md | Component decoupling check | System Architecture Doc | COMPLETED |
@@ -83,7 +83,7 @@ Acceptance
 | REQ-P00-S06-004 | P00-S06 | specs/phase-00/06-evaluation-and-success-criteria.md | Measurement evaluation design | Evaluation Spec | COMPLETED |
 | REQ-P00-S06-005 | P00-S06 | specs/phase-00/06-evaluation-and-success-criteria.md | Visual inspection protocol | Evaluation Spec | COMPLETED |
 | REQ-P00-S06-006 | P00-S06 | specs/phase-00/06-evaluation-and-success-criteria.md | Error taxonomy definition | Evaluation Spec | COMPLETED |
-| REQ-P00-S06-007 | P00-S06 | experiments/README.md | Experiment logging format | Experiments README | COMPLETED |
+| REQ-P00-S06-007 | P00-S06 | docs/development/EXPERIMENTS.md | Experiment logging format | Experiment record guide | COMPLETED |
 | REQ-P00-S06-008 | P00-S06 | specs/phase-00/06-evaluation-and-success-criteria.md | Metric reporting policy check | Evaluation Spec | COMPLETED |
 | REQ-P00-S07-001 | P00-S07 | specs/phase-00/07-risks-limitations-and-acceptance.md | Limitation register audit | Risk Register | COMPLETED |
 | REQ-P00-S07-002 | P00-S07 | specs/phase-00/07-risks-limitations-and-acceptance.md | Leakage risk assessment | Risk Register | COMPLETED |
@@ -108,7 +108,7 @@ Acceptance
 | REQ-P01-S01-007 | P01-S01 | reports/dataset_verification_report.md | Limitation register check | dataset_verification_report.md | COMPLETED |
 | REQ-P01-S01-008 | P01-S01 | data/external/dataset_registry.json | Verification taxonomy check | dataset_registry.json | COMPLETED |
 | REQ-P01-S01-009 | P01-S01 | reports/dataset_verification_report.md | Proposed role audit | dataset_verification_report.md | COMPLETED |
-| REQ-P01-S01-010 | P01-S01 | scripts/run_phase_01_pipeline.py | Ingestion gateway check | pipeline output | COMPLETED |
+| REQ-P01-S01-010 | P01-S01 | scripts/data/run_phase_01_pipeline.py | Ingestion gateway check | pipeline output | COMPLETED |
 | REQ-P01-S02-001 | P01-S02 | src/data/ingestion.py | Filter verification | reports/ingestion_report.json | COMPLETED |
 | REQ-P01-S02-002 | P01-S02 | src/data/ingestion.py | Immutability audit | data/raw/ storage layer | COMPLETED |
 | REQ-P01-S02-003 | P01-S02 | src/data/ingestion.py | Provenance tracking check | reports/ingestion_report.json | COMPLETED |
@@ -159,7 +159,7 @@ Acceptance
 | REQ-P01-S06-006 | P01-S06 | reports/eda_summary.json | Split distribution comparison | eda_summary.json | COMPLETED |
 | REQ-P01-S06-007 | P01-S06 | src/data/eda.py | Segmentation overlay renderer | phase_01_annotation_grid.png | COMPLETED |
 | REQ-P01-S06-008 | P01-S06 | outputs/visualizations/phase_01_annotation_grid.png | Visualization grid check | phase_01_annotation_grid.png | COMPLETED |
-| REQ-P01-S06-009 | P01-S06 | scripts/run_phase_01_pipeline.py | Reproducible EDA execution | eda_summary.json | COMPLETED |
+| REQ-P01-S06-009 | P01-S06 | scripts/data/run_phase_01_pipeline.py | Reproducible EDA execution | eda_summary.json | COMPLETED |
 | REQ-P01-S06-010 | P01-S06 | src/data/eda.py | Deterministic grid sampling | phase_01_annotation_grid.png | COMPLETED |
 | REQ-P01-S06-011 | P01-S06 | reports/eda_summary.json | Compatible stats policy check | eda_summary.json | COMPLETED |
 
@@ -265,13 +265,13 @@ P02-S04 to P02-S07 are now COMPLETED via SPEC-02-02/03.
 
 | Requirement | Implementation | Verification | Status |
 |---|---|---|---|
-| REQ-SPEC-02-03-001 held-out split | `src/data/heldout_split.py`, `scripts/build_fuseg2021_heldout_manifest.py` | `test_derive_heldout_manifest_*`, split report | PASS |
+| REQ-SPEC-02-03-001 held-out split | `src/data/heldout_split.py`, `scripts/data/build_fuseg2021_heldout_manifest.py` | `test_derive_heldout_manifest_*`, split report | PASS |
 | REQ-SPEC-02-03-002 near-duplicate grouping | `src/data/near_duplicates.py` | `test_phash_*`, `test_near_duplicate_groups_are_transitive` | PASS |
 | REQ-SPEC-02-03-003 test-neighbour quarantine | `derive_heldout_manifest` | `test_derive_heldout_manifest_roles_and_guards` | PASS (7 quarantined) |
-| REQ-SPEC-02-03-004 selection isolation | `strong_trainer.py`, `config_strong.py`, `scripts/run_spec_02_03.py` | `test_strong_config_rejects_unsafe_values`, train smoke test | PASS |
+| REQ-SPEC-02-03-004 selection isolation | `strong_trainer.py`, `config_strong.py`, `scripts/training/run_spec_02_03.py` | `test_strong_config_rejects_unsafe_values`, train smoke test | PASS |
 | REQ-SPEC-02-03-005 native-resolution scoring | `src/segmentation/inference.py` | `test_tune_postprocessing_prefers_cleanup_and_scores`, CLI smoke run | PASS |
 | REQ-SPEC-02-03-006 metrics | `src/segmentation/metrics.py` | `test_pooled_and_nonempty_metrics`, `test_hd95_edge_cases` | PASS |
-| REQ-SPEC-02-03-007 external check | `scripts/build_lowerlimb_external_manifest.py`, `run_spec_02_03.py --external` | CLI smoke run | PASS |
+| REQ-SPEC-02-03-007 external check | `scripts/data/build_lowerlimb_external_manifest.py`, `run_spec_02_03.py --external` | CLI smoke run | PASS |
 | REQ-SPEC-02-03-008 reproducibility record | `run_spec_02_03.py` experiment record | CLI smoke run | PASS |
 | Real held-out and external results | Kaggle T4 run, CPU re-verification | `reports/experiments/spec-02-03/*.json` | PASS |
 
@@ -342,10 +342,103 @@ ST = `tests/api/test_p05_storage.py`, REL = `tests/release/test_p06_release.py`.
 | REQ-P06-S02-002 latency/memory with hardware | `scripts/evaluation/run_phase_06_benchmark.py` | `reports/final/p06_benchmark.json` | PASS |
 | REQ-P06-S02-003 five failure classes | `failure_class` in the error envelope | API `test_every_error_has_a_failure_class`; benchmark boundary inputs | PASS |
 | REQ-P06-S02-004 optimisation needs a measured bottleneck | benchmark `optimisation_decision` | none applied (no latency requirement) | PASS |
-| REQ-P06-S03-001 clean install and start | `docs/release/RELEASE.md` | smoke test on an empty data dir; fresh-venv install on a second machine **not exercised** | PARTIAL |
+| REQ-P06-S03-001 clean install and start | `docs/release/RELEASE.md`, `.github/workflows/ci.yml` | smoke test on an empty data dir; empty Python 3.12 venv on Windows gave 263 passed, 2 skipped; Linux waits for the first Actions run | PARTIAL |
 | REQ-P06-S03-002 health: service vs model | `/health/live`, `/health/ready` | REL `test_health_separates_service_from_model`; API `test_readiness_reports_missing_model` | PASS |
 | REQ-P06-S03-003 versions/configs/limitations/commands | `scripts/deployment/build_release_manifest.py` | REL `test_release_manifest_builds`; `reports/final/release_manifest.json` | PASS |
 | REQ-P06-S03-004 no clinical implication | limitations, labels, dashboard, RELEASE.md | REL `test_no_unqualified_clinical_claims` | PASS |
+
+## Phases 07–10 (planned)
+
+These requirements are specified and not implemented. The paths are planned locations.
+
+| Requirement | Planned implementation | Planned test | Planned evidence | Status |
+|---|---|---|---|---|
+| REQ-P07-S01-001 | `.github/workflows/ci.yml` | Workflow run on a pull request | Workflow written; ruff, mypy and pytest pass locally; no Actions run yet | IN_PROGRESS |
+| REQ-P07-S01-002 | `.github/workflows/ci.yml` install job | Matrix job | Windows, Python 3.12, empty venv: 263 passed, 2 skipped on 2026-10-30; Linux needs the Actions run | IN_PROGRESS |
+| REQ-P07-S01-003 | `.github/workflows/ci.yml` docker job | Container start check | Written; Docker is not installed locally, so the image build is unproven | IN_PROGRESS |
+| REQ-P07-S01-004 | Published Space | `smoke_test.py --url <space>` | Waiting for `hf auth login` and approval to publish | BLOCKED |
+| REQ-P07-S01-005 | `scripts/deployment/fetch_checkpoint.py`, `scripts/deployment/check_refuses_bad_model.py` | Container test with a wrong hash | Running service with a tampered checkpoint gave 503 on readiness and analysis, CHECKPOINT_CHECKSUM_MISMATCH; container run needs the docker job | IN_PROGRESS |
+| REQ-P07-S02-001 | `src/storage/repository.py` | `tests/storage/test_repository.py` | `test_api_layer_contains_no_sql`, 279 passed on PostgreSQL | COMPLETED |
+| REQ-P07-S02-002 | `src/storage/migrations/` | `test_migration_round_trip`, `test_migrations_match_the_models` | Round trip passes on SQLite and PostgreSQL 16 | COMPLETED |
+| REQ-P07-S02-003 | Parametrised test fixture | `DFU_TEST_DATABASE_URL`; CI `postgres` job | Local PostgreSQL 16: all passed. CI awaits a push | IN_PROGRESS |
+| REQ-P07-S02-004 | `scripts/deployment/import_sqlite.py` | `test_import_verifies_counts` | `reports/deployment/p07_s02_import_report.json` | COMPLETED |
+| REQ-P07-S02-005 | `src/api/app.py` | `tests/api/`, `tests/storage/test_database_outage.py` | Smoke test 8/8 with the real model on PostgreSQL | COMPLETED |
+| REQ-P07-S03-001 | `src/storage/blobs.py` | `tests/storage/test_blob_contract.py` | Contract tests pass on local disk and moto. MinIO in CI awaits a push | IN_PROGRESS |
+| REQ-P07-S03-002 | `src/storage/blobs.py` | `test_corrupt_blob_detected` | Test run | COMPLETED |
+| REQ-P07-S03-003 | `src/api/uploads.py` | `test_upload_url_limits` | Test run | COMPLETED |
+| REQ-P07-S03-004 | `src/api/uploads.py` | `test_rejects_disguised_file` | Test run | COMPLETED |
+| REQ-P07-S03-005 | `src/storage/blobs.py` | `test_no_public_access` | Test run on moto. A hosted bucket has not been created or reviewed | IN_PROGRESS |
+| REQ-P07-S04-001 | `src/api/auth.py` | `tests/api/test_auth.py` | Test run | COMPLETED |
+| REQ-P07-S04-002 | Repository owner filter | `test_cross_user_isolation`, for every route | Test run | COMPLETED |
+| REQ-P07-S04-003 | `src/api/auth.py` | `test_rejects_bad_tokens` | `reports/deployment/p07_s04_security_review.md` | COMPLETED |
+| REQ-P07-S04-004 | `src/api/account.py` | `test_account_deletion_is_complete` | Test run | COMPLETED |
+| REQ-P07-S04-005 | Alembic revision | `test_owner_migration` | Passes locally on SQLite and PostgreSQL 16. CI log awaits a push | IN_PROGRESS |
+| REQ-P07-S05-001 | `src/api/analyses_v2.py` | `test_submit_does_not_run_model` | Test run, with the queue stubbed. Real Redis submits are covered by `tests/worker/test_redis.py` | COMPLETED |
+| REQ-P07-S05-002 | `src/worker/state.py` | `test_state_machine`, `test_a_job_only_moves_from_the_state_it_is_in` | Test run | COMPLETED |
+| REQ-P07-S05-003 | `src/worker/tasks.py` | `test_redelivery_is_idempotent`, `test_only_one_worker_can_claim_a_job`, `test_two_workers_finish_a_burst_with_no_duplicates_or_losses` | Test run | COMPLETED |
+| REQ-P07-S05-004 | `src/worker/tasks.py` | `test_retry_policy`, `test_input_and_model_errors_do_not_retry`, `test_a_retry_is_delivered_after_its_back_off` | Test run | COMPLETED |
+| REQ-P07-S05-005 | `src/worker/tasks.py` | `test_worker_matches_pipeline` | `reports/deployment/p07_s05_parity_report.json`: 5 real images, identical results and mask hashes | COMPLETED |
+| REQ-P07-S05-006 | `src/api/app.py` | `test_readiness_covers_the_queue`, `test_model_route_works_without_a_model_in_the_api` | Test run | COMPLETED |
+| REQ-P07-S06-001 | `scripts/deployment/export_onnx.py` | `test_export_records_provenance` | `models/metadata/` record | NOT_STARTED |
+| REQ-P07-S06-002 | `src/inference/onnx_engine.py` | `test_engine_interface_parity` | Test run | NOT_STARTED |
+| REQ-P07-S06-003 | `scripts/evaluation/run_onnx_parity.py` | Parity run | `reports/final/p07_s06_onnx_parity.json` | NOT_STARTED |
+| REQ-P07-S06-004 | `scripts/evaluation/run_phase_06_benchmark.py` | Benchmark run | `reports/final/p07_s06_onnx_benchmark.json` | NOT_STARTED |
+| REQ-P07-S06-005 | `configs/inference/` | Decision entry | `docs/architecture/decisions.md` | NOT_STARTED |
+| REQ-P08-S01-001 | `web/lib/api/` | CI schema diff | CI log | NOT_STARTED |
+| REQ-P08-S01-002 | `web/components/MedicalNotice.tsx` | Playwright check over all routes | Test report | NOT_STARTED |
+| REQ-P08-S01-003 | `web/middleware.ts` | Playwright auth test | Test report | NOT_STARTED |
+| REQ-P08-S01-004 | `web/lib/errors.ts` | Unit test over all categories | Test report | NOT_STARTED |
+| REQ-P08-S01-005 | `web/` layouts | axe and Playwright | Test report | NOT_STARTED |
+| REQ-P08-S02-001 | `web/components/Upload.tsx` | Playwright upload test | Test report | NOT_STARTED |
+| REQ-P08-S02-002 | `web/app/analyses/[id]/` | Playwright with mocked states | Test report | NOT_STARTED |
+| REQ-P08-S02-003 | `web/components/QualityResult.tsx` | Component test | Test report | NOT_STARTED |
+| REQ-P08-S02-004 | `web/components/Measurements.tsx` | Component test | Test report | NOT_STARTED |
+| REQ-P08-S02-005 | `web/components/Provenance.tsx` | Playwright check | Test report | NOT_STARTED |
+| REQ-P08-S02-006 | `web/e2e/` | Playwright in CI | Test report | NOT_STARTED |
+| REQ-P08-S03-001 | `web/components/TrendChart.tsx` | Component test | Test report | NOT_STARTED |
+| REQ-P08-S03-002 | `web/components/Exclusions.tsx` | Component test | Test report | NOT_STARTED |
+| REQ-P08-S03-003 | `web/components/TrendChart.tsx` | Component test | Test report | NOT_STARTED |
+| REQ-P08-S03-004 | `web/components/TrendNotice.tsx` | Playwright check | Test report | NOT_STARTED |
+| REQ-P08-S03-005 | `web/components/Compare.tsx` | Component test | Test report | NOT_STARTED |
+| REQ-P09-S01-001 | `src/measurement/marker.py` | `tests/measurement/test_marker.py` | Test run | NOT_STARTED |
+| REQ-P09-S01-002 | `src/measurement/marker.py` | `test_marker_fallbacks` | Test run | NOT_STARTED |
+| REQ-P09-S01-003 | `scripts/evaluation/run_marker_validation.py` | Validation run | `reports/final/p09_s01_marker_validation.json` | NOT_STARTED |
+| REQ-P09-S01-004 | `src/measurement/calibration.py` | `test_scale_conflict` | Test run | NOT_STARTED |
+| REQ-P09-S01-005 | API limitation text | `test_limitation_present` | Test run | NOT_STARTED |
+| REQ-P09-S02-001 | `web/components/Heatmap.tsx` | Component test | Test report | NOT_STARTED |
+| REQ-P09-S02-002 | `src/inference/uncertainty.py` | `test_disagreement_known_inputs` | Test run | NOT_STARTED |
+| REQ-P09-S02-003 | `scripts/evaluation/run_uncertainty_study.py` | Study run | `reports/final/p09_s02_uncertainty.json` | NOT_STARTED |
+| REQ-P09-S02-004 | `web/components/Heatmap.tsx` | Language test | Test report | NOT_STARTED |
+| REQ-P09-S03-001 | `web/components/MaskEditor/` | Playwright test | Test report | NOT_STARTED |
+| REQ-P09-S03-002 | `src/api/corrections.py` | `test_original_is_immutable` | Test run | NOT_STARTED |
+| REQ-P09-S03-003 | `src/api/corrections.py` | `test_measurements_from_corrected_mask` | Test run | NOT_STARTED |
+| REQ-P09-S03-004 | `src/longitudinal/` | `test_trend_marks_corrected` | Test run | NOT_STARTED |
+| REQ-P09-S03-005 | `src/api/corrections.py` | `test_export_requires_opt_in` | Test run | NOT_STARTED |
+| REQ-P09-S04-001 | `reports/experiments/p09_s04_protocol.md` | Review of the protocol | Study report | NOT_STARTED |
+| REQ-P09-S04-002 | `data/manifests/` | Split leakage test | Manifest | NOT_STARTED |
+| REQ-P09-S04-003 | `scripts/evaluation/` | Evaluation run | Comparison report | NOT_STARTED |
+| REQ-P09-S04-004 | `docs/deployment/MODEL_CARD.md` | Claim-check test | Model card | NOT_STARTED |
+| REQ-P09-S04-005 | `configs/inference/` | Hash test | Release record | NOT_STARTED |
+| REQ-P10-S01-001 | `src/api/middleware.py` | `test_request_id_propagates` | Test run | NOT_STARTED |
+| REQ-P10-S01-002 | `src/observability/metrics.py` | `test_metrics_exposed` | Dashboard export | NOT_STARTED |
+| REQ-P10-S01-003 | `src/observability/scrub.py` | `test_log_scrubbing` | Test run | NOT_STARTED |
+| REQ-P10-S01-004 | `deploy/monitoring/alerts.yml` | Injected-fault test | Alert record | NOT_STARTED |
+| REQ-P10-S02-001 | `tests/load/locustfile.py` | Load run | `reports/final/p10_s02_load.json` | NOT_STARTED |
+| REQ-P10-S02-002 | `scripts/evaluation/` | Load run | `reports/final/p10_s02_load.json` | NOT_STARTED |
+| REQ-P10-S02-003 | `docs/deployment/SLO.md` | Document review | SLO document | NOT_STARTED |
+| REQ-P10-S02-004 | `src/api/analyses_v2.py` | Overload run | Report | NOT_STARTED |
+| REQ-P10-S02-005 | `deploy/` | Scaling run | Report | NOT_STARTED |
+| REQ-P10-S03-001 | `src/worker/retention.py` | `test_retention_deletes_all` | Retention log | NOT_STARTED |
+| REQ-P10-S03-002 | `src/preprocessing/sanitise.py` | `test_exif_removed` | Test run | NOT_STARTED |
+| REQ-P10-S03-003 | `src/api/consent.py` | `test_upload_requires_consent` | Test run | NOT_STARTED |
+| REQ-P10-S03-004 | `src/api/limits.py` | `test_rate_limits` | Test run | NOT_STARTED |
+| REQ-P10-S03-005 | `docs/deployment/THREAT_MODEL.md` | Document review | Threat model | NOT_STARTED |
+| REQ-P10-S03-006 | `.github/workflows/ci.yml` | CI job | Scan report | NOT_STARTED |
+| REQ-P10-S04-001 | `src/mlops/registry.py` | `test_registry_requires_fields` | Test run | NOT_STARTED |
+| REQ-P10-S04-002 | `scripts/deployment/promote_model.py` | `test_gate_blocks_regression` | Promotion record | NOT_STARTED |
+| REQ-P10-S04-003 | `scripts/deployment/promote_model.py` | Rollback drill | Drill record | NOT_STARTED |
+| REQ-P10-S04-004 | `src/mlops/drift.py` | `test_drift_detects_shift` | Dashboard export | NOT_STARTED |
+| REQ-P10-S04-005 | `src/mlops/drift.py` | Text review | Alert sample | NOT_STARTED |
 
 No future requirement is considered implemented or complete merely because the
 architecture document contains a conceptual module boundary.

@@ -18,9 +18,11 @@ from __future__ import annotations
 
 import csv
 import io
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, cast
 
 from src.longitudinal.comparison import (
     AVAILABLE,
@@ -31,6 +33,7 @@ from src.longitudinal.comparison import (
     canonical_hash,
     carried_warnings,
     change,
+    elapsed_days,
     metric_values,
     pair_problems,
     point_problems,
@@ -44,19 +47,19 @@ TREND_VERSION = "p04-s03-v1"
 @dataclass
 class TrendResult:
     status: str
-    case_id: Optional[str]
-    basis: Optional[str]
-    unit: Dict[str, str]
-    rows: List[Dict[str, Any]]
-    excluded: List[Dict[str, Any]]
-    warnings: List[Dict[str, Any]]
-    reason_codes: List[str]
-    policy: Dict[str, Any]
+    case_id: str | None
+    basis: str | None
+    unit: dict[str, str]
+    rows: list[dict[str, Any]]
+    excluded: list[dict[str, Any]]
+    warnings: list[dict[str, Any]]
+    reason_codes: list[str]
+    policy: dict[str, Any]
     trend_id: str
     version: str = TREND_VERSION
     label: str = TREND_LABEL
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     def to_csv(self) -> str:
@@ -128,7 +131,7 @@ def _sort_key(point: MeasurementPoint):
             point.examination.examination_id, point.analysis.analysis_id)
 
 
-def build_trend(points: Sequence[MeasurementPoint], policy: Optional[CompatibilityPolicy] = None) -> TrendResult:
+def build_trend(points: Sequence[MeasurementPoint], policy: CompatibilityPolicy | None = None) -> TrendResult:
     if policy is None:
         raise ValueError("A CompatibilityPolicy is required to build a trend")
     ordered = sorted(points, key=_sort_key)
@@ -141,8 +144,8 @@ def build_trend(points: Sequence[MeasurementPoint], policy: Optional[Compatibili
     if len(case_ids) > 1:
         return TrendResult(UNAVAILABLE, None, None, {}, [], [], [], ["MIXED_CASES"], policy.to_dict(), trend_id)
 
-    excluded: List[Dict[str, Any]] = []
-    usable: List[MeasurementPoint] = []
+    excluded: list[dict[str, Any]] = []
+    usable: list[MeasurementPoint] = []
     for point in ordered:
         problems = point_problems(point, policy)
         if not problems and usable:
@@ -160,10 +163,10 @@ def build_trend(points: Sequence[MeasurementPoint], policy: Optional[Compatibili
         reasons = ["INSUFFICIENT_POINTS"] + (["NO_BASELINE"] if not usable else [])
         return TrendResult(UNAVAILABLE, case_id, None, {}, [], excluded, [], reasons, policy.to_dict(), trend_id)
 
-    basis = usable[0].analysis.measurement_basis
+    basis = cast(str, usable[0].analysis.measurement_basis)
     unit_index = 3 if basis == "PHYSICALLY_CALIBRATED" else 2
     unit = {name: keys[unit_index] for name, keys in METRICS.items()}
-    warnings: List[Dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
     if basis == "PIXEL_BASED":
         warnings.append({"code": "PIXEL_SCALE_NOT_CONTROLLED",
                          "message": "No calibration: pixel changes also reflect camera distance and zoom"})
@@ -175,7 +178,7 @@ def build_trend(points: Sequence[MeasurementPoint], policy: Optional[Compatibili
     rows, previous = [], None
     for point in usable:
         values = metric_values(point, basis)
-        days = (point.examination.captured_at - baseline.examination.captured_at).total_seconds() / 86400.0
+        days = elapsed_days(baseline, point)
         flags = [w["code"] for w in carried_warnings(point, "point")]
         from_baseline = {name: change(base_values[name], values[name]) for name in METRICS}
         if from_baseline["area"]["state"] == "BASELINE_ZERO" and "BASELINE_ZERO" not in flags and point is not baseline:
@@ -184,7 +187,7 @@ def build_trend(points: Sequence[MeasurementPoint], policy: Optional[Compatibili
         if previous is not None:
             prev_values = metric_values(previous, basis)
             from_previous = {name: change(prev_values[name], values[name]) for name in METRICS}
-            gap = (point.examination.captured_at - previous.examination.captured_at).total_seconds() / 86400.0
+            gap = elapsed_days(previous, point)
             if gap > policy.max_gap_days:
                 flags.append("LONG_GAP")
                 warnings.append({"code": "LONG_GAP", "examination_id": point.examination.examination_id,
@@ -192,7 +195,7 @@ def build_trend(points: Sequence[MeasurementPoint], policy: Optional[Compatibili
         rows.append({
             "examination_id": point.examination.examination_id,
             "analysis_id": point.analysis.analysis_id,
-            "captured_at": point.examination.captured_at.isoformat(),
+            "captured_at": cast(datetime, point.examination.captured_at).isoformat(),
             "days_since_baseline": round(days, 4),
             "is_baseline": point is baseline,
             "model_version": point.analysis.model_version,

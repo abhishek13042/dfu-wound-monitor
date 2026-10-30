@@ -21,7 +21,7 @@ divisible by 32.
 
 from __future__ import annotations
 
-from typing import List, Sequence
+from collections.abc import Sequence
 
 import torch
 import torch.nn as nn
@@ -99,14 +99,14 @@ class ResNetUNet(nn.Module):
                 if module.bias is not None:
                     nn.init.zeros_(module.bias)
 
-    def encoder_parameters(self) -> List[nn.Parameter]:
+    def encoder_parameters(self) -> list[nn.Parameter]:
         return [
             parameter
             for module in (self.stem, self.layer1, self.layer2, self.layer3, self.layer4)
             for parameter in module.parameters()
         ]
 
-    def decoder_parameters(self) -> List[nn.Parameter]:
+    def decoder_parameters(self) -> list[nn.Parameter]:
         return [*self.decoder.parameters(), *self.head.parameters()]
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:

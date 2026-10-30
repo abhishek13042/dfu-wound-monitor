@@ -17,8 +17,9 @@ SPEC-02-03 evaluation contract:
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -48,7 +49,7 @@ def predict_logits_tta(model: nn.Module, images: torch.Tensor, tta: bool = True)
     return probabilities / views
 
 
-def load_binary_mask(path: Path, target_size: Optional[Tuple[int, int]] = None, threshold: int = 128) -> np.ndarray:
+def load_binary_mask(path: Path, target_size: tuple[int, int] | None = None, threshold: int = 128) -> np.ndarray:
     """Load a mask as ``uint8`` {0,1}.
 
     ``target_size`` is ``(width, height)``.  A mask whose size differs from its
@@ -84,20 +85,20 @@ def predict_native_probabilities(
     image_paths: Sequence[Path],
     input_height: int,
     input_width: int,
-    normalize_mean: List[float],
-    normalize_std: List[float],
+    normalize_mean: list[float],
+    normalize_std: list[float],
     device: torch.device,
     tta: bool = True,
     use_amp: bool = False,
     batch_size: int = 4,
-) -> List[np.ndarray]:
+) -> list[np.ndarray]:
     """Predict probability maps at each image's native resolution (``float16``)."""
 
     model.eval()
-    outputs: List[np.ndarray] = []
+    outputs: list[np.ndarray] = []
     for start in range(0, len(image_paths), batch_size):
         chunk = image_paths[start:start + batch_size]
-        native_sizes: List[Tuple[int, int]] = []
+        native_sizes: list[tuple[int, int]] = []
         tensors = []
         for path in chunk:
             with Image.open(path) as image_file:
@@ -122,12 +123,12 @@ def score_predictions(
     threshold: float,
     min_component_area: int = 0,
     include_hd95: bool = False,
-) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Binarize, post-process and score native-resolution predictions."""
 
     if not (len(sample_ids) == len(probabilities) == len(ground_truths)):
         raise ValueError("sample_ids, probabilities and ground_truths must have equal length")
-    per_sample: List[Dict[str, Any]] = []
+    per_sample: list[dict[str, Any]] = []
     for sample_id, probability, ground_truth in zip(sample_ids, probabilities, ground_truths):
         if probability.shape != ground_truth.shape:
             raise ValueError(f"{sample_id}: prediction {probability.shape} vs mask {ground_truth.shape}")
@@ -158,14 +159,14 @@ def tune_postprocessing(
     thresholds: Iterable[float] = DEFAULT_THRESHOLD_GRID,
     min_areas: Iterable[int] = DEFAULT_MIN_AREA_GRID,
     selection_metric: str = "mean_dice",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Grid-search threshold and minimum component area on validation data.
 
     Ties are broken toward threshold 0.5 and the smaller area, i.e. toward
     the least post-processing.
     """
 
-    grid: List[Dict[str, Any]] = []
+    grid: list[dict[str, Any]] = []
     for threshold in thresholds:
         for min_area in min_areas:
             aggregate, _ = score_predictions(sample_ids, probabilities, ground_truths, float(threshold), int(min_area))

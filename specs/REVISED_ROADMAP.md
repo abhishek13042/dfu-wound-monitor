@@ -4,7 +4,7 @@
 
 This document replaces the over-sliced Phase 03–12 roadmap with a smaller set
 of implementation phases. Phase 00 and Phase 01 remain completed historical
-foundations. Phase 02 remains the active baseline phase.
+foundations. Phases 00–06 are complete. Phases 07–10 are specified and not started (section 12).
 
 The roadmap is intentionally product-oriented: each phase delivers a usable
 capability and has a small number of specifications with clear interfaces,
@@ -239,8 +239,8 @@ The following are backlog items, not mandatory phases:
 - additional external-dataset generalization;
 - uncertainty estimation;
 - detector/localizer implementation when full-image segmentation is adequate;
-- ONNX/TensorRT optimization without a measured bottleneck;
-- advanced authentication, multi-tenant infrastructure, and cloud scaling;
+- optimization without a measured bottleneck (ONNX is now P07-S06, with a measurement gate);
+- multi-tenant organisations and multi-region scaling (single-user accounts are P07-S04);
 - clinical validation or treatment recommendation features.
 
 Each optional item requires its own approved specification before implementation.
@@ -278,3 +278,42 @@ A phase is complete only when:
 
 This roadmap reduces the number of management phases without weakening
 requirements, testing, or traceability.
+
+## 12. Phases 07–10 — Production Platform
+
+These phases turn the single-machine prototype into a public, multi-user research demonstration. It remains a
+research prototype. All specifications are `NOT_STARTED`, and each needs approval before implementation.
+
+| Spec | Name | Depends on |
+|---|---|---|
+| P07-S01 | Public Demo and Continuous Integration | P06-S03 |
+| P07-S02 | PostgreSQL and Managed Migrations | P05-S02, P07-S01 |
+| P07-S03 | Object Storage and Pre-Signed Uploads | P07-S02 |
+| P07-S04 | Authentication and Data Ownership | P07-S02 |
+| P07-S05 | Asynchronous Inference Queue and Workers | P07-S02, P07-S03 |
+| P07-S06 | ONNX Export and Serving Parity | P03-S01, P07-S01 |
+| P08-S01 | Next.js Frontend Foundation | P07-S04 |
+| P08-S02 | Analysis and Case Workflows | P08-S01, P07-S03, P07-S05 |
+| P08-S03 | Longitudinal Views | P08-S02, P04-S03 |
+| P09-S01 | Reference-Marker Calibration | P03-S03, P08-S02 |
+| P09-S02 | Model Confidence Visualisation | P03-S01, P08-S02 |
+| P09-S03 | Mask Correction Editor | P08-S02, P03-S03, P07-S02 |
+| P09-S04 | External Generalisation Study | SPEC-02-03, P06-S01 |
+| P10-S01 | Observability | P07-S05 |
+| P10-S02 | Load Testing and Service Objectives | P10-S01, P07-S06 |
+| P10-S03 | Security and Privacy Controls | P07-S03, P07-S04, P08-S02 |
+| P10-S04 | Model Lifecycle and Drift Monitoring | P07-S06, P09-S03, P10-S01 |
+
+```text
+P07-S01 → P07-S02 → P07-S03 ─┐
+   │         ├──→ P07-S04 ───┼──→ P08-S01 → P08-S02 → P08-S03
+   │         └───────────────┤                 │
+   └──→ P07-S06              └──→ P07-S05 ─────┤
+                                    │          ├──→ P09-S01, P09-S02, P09-S03
+                                    ▼          ▼
+                                 P10-S01 → P10-S02, P10-S03, P10-S04
+
+P09-S04 (generalisation study) depends only on SPEC-02-03 and P06-S01, and can start at any time.
+```
+
+P07-S01 comes first, because it closes the last open release item and protects all later work with CI.

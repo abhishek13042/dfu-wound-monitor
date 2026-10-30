@@ -33,9 +33,9 @@ import json
 import platform
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 from PIL import Image
@@ -66,7 +66,7 @@ FLAG_RULES = {
 }
 
 
-def overlap(pred: np.ndarray, gt: np.ndarray) -> Dict[str, Optional[float]]:
+def overlap(pred: np.ndarray, gt: np.ndarray) -> dict[str, float | None]:
     p, g = pred.astype(bool), gt.astype(bool)
     tp, fp, fn = int((p & g).sum()), int((p & ~g).sum()), int((~p & g).sum())
     if tp + fp + fn == 0:
@@ -83,7 +83,7 @@ def load_gt(path: Path, size) -> np.ndarray:
     return (np.asarray(mask) > 127).astype(np.uint8)
 
 
-def categorise(status: str, metrics: Dict[str, Any], pred_area: int, gt_area: int) -> str:
+def categorise(status: str, metrics: dict[str, Any], pred_area: int, gt_area: int) -> str:
     if status != COMPLETED:
         return "QUALITY_REJECTED"
     if gt_area == 0:
@@ -97,7 +97,7 @@ def categorise(status: str, metrics: Dict[str, Any], pred_area: int, gt_area: in
     return "GOOD"
 
 
-def quantiles(values: List[float]) -> Optional[Dict[str, float]]:
+def quantiles(values: list[float]) -> dict[str, float] | None:
     if not values:
         return None
     arr = np.asarray(values, dtype=np.float64)
@@ -107,21 +107,21 @@ def quantiles(values: List[float]) -> Optional[Dict[str, float]]:
             "p90": float(np.percentile(arr, 90)), "max": float(arr.max())}
 
 
-def histogram(values: List[float], edges: List[float]) -> Dict[str, int]:
+def histogram(values: list[float], edges: list[float]) -> dict[str, int]:
     counts, _ = np.histogram(np.clip(values, edges[0], edges[-1]), bins=edges)
     return {f"[{lo:g},{hi:g})": int(c) for lo, hi, c in zip(edges[:-1], edges[1:], counts)}
 
 
-def summarise(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+def summarise(rows: list[dict[str, Any]]) -> dict[str, Any]:
     done = [r for r in rows if r["status"] == COMPLETED]
     nonempty = [r for r in done if r["gt"]["area_px"] > 0]
     both = [r for r in nonempty if r["pred"]["area_px"] > 0]
     tp = sum(r["metrics"]["tp"] for r in done)
     fp = sum(r["metrics"]["fp"] for r in done)
     fn = sum(r["metrics"]["fn"] for r in done)
-    categories: Dict[str, int] = {name: 0 for name in CATEGORY_RULES}
-    flags: Dict[str, int] = {name: 0 for name in FLAG_RULES}
-    reasons: Dict[str, int] = {}
+    categories: dict[str, int] = {name: 0 for name in CATEGORY_RULES}
+    flags: dict[str, int] = {name: 0 for name in FLAG_RULES}
+    reasons: dict[str, int] = {}
     for r in rows:
         categories[r["category"]] += 1
         for flag in r["flags"]:
@@ -166,7 +166,7 @@ def summarise(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def reference_check(rows: List[Dict[str, Any]], reference_path: Optional[Path]) -> Optional[Dict[str, Any]]:
+def reference_check(rows: list[dict[str, Any]], reference_path: Path | None) -> dict[str, Any] | None:
     """Compare per-sample Dice against the Phase 02 held-out evaluation (independent code path)."""
 
     if not reference_path or not reference_path.is_file():
@@ -179,7 +179,7 @@ def reference_check(rows: List[Dict[str, Any]], reference_path: Optional[Path]) 
             "samples_differing_by_more_than_0.01": sum(d > 0.01 for d in diffs)}
 
 
-def plot(rows: List[Dict[str, Any]], out_dir: Path, tag: str) -> List[str]:
+def plot(rows: list[dict[str, Any]], out_dir: Path, tag: str) -> list[str]:
     import matplotlib
 
     matplotlib.use("Agg")
@@ -205,7 +205,7 @@ def plot(rows: List[Dict[str, Any]], out_dir: Path, tag: str) -> List[str]:
     return [path.relative_to(PROJECT_ROOT).as_posix()]
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--manifest", type=Path, default=PROJECT_ROOT / "data/manifests/fuseg2021_heldout_manifest.json")
     parser.add_argument("--split", default="test")
@@ -228,8 +228,8 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     engine = InferenceEngine.from_config(args.config)
     pipeline = AnalysisPipeline(engine)
-    rows: List[Dict[str, Any]] = []
-    integrity_failures: List[str] = []
+    rows: list[dict[str, Any]] = []
+    integrity_failures: list[str] = []
     started = time.perf_counter()
     for i, sample in enumerate(samples, 1):
         image_path = PROJECT_ROOT / sample["image_path"]
@@ -242,7 +242,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         seconds = time.perf_counter() - t0
         gt = load_gt(PROJECT_ROOT / sample["annotation_path"], (outcome.decoded.width, outcome.decoded.height))
         gt_m = measure(gt).pixel
-        row: Dict[str, Any] = {
+        row: dict[str, Any] = {
             "sample_id": sample["source_sample_id"], "status": outcome.status, "seconds": round(seconds, 4),
             "quality_reasons": outcome.quality.reason_codes,
             "gt": {"area_px": gt_m["area_px"], "components": gt_m["component_count"]},
@@ -283,7 +283,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     report = {
         "report": "P06-S01 end-to-end validation",
-        "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "command": "python " + " ".join([Path(sys.argv[0]).as_posix()] + (argv if argv is not None else sys.argv[1:])),
         "provenance": {
             "manifest": args.manifest.resolve().relative_to(PROJECT_ROOT).as_posix(),

@@ -12,8 +12,8 @@ unrelated images into one group, which only makes a group-aware split stricter.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Tuple
 
 import numpy as np
 from PIL import Image
@@ -65,9 +65,9 @@ def pairwise_hamming(hashes: Sequence[int]) -> np.ndarray:
 
 
 def find_near_duplicate_pairs(
-    hashes: Dict[str, int],
+    hashes: dict[str, int],
     max_distance: int = DEFAULT_MAX_HAMMING_DISTANCE,
-) -> List[Tuple[str, str, int]]:
+) -> list[tuple[str, str, int]]:
     """List ``(key_a, key_b, distance)`` pairs within ``max_distance``."""
 
     if not 0 <= max_distance <= 64:
@@ -80,11 +80,11 @@ def find_near_duplicate_pairs(
 
 def group_near_duplicates(
     keys: Iterable[str],
-    pairs: Iterable[Tuple[str, str, int]],
-) -> List[List[str]]:
+    pairs: Iterable[tuple[str, str, int]],
+) -> list[list[str]]:
     """Union-find connected components; every key appears in exactly one group."""
 
-    parent: Dict[str, str] = {key: key for key in keys}
+    parent: dict[str, str] = {key: key for key in keys}
 
     def find(key: str) -> str:
         while parent[key] != key:
@@ -99,7 +99,7 @@ def group_near_duplicates(
             low, high = sorted((root_first, root_second))
             parent[high] = low
 
-    groups: Dict[str, List[str]] = {}
+    groups: dict[str, list[str]] = {}
     for key in parent:
         groups.setdefault(find(key), []).append(key)
     return sorted((sorted(members) for members in groups.values()), key=lambda group: group[0])

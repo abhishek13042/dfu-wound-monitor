@@ -1,0 +1,21 @@
+{
+  "spec": "P07-S03",
+  "target": "moto S3 server on localhost (not a hosted bucket)",
+  "first_run": {
+    "files": 9,
+    "copied": 9,
+    "already_present": 0,
+    "verified": 9,
+    "failures": []
+  },
+  "second_run": {
+    "files": 9,
+    "copied": 0,
+    "already_present": 9,
+    "verified": 9,
+    "failures": []
+  },
+  "source_tree_sha256_before": "3903f7c8669eb4cf089e0605d701c352704d755af40dc0bac6f4bf5280767d78",
+  "source_tree_sha256_after": "3903f7c8669eb4cf089e0605d701c352704d755af40dc0bac6f4bf5280767d78",
+  "source_unchanged": true
+}

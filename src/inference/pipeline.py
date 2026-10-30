@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from src.inference.engine import InferenceEngine, InferenceRequest, InferenceResult
 from src.measurement.engine import Calibration, MeasurementConfig, MeasurementResult, measure
@@ -25,11 +25,11 @@ class AnalysisOutcome:
     status: str                                   # COMPLETED | QUALITY_REJECTED
     decoded: DecodedImage
     quality: QualityResult
-    inference: Optional[InferenceResult] = None
-    measurement: Optional[MeasurementResult] = None
-    warnings: List[Dict[str, Any]] = field(default_factory=list)
+    inference: InferenceResult | None = None
+    measurement: MeasurementResult | None = None
+    warnings: list[dict[str, Any]] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "request_id": self.request_id,
             "status": self.status,
@@ -43,14 +43,14 @@ class AnalysisOutcome:
 
 
 class AnalysisPipeline:
-    def __init__(self, engine: InferenceEngine, gate: Optional[QualityGate] = None,
-                 measurement_config: Optional[MeasurementConfig] = None) -> None:
+    def __init__(self, engine: InferenceEngine, gate: QualityGate | None = None,
+                 measurement_config: MeasurementConfig | None = None) -> None:
         self.engine = engine
         self.gate = gate or QualityGate()
         self.measurement_config = measurement_config or MeasurementConfig.load()
 
-    def analyze(self, image: Union[ImageSource, DecodedImage], *, calibration: Optional[Calibration] = None,
-                threshold: Optional[float] = None, request_id: Optional[str] = None) -> AnalysisOutcome:
+    def analyze(self, image: ImageSource | DecodedImage, *, calibration: Calibration | None = None,
+                threshold: float | None = None, request_id: str | None = None) -> AnalysisOutcome:
         request_id = request_id or uuid.uuid4().hex
         decoded = self.engine.decode(image)            # raises InputError subclasses
         quality = self.gate.evaluate(decoded)

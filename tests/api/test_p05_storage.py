@@ -3,20 +3,22 @@
 from __future__ import annotations
 
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from src.longitudinal.records import AnalysisRecord, CaseRecord, ExaminationRecord, ImageRecord
-from src.storage.database import SCHEMA_VERSION, BlobStore, Database, NotFoundError, StorageError
+from src.storage.blobs import BlobStore, LocalBlobStore
+from src.storage.database import SCHEMA_VERSION, NotFoundError, StorageError
+from src.storage.repository import Repository
 
-T0 = datetime(2026, 1, 5, 9, 30, tzinfo=timezone.utc)
+T0 = datetime(2026, 1, 5, 9, 30, tzinfo=UTC)
 MODEL = {"model_version": "m-1", "architecture": "ResNetUNet/test", "checkpoint_sha256": "a" * 64, "inference_config_sha256": "b" * 64}
 
 
 @pytest.fixture()
-def db(tmp_path):
-    database = Database(tmp_path / "test.sqlite3")
+def db(database_url):
+    database = Repository(database_url)
     database.register_model(MODEL)
     yield database
     database.close()
@@ -24,7 +26,7 @@ def db(tmp_path):
 
 @pytest.fixture()
 def blobs(tmp_path):
-    return BlobStore(tmp_path / "blobs")
+    return LocalBlobStore(tmp_path / "blobs")
 
 
 def _completed(image: ImageRecord, area: int = 100) -> AnalysisRecord:
@@ -36,7 +38,7 @@ def _completed(image: ImageRecord, area: int = 100) -> AnalysisRecord:
     )
 
 
-def _populated(db: Database, blobs: BlobStore):
+def _populated(db: Repository, blobs: BlobStore):
     case = db.add_case(CaseRecord.create(identity_status="VERIFIED", data_source="SYNTHETIC"))
     exam = db.add_examination(ExaminationRecord.create(case_id=case.case_id, captured_at=T0,
                                                        timestamp_source="USER_ENTERED"))
@@ -51,10 +53,10 @@ def _populated(db: Database, blobs: BlobStore):
 
 def test_migrations_are_idempotent(tmp_path):
     path = tmp_path / "m.sqlite3"
-    first = Database(path)
+    first = Repository(path)
     assert first.schema_version() == SCHEMA_VERSION
     first.close()
-    second = Database(path)
+    second = Repository(path)
     assert second.migrate() == []
     assert second.schema_version() == SCHEMA_VERSION
     second.close()
@@ -165,10 +167,11 @@ def test_blob_store_is_content_addressed_and_blocks_traversal(blobs):
 
 
 def test_database_constraints_exist_at_sql_level(tmp_path):
-    db = Database(tmp_path / "c.sqlite3")
+    db = Repository(tmp_path / "c.sqlite3")
     raw = sqlite3.connect(db.path)
     raw.execute("PRAGMA foreign_keys = ON")
     with pytest.raises(sqlite3.IntegrityError):
-        raw.execute("INSERT INTO cases VALUES ('c1', 'BOGUS', 'SYNTHETIC', NULL, NULL, '2026-01-01', '{}')")
+        raw.execute("INSERT INTO cases (case_id, owner_id, identity_status, data_source, created_at, record_json) "
+                    "VALUES ('c1', 'demo', 'BOGUS', 'SYNTHETIC', '2026-01-01', '{}')")
     raw.close()
     db.close()

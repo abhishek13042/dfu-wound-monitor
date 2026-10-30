@@ -50,6 +50,11 @@ def _gt(path: Path, size) -> np.ndarray:
     return np.asarray(mask) >= 128
 
 
+def _overlay(image: Image.Image, mask: np.ndarray, colour) -> Image.Image:
+    layer = Image.fromarray((mask * 255).astype(np.uint8)).resize((TILE, TILE), Image.Resampling.NEAREST)
+    return Image.composite(Image.blend(image, Image.new("RGB", image.size, colour), 0.5), image, layer)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--per-group", type=int, default=6, help="images per mask form for the probability check")
@@ -92,10 +97,7 @@ def main(argv=None) -> int:
                            "mean_probability_in_missed_region": round(float(prob[missed].mean()), 4) if missed.any() else None,
                            "share_of_missed_above_0.2": round(float((prob[missed] > 0.2).mean()), 4) if missed.any() else None})
             image = Image.open(PROJECT_ROOT / sample["image_path"]).convert("RGB").resize((TILE, TILE))
-            def overlay(mask, colour):
-                layer = Image.fromarray((mask * 255).astype(np.uint8)).resize((TILE, TILE), Image.Resampling.NEAREST)
-                return Image.composite(Image.blend(image, Image.new("RGB", image.size, colour), 0.5), image, layer)
-            tiles.append((image, overlay(gt, (255, 0, 0)), overlay(pred, (0, 160, 255))))
+            tiles.append((image, _overlay(image, gt, (255, 0, 0)), _overlay(image, pred, (0, 160, 255))))
         report["groups"][name] = {"n": len(rows), "dice": _summary(dice), "precision_nonempty_pred": _summary(precision),
                                   "recall": _summary(recall), "gt_area_fraction": _summary(gt_fraction),
                                   "probability_probe": probes}

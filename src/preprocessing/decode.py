@@ -9,9 +9,9 @@ from __future__ import annotations
 import hashlib
 import io
 import warnings
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence, Union
 
 import numpy as np
 from PIL import Image, ImageOps, UnidentifiedImageError
@@ -21,7 +21,7 @@ from src.inference.errors import InputMissingError, InputTooLargeError, InputUnr
 DEFAULT_ALLOWED_FORMATS = ("PNG", "JPEG", "BMP", "TIFF", "WEBP")
 DEFAULT_MAX_PIXELS = 50_000_000
 
-ImageSource = Union[bytes, str, Path]
+ImageSource = bytes | str | Path
 
 
 @dataclass(frozen=True)

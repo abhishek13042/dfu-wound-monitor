@@ -9,14 +9,14 @@ All errors are categorized into explicit issue taxonomies without altering raw f
 Coding Style: Beginner-Understandable Python
 """
 
-import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-from PIL import Image
+from typing import Any
+
 import numpy as np
+from PIL import Image
 
 
-def validate_image_file(image_path: Path) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+def validate_image_file(image_path: Path) -> tuple[bool, dict[str, Any] | None, str | None]:
     """
     Attempt to open and decode an image file using PIL.
 
@@ -70,16 +70,16 @@ def validate_image_file(image_path: Path) -> Tuple[bool, Optional[Dict[str, Any]
 
             return True, metadata, None
 
-    except Exception as error:
+    except Exception:
         # File could not be parsed or decoded by PIL
         return False, None, "unreadable_image"
 
 
 def validate_bounding_box(
-    bbox: Tuple[float, float, float, float],
+    bbox: tuple[float, float, float, float],
     image_width: int,
     image_height: int
-) -> Tuple[bool, Optional[str]]:
+) -> tuple[bool, str | None]:
     """
     Validate bounding box geometry [x_min, y_min, x_max, y_max].
 
@@ -116,7 +116,7 @@ def validate_segmentation_mask(
     mask_path: Path,
     expected_width: int,
     expected_height: int
-) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+) -> tuple[bool, dict[str, Any] | None, str | None]:
     """
     Validate binary or multi-class segmentation mask file.
 
@@ -178,16 +178,16 @@ def validate_segmentation_mask(
 
         return True, mask_stats, None
 
-    except Exception as error:
+    except Exception:
         return False, None, "invalid_mask"
 
 
 def run_dataset_quality_validation(
-    ingestion_report: Dict[str, Any],
+    ingestion_report: dict[str, Any],
     raw_images_dir: Path,
-    raw_annotations_dir: Optional[Path],
+    raw_annotations_dir: Path | None,
     require_annotation: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Perform full data quality and annotation validation across all ingested samples.
 
@@ -207,7 +207,7 @@ def run_dataset_quality_validation(
     print(f"Running quality validation for dataset: {dataset_name} ({len(samples)} samples)...")
 
     valid_samples_count = 0
-    issue_summary: Dict[str, int] = {
+    issue_summary: dict[str, int] = {
         "unreadable_image": 0,
         "malformed_annotation": 0,
         "invalid_bbox": 0,
@@ -220,7 +220,7 @@ def run_dataset_quality_validation(
         "duplicate": 0
     }
 
-    sample_results: List[Dict[str, Any]] = []
+    sample_results: list[dict[str, Any]] = []
 
     for sample in samples:
         sample_id = sample["sample_id"]
@@ -232,7 +232,7 @@ def run_dataset_quality_validation(
         # 1. Validate Image
         img_valid, img_meta, img_issue = validate_image_file(image_path)
 
-        if not img_valid:
+        if not img_valid or img_meta is None:
             if img_issue:
                 issue_summary[img_issue] = issue_summary.get(img_issue, 0) + 1
             sample_results.append({

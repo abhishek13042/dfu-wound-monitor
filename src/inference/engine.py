@@ -21,9 +21,9 @@ import json
 import platform
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 import torch
@@ -57,7 +57,7 @@ def sha256_file(path: Path, chunk_size: int = 1 << 20) -> str:
     return digest.hexdigest()
 
 
-def _require(mapping: Dict[str, Any], key: str, where: str) -> Any:
+def _require(mapping: dict[str, Any], key: str, where: str) -> Any:
     if key not in mapping or mapping[key] is None:
         raise ConfigError(f"Missing '{key}' in {where}")
     return mapping[key]
@@ -87,12 +87,12 @@ class InferenceConfig:
     max_pixels: int
     apply_exif_orientation: bool
     device: str
-    num_threads: Optional[int]
+    num_threads: int | None
     determinism_policy: str
-    raw: Dict[str, Any] = field(repr=False, compare=False, default_factory=dict)
+    raw: dict[str, Any] = field(repr=False, compare=False, default_factory=dict)
 
     @classmethod
-    def load(cls, path: Union[str, Path] = DEFAULT_INFERENCE_CONFIG, base_dir: Path = PROJECT_ROOT) -> "InferenceConfig":
+    def load(cls, path: str | Path = DEFAULT_INFERENCE_CONFIG, base_dir: Path = PROJECT_ROOT) -> InferenceConfig:
         path = Path(path)
         if not path.is_file():
             raise ConfigError(f"Inference config not found: {path}")
@@ -157,7 +157,7 @@ class InferenceConfig:
             raw=raw,
         )
 
-    def preprocessing(self) -> Dict[str, Any]:
+    def preprocessing(self) -> dict[str, Any]:
         return {
             "source": str(self.training_config_path.relative_to(PROJECT_ROOT)) if self.training_config_path.is_relative_to(PROJECT_ROOT) else str(self.training_config_path),
             "input_height": self.input_height,
@@ -177,19 +177,19 @@ class InferenceRequest:
     recorded as a warning and in provenance.
     """
 
-    image: Union[ImageSource, DecodedImage]
-    threshold: Optional[float] = None
-    request_id: Optional[str] = None
+    image: ImageSource | DecodedImage
+    threshold: float | None = None
+    request_id: str | None = None
 
 
 @dataclass
 class InferenceResult:
     probability_mask: np.ndarray      # float32 (H, W) at native resolution, values in [0, 1]
     binary_mask: np.ndarray           # uint8 (H, W) in {0, 1}, after post-processing
-    provenance: Dict[str, Any]
-    warnings: List[Dict[str, Any]]
+    provenance: dict[str, Any]
+    warnings: list[dict[str, Any]]
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         return {
             "foreground_pixels": int(self.binary_mask.sum()),
             "height": int(self.binary_mask.shape[0]),
@@ -200,7 +200,7 @@ class InferenceResult:
 
 
 class InferenceEngine:
-    def __init__(self, config: InferenceConfig, device: Optional[str] = None, verify_checksum: bool = True) -> None:
+    def __init__(self, config: InferenceConfig, device: str | None = None, verify_checksum: bool = True) -> None:
         self.config = config
         self.device = torch.device(device or config.device)
         if self.device.type == "cuda" and not torch.cuda.is_available():
@@ -210,7 +210,7 @@ class InferenceEngine:
         self.model, self.checkpoint_info = self._load_model(verify_checksum)
 
     @classmethod
-    def from_config(cls, path: Union[str, Path] = DEFAULT_INFERENCE_CONFIG, **kwargs: Any) -> "InferenceEngine":
+    def from_config(cls, path: str | Path = DEFAULT_INFERENCE_CONFIG, **kwargs: Any) -> InferenceEngine:
         return cls(InferenceConfig.load(path), **kwargs)
 
     def _load_model(self, verify_checksum: bool):
@@ -259,7 +259,7 @@ class InferenceEngine:
         }
         return model, info
 
-    def describe(self) -> Dict[str, Any]:
+    def describe(self) -> dict[str, Any]:
         cfg = self.config
         return {
             "model_version": cfg.model_version,
@@ -278,7 +278,7 @@ class InferenceEngine:
             "engine_version": ENGINE_VERSION,
         }
 
-    def decode(self, source: Union[ImageSource, DecodedImage]) -> DecodedImage:
+    def decode(self, source: ImageSource | DecodedImage) -> DecodedImage:
         if isinstance(source, DecodedImage):
             return source
         return decode_image(source, self.config.allowed_formats, self.config.max_pixels,
@@ -289,7 +289,7 @@ class InferenceEngine:
         cfg = self.config
         started = time.perf_counter()
         decoded = self.decode(request.image)
-        warnings: List[Dict[str, Any]] = []
+        warnings: list[dict[str, Any]] = []
         threshold = cfg.threshold
         if request.threshold is not None:
             if not 0.0 < float(request.threshold) < 1.0:
@@ -346,7 +346,7 @@ class InferenceEngine:
                 "python_version": platform.python_version(),
                 "num_threads": torch.get_num_threads(),
                 "duration_ms": round((time.perf_counter() - started) * 1000, 2),
-                "completed_at": datetime.now(timezone.utc).isoformat(),
+                "completed_at": datetime.now(UTC).isoformat(),
             },
         }
         return InferenceResult(probability, binary, provenance, warnings)

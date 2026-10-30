@@ -10,13 +10,13 @@ independent of DataLoader worker scheduling.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import torch
 from torchvision.transforms import InterpolationMode
 from torchvision.transforms.v2 import functional as TF
 
-DEFAULT_AUGMENTATION: Dict[str, Any] = {
+DEFAULT_AUGMENTATION: dict[str, Any] = {
     "horizontal_flip_prob": 0.5,
     "vertical_flip_prob": 0.5,
     "rotate90_prob": 0.5,
@@ -43,7 +43,7 @@ def _chance(generator: torch.Generator, probability: float) -> bool:
     return probability > 0 and torch.rand((), generator=generator).item() < probability
 
 
-def validate_augmentation_config(config: Dict[str, Any]) -> Dict[str, Any]:
+def validate_augmentation_config(config: dict[str, Any]) -> dict[str, Any]:
     """Merge with defaults and reject out-of-range values."""
 
     unknown = set(config) - set(DEFAULT_AUGMENTATION) - {"validation_and_test"}
@@ -72,7 +72,7 @@ def validate_augmentation_config(config: Dict[str, Any]) -> Dict[str, Any]:
 class SegmentationAugmenter:
     """Callable ``(image01, mask, generator) -> (image01, mask)``."""
 
-    def __init__(self, config: Dict[str, Any] | None = None) -> None:
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
         self.config = validate_augmentation_config(config or {})
 
     def __call__(
@@ -80,7 +80,7 @@ class SegmentationAugmenter:
         image: torch.Tensor,
         mask: torch.Tensor,
         generator: torch.Generator,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         cfg = self.config
         if _chance(generator, cfg["horizontal_flip_prob"]):
             image, mask = TF.horizontal_flip(image), TF.horizontal_flip(mask)

@@ -1,0 +1,191 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - name: Install CPU torch and dependencies
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install -r requirements-dev.txt
+      - name: Lint
+        run: python -m ruff check .
+      - name: Types
+        run: python -m mypy src
+      - name: Tests
+        run: python -m pytest -q
+
+  # REQ-P07-S02-003: the whole suite against a real PostgreSQL server.
+  postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ci-only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DFU_TEST_DATABASE_URL: postgresql://postgres:ci-only@127.0.0.1:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - name: Install CPU torch and dependencies
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install -r requirements-dev.txt
+      - name: Tests on PostgreSQL
+        run: python -m pytest -q
+
+  # REQ-P07-S03-001: the storage and upload tests against a real MinIO server.
+  object-storage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DFU_TEST_S3_ENDPOINT: http://127.0.0.1:9000
+      AWS_ACCESS_KEY_ID: ci-only
+      AWS_SECRET_ACCESS_KEY: ci-only-secret
+      AWS_DEFAULT_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio -p 9000:9000 -e MINIO_ROOT_USER=ci-only \
+            -e MINIO_ROOT_PASSWORD=ci-only-secret minio/minio server /data
+          for attempt in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:9000/minio/health/live && exit 0
+            sleep 2
+          done
+          exit 1
+      - name: Install CPU torch and dependencies
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install -r requirements-dev.txt
+      - name: Tests on MinIO
+        run: python -m pytest tests/storage/test_blob_contract.py tests/storage/test_blob_migration.py tests/api/test_uploads.py -q
+
+  # REQ-P07-S05: real arq workers against a real Redis.
+  redis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DFU_TEST_REDIS_URL: redis://127.0.0.1:6379
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install CPU torch and dependencies
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install -r requirements-dev.txt
+      - name: Tests on Redis
+        run: python -m pytest tests/worker -q
+
+  # REQ-P07-S01-002: a fresh clone in an empty environment, on Linux and Windows.
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Create empty environment
+        run: python -m venv .ci-venv
+      - name: Install (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          .ci-venv/bin/python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          .ci-venv/bin/python -m pip install -r requirements-dev.txt
+          .ci-venv/bin/python -m pytest -q
+      - name: Install (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          .ci-venv\Scripts\python -m pip install -r requirements-dev.txt
+          .ci-venv\Scripts\python -m pytest -q
+
+  # REQ-P07-S01-003 and -005: the image starts, and a wrong checkpoint cannot serve.
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -f docker/production/Dockerfile -t dfu-woundmonitor .
+      - name: Build worker image
+        run: docker build -f docker/production/Dockerfile --target worker -t dfu-woundmonitor-worker .
+      - name: Start with a checkpoint whose hash does not match
+        run: |
+          mkdir -p ci-model
+          head -c 1024 /dev/urandom > ci-model/resnet34_unet_512_best.pth
+          docker run -d --name dfu -p 7860:7860 \
+            -v "$PWD/ci-model:/home/user/app/models/checkpoints/spec-02-03:ro" dfu-woundmonitor
+      - name: Liveness answers
+        run: |
+          for attempt in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:7860/health/live && exit 0
+            sleep 2
+          done
+          docker logs dfu
+          exit 1
+      - name: Readiness and analysis refuse the wrong checkpoint
+        run: |
+          python3 scripts/deployment/check_refuses_bad_model.py --url http://127.0.0.1:7860
+      - name: A worker refuses the wrong checkpoint
+        run: |
+          docker run -d --name ci-redis -p 6379:6379 redis:7-alpine
+          sleep 3
+          set +e
+          timeout 240 docker run --rm --network host -e DFU_REDIS_URL=redis://127.0.0.1:6379             -v "$PWD/ci-model:/home/user/app/models/checkpoints/spec-02-03:ro" dfu-woundmonitor-worker
+          status=$?
+          set -e
+          test "$status" -ne 0 && test "$status" -ne 124

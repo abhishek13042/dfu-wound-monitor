@@ -26,26 +26,23 @@ Coding Style: Beginner-Understandable Python
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import matplotlib
+
 matplotlib.use("Agg")  # Non-interactive backend for server/script use
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-from PIL import Image
 from torch.utils.data import DataLoader
 
 from src.segmentation.metrics import (
-    EpochMetricAccumulator,
     aggregate_metrics,
     compute_binary_segmentation_metrics,
     evaluate_batch,
 )
-from src.segmentation.trainer import load_checkpoint
-
 
 # ============================================================
 # TEST SET EVALUATION (P02-S05)
@@ -57,7 +54,7 @@ def evaluate_on_test_set(
     loss_fn: nn.Module,
     device: torch.device,
     prediction_threshold: float = 0.5,
-) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """
     Evaluate the model on the test split and return metrics + per-sample results.
 
@@ -78,14 +75,14 @@ def evaluate_on_test_set(
     """
     model.eval()  # Evaluation mode — no gradient computation, no dropout
 
-    all_per_sample_results: List[Dict[str, Any]] = []
+    all_per_sample_results: list[dict[str, Any]] = []
     total_test_loss = 0.0
     total_test_samples = 0
 
     print(f"\nRunning test set evaluation (threshold={prediction_threshold})...")
 
     with torch.no_grad():
-        for batch_index, (image_batch, mask_batch, sample_ids) in enumerate(test_loader):
+        for image_batch, mask_batch, sample_ids in test_loader:
             image_batch = image_batch.to(device)
             mask_batch = mask_batch.to(device)
 
@@ -144,9 +141,9 @@ def collect_predictions_for_visualization(
     test_loader: DataLoader,
     device: torch.device,
     prediction_threshold: float = 0.5,
-    normalize_mean: List[float] = None,
-    normalize_std: List[float] = None,
-) -> List[Dict[str, Any]]:
+    normalize_mean: list[float] | None = None,
+    normalize_std: list[float] | None = None,
+) -> list[dict[str, Any]]:
     """
     Collect raw predictions, images, and masks for qualitative visualization.
 
@@ -227,9 +224,9 @@ def collect_predictions_for_visualization(
 
 
 def save_prediction_artifacts(
-    visualization_data: List[Dict[str, Any]],
+    visualization_data: list[dict[str, Any]],
     output_dir: str,
-) -> List[str]:
+) -> list[str]:
     """Save per-sample probabilities, binary predictions, and ground truth.
 
     The compressed NumPy files are intentionally generated artifacts rather than
@@ -239,7 +236,7 @@ def save_prediction_artifacts(
     """
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-    saved_paths: List[str] = []
+    saved_paths: list[str] = []
 
     for sample_data in visualization_data:
         sample_id = str(sample_data["sample_id"])
@@ -257,10 +254,10 @@ def save_prediction_artifacts(
 
 
 def create_qualitative_visualization(
-    visualization_data: List[Dict[str, Any]],
+    visualization_data: list[dict[str, Any]],
     output_dir: str,
     experiment_id: str,
-) -> List[str]:
+) -> list[str]:
     """
     Create qualitative visualization figures for test samples (REQ-P02-S06-001/002).
 
@@ -399,8 +396,8 @@ def create_qualitative_visualization(
 # ============================================================
 
 def analyze_failure_modes(
-    visualization_data: List[Dict[str, Any]],
-) -> Dict[str, Any]:
+    visualization_data: list[dict[str, Any]],
+) -> dict[str, Any]:
     """
     Identify and document observed failure categories (REQ-P02-S06-003/004).
 
@@ -466,7 +463,7 @@ def analyze_failure_modes(
     for obs in failure_observations:
         all_patterns.extend(obs["observed_failure_patterns"])
 
-    pattern_counts = {}
+    pattern_counts: dict[str, int] = {}
     for pattern in all_patterns:
         pattern_counts[pattern] = pattern_counts.get(pattern, 0) + 1
 
@@ -492,14 +489,14 @@ def analyze_failure_modes(
 # ============================================================
 
 def save_evaluation_results(
-    aggregate_results: Dict[str, Any],
-    per_sample_results: List[Dict[str, Any]],
-    failure_analysis: Dict[str, Any],
-    visualization_paths: List[str],
-    checkpoint_metadata: Dict[str, Any],
+    aggregate_results: dict[str, Any],
+    per_sample_results: list[dict[str, Any]],
+    failure_analysis: dict[str, Any],
+    visualization_paths: list[str],
+    checkpoint_metadata: dict[str, Any],
     output_path: str,
-    prediction_artifact_paths: Optional[List[str]] = None,
-    independent_verification_path: Optional[str] = None,
+    prediction_artifact_paths: list[str] | None = None,
+    independent_verification_path: str | None = None,
 ) -> None:
     """
     Save complete test evaluation results to a JSON file (REQ-P02-S05-005).

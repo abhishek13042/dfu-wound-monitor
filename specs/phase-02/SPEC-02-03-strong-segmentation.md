@@ -75,7 +75,7 @@ SPEC-02-01 stays the frozen engineering baseline. Its config, validator
 ## Held-Out Split (implemented)
 
 Manifest: `data/manifests/fuseg2021_heldout_manifest.json` (`fuseg2021-heldout-v1`).
-It is built by `scripts/build_fuseg2021_heldout_manifest.py` and the split
+It is built by `scripts/data/build_fuseg2021_heldout_manifest.py` and the split
 report is `data/manifests/fuseg2021_heldout_split_report.json`.
 
 | Split | Source | Samples | Empty masks |
@@ -140,7 +140,7 @@ selection.
 
 ## External Dataset Preparation (implemented)
 
-`scripts/build_lowerlimb_external_manifest.py` produces
+`scripts/data/build_lowerlimb_external_manifest.py` produces
 `data/manifests/lowerlimb_v3_external_manifest.json`:
 
 - 2,686 image/mask pairs and no unpaired files.
@@ -153,7 +153,7 @@ selection.
 - The licence is `NOT_VERIFIED`. The dataset is used for a research-only
   external check and is not redistributed.
 
-`scripts/check_near_duplicates.py` produces a cross-dataset near-duplicate
+`scripts/data/check_near_duplicates.py` produces a cross-dataset near-duplicate
 report for any set of image directories.
 
 ## Commands
@@ -161,14 +161,14 @@ report for any set of image directories.
 Local (CPU) build steps; both have already been run, and their outputs are in `data/manifests/`:
 
 ```bash
-python scripts/build_fuseg2021_heldout_manifest.py
-python scripts/build_lowerlimb_external_manifest.py
+python scripts/data/build_fuseg2021_heldout_manifest.py
+python scripts/data/build_lowerlimb_external_manifest.py
 ```
 
 Kaggle (GPU), with the repository and both datasets attached:
 
 ```bash
-python scripts/run_spec_02_03.py --train --evaluate --external \
+python scripts/training/run_spec_02_03.py --train --evaluate --external \
     --data-root "/kaggle/input/<fuseg>/Foot Ulcer Segmentation Challenge" \
     --external-data-root "/kaggle/input/<lowerlimb>/V3/extracted" \
     --output-root /kaggle/working/spec-02-03
@@ -180,11 +180,11 @@ To resume after an interruption, add
 Automated launch from the local machine (Kaggle CLI must already be
 authenticated). This uploads three private datasets (code, FUSeg2021
 train+validation, LowerLimb V3), pushes the private GPU kernel
-`kaggle_jobs/spec_02_03/run_kernel.py`, waits, and downloads the outputs to
+`scripts/training/kaggle/spec_02_03_kernel.py`, waits, and downloads the outputs to
 `reports/experiments/spec-02-03/kaggle/`:
 
 ```bash
-python scripts/launch_kaggle_spec_02_03.py --username <kaggle-user> --all
+python scripts/training/kaggle/launch_kaggle_spec_02_03.py --username <kaggle-user> --all
 ```
 
 ## Tests and Acceptance

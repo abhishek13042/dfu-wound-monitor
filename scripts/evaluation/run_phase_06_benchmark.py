@@ -35,9 +35,9 @@ import sys
 import tempfile
 import time
 import warnings
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import psutil
@@ -58,20 +58,20 @@ def rss_mb() -> float:
     return PROCESS.memory_info().rss / 2 ** 20
 
 
-def peak_mb() -> Optional[float]:
+def peak_mb() -> float | None:
     info = PROCESS.memory_info()
     peak = getattr(info, "peak_wset", None) or getattr(info, "peak_rss", None)
     return peak / 2 ** 20 if peak else None
 
 
-def stats(values: List[float]) -> Dict[str, float]:
+def stats(values: list[float]) -> dict[str, float]:
     arr = np.asarray(values, dtype=np.float64)
     return {"n": int(arr.size), "mean": round(float(arr.mean()), 4), "p50": round(float(np.median(arr)), 4),
             "p90": round(float(np.percentile(arr, 90)), 4), "min": round(float(arr.min()), 4),
             "max": round(float(arr.max()), 4)}
 
 
-def hardware() -> Dict[str, Any]:
+def hardware() -> dict[str, Any]:
     freq = psutil.cpu_freq()
     return {
         "platform": platform.platform(), "processor": platform.processor(), "machine": platform.machine(),
@@ -89,7 +89,7 @@ def png_bytes(array: np.ndarray) -> bytes:
     return buffer.getvalue()
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--manifest", type=Path, default=PROJECT_ROOT / "data/manifests/fuseg2021_heldout_manifest.json")
     parser.add_argument("--config", type=Path, default=DEFAULT_INFERENCE_CONFIG)
@@ -114,7 +114,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     for data in payloads[: args.warmup]:
         engine.predict(InferenceRequest(engine.decode(data)))
 
-    stages: Dict[str, List[float]] = {"decode": [], "quality_gate": [], "segmentation": [], "measurement": [],
+    stages: dict[str, list[float]] = {"decode": [], "quality_gate": [], "segmentation": [], "measurement": [],
                                       "total": []}
     for data in payloads:
         t = time.perf_counter()
@@ -196,7 +196,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     report = {
         "report": "P06-S02 reliability and performance benchmark",
-        "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "command": "python scripts/evaluation/run_phase_06_benchmark.py " + " ".join(argv if argv is not None else sys.argv[1:]),
         "hardware": hardware(),
         "configuration": {"model_version": engine.config.model_version, "inference_config": engine.config.version,

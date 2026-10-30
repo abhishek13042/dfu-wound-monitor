@@ -36,7 +36,7 @@ import json
 import math
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 from scipy import ndimage
@@ -66,7 +66,7 @@ class MeasurementError(Exception):
         super().__init__(message)
         self.code, self.message = code, message
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"category": self.category, "code": self.code, "message": self.message}
 
 
@@ -77,7 +77,7 @@ class Calibration:
     pixels_per_mm: float
     method: str
     source: str = ""
-    uncertainty_pct: Optional[float] = None
+    uncertainty_pct: float | None = None
 
     def __post_init__(self) -> None:
         value = self.pixels_per_mm
@@ -99,7 +99,7 @@ class MeasurementConfig:
     max_reported_components: int
 
     @classmethod
-    def load(cls, path: Union[str, Path] = DEFAULT_MEASUREMENT_CONFIG) -> "MeasurementConfig":
+    def load(cls, path: str | Path = DEFAULT_MEASUREMENT_CONFIG) -> MeasurementConfig:
         path = Path(path)
         data = path.read_bytes()
         raw = json.loads(data)
@@ -109,7 +109,7 @@ class MeasurementConfig:
                    float(raw["low_confidence_mean_probability"]), int(raw["min_reliable_area_px"]),
                    int(raw.get("max_reported_components", 20)))
 
-    def reference(self) -> Dict[str, Any]:
+    def reference(self) -> dict[str, Any]:
         return {"path": self.path, "version": self.version, "sha256": self.sha256}
 
 
@@ -117,21 +117,21 @@ class MeasurementConfig:
 class MeasurementResult:
     measurement_basis: str                  # PIXEL_BASED | PHYSICALLY_CALIBRATED
     status: str                             # MEASURED | EMPTY
-    pixel: Dict[str, Any]
-    physical: Optional[Dict[str, Any]]      # None unless calibrated
-    components: List[Dict[str, Any]]
-    confidence: Optional[Dict[str, Any]]
-    calibration: Optional[Dict[str, Any]]
-    warnings: List[Dict[str, Any]]
-    provenance: Dict[str, Any]
+    pixel: dict[str, Any]
+    physical: dict[str, Any] | None      # None unless calibrated
+    components: list[dict[str, Any]]
+    confidence: dict[str, Any] | None
+    calibration: dict[str, Any] | None
+    warnings: list[dict[str, Any]]
+    provenance: dict[str, Any]
     limitation: str = LIMITATION
-    units: Dict[str, str] = field(default_factory=dict)
+    units: dict[str, str] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "MeasurementResult":
+    def from_dict(cls, data: dict[str, Any]) -> MeasurementResult:
         return cls(**data)
 
 
@@ -159,7 +159,7 @@ def perimeter_px(mask: np.ndarray) -> float:
     return float(_PERIMETER_WEIGHTS[codes[border.astype(bool)]].sum()) if border.any() else 0.0
 
 
-def _hull_geometry(mask: np.ndarray) -> Dict[str, float]:
+def _hull_geometry(mask: np.ndarray) -> dict[str, float]:
     """Convex hull of the pixel squares: hull area and min/max Feret diameters."""
 
     border = mask.astype(bool) & ~ndimage.binary_erosion(mask.astype(bool), structure=_CROSS, border_value=0)
@@ -185,7 +185,7 @@ def _hull_geometry(mask: np.ndarray) -> Dict[str, float]:
     return {"hull_area": float(hull.volume), "max_feret": max_feret, "min_feret": min_feret}
 
 
-def _region_geometry(mask: np.ndarray) -> Dict[str, Any]:
+def _region_geometry(mask: np.ndarray) -> dict[str, Any]:
     area = int(mask.sum())
     ys, xs = np.nonzero(mask)
     x_min, x_max, y_min, y_max = int(xs.min()), int(xs.max()), int(ys.min()), int(ys.max())
@@ -208,7 +208,7 @@ def _region_geometry(mask: np.ndarray) -> Dict[str, Any]:
     }
 
 
-def _to_physical(pixel: Dict[str, Any], ppm: float) -> Dict[str, Any]:
+def _to_physical(pixel: dict[str, Any], ppm: float) -> dict[str, Any]:
     lengths = ("perimeter_px", "bbox_width_px", "bbox_height_px", "max_feret_px", "min_feret_px",
                "equivalent_diameter_px")
     physical = {"area_mm2": round(pixel["area_px"] / ppm ** 2, 4)}
@@ -219,10 +219,10 @@ def _to_physical(pixel: Dict[str, Any], ppm: float) -> Dict[str, Any]:
 
 def measure(
     mask: np.ndarray,
-    calibration: Optional[Calibration] = None,
-    probability_mask: Optional[np.ndarray] = None,
-    provenance: Optional[Dict[str, Any]] = None,
-    config: Optional[MeasurementConfig] = None,
+    calibration: Calibration | None = None,
+    probability_mask: np.ndarray | None = None,
+    provenance: dict[str, Any] | None = None,
+    config: MeasurementConfig | None = None,
 ) -> MeasurementResult:
     config = config or MeasurementConfig.load()
     binary = _validate_mask(mask)
@@ -232,7 +232,7 @@ def measure(
         if not np.isfinite(probability_mask).all() or probability_mask.min() < 0 or probability_mask.max() > 1:
             raise MeasurementError("PROBABILITY_MALFORMED", "probability_mask values must be finite and in [0,1]")
     basis = PHYSICALLY_CALIBRATED if calibration is not None else PIXEL_BASED
-    warnings: List[Dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
     full_provenance = {
         **(provenance or {}),
         "measurement": {"engine_version": ENGINE_VERSION, "config": config.reference(),

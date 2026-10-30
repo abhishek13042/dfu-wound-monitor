@@ -7,8 +7,6 @@ logits; sigmoid is applied by the loss and metric/inference code.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -40,7 +38,7 @@ class EncoderLevel(nn.Module):
         self.double_conv = DoubleConvBlock(in_channels, out_channels)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         skip_features = self.double_conv(x)
         return skip_features, self.pool(skip_features)
 
@@ -74,7 +72,7 @@ class LightweightUNet(nn.Module):
 
     def __init__(
         self,
-        encoder_channels: Optional[List[int]] = None,
+        encoder_channels: list[int] | None = None,
         num_classes: int = 1,
     ) -> None:
         super().__init__()
@@ -184,7 +182,7 @@ class BCEDiceLoss(nn.Module):
         return self.bce_weight * bce_value + self.dice_weight * dice_value
 
 
-def count_model_parameters(model: nn.Module) -> Dict[str, int]:
+def count_model_parameters(model: nn.Module) -> dict[str, int]:
     """Return total, trainable, and non-trainable parameter counts."""
 
     total = sum(parameter.numel() for parameter in model.parameters())
@@ -201,8 +199,8 @@ def verify_model_forward_pass(
     input_height: int = 256,
     input_width: int = 256,
     batch_size: int = 2,
-    device: Optional[torch.device] = None,
-) -> Dict[str, object]:
+    device: torch.device | None = None,
+) -> dict[str, object]:
     """Verify output shape, finite logits, probability range, and loss."""
 
     device = device or torch.device("cpu")

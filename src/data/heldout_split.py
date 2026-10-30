@@ -23,7 +23,7 @@ import copy
 import hashlib
 import json
 import random
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from src.data.near_duplicates import (
     DEFAULT_MAX_HAMMING_DISTANCE,
@@ -38,18 +38,18 @@ HELDOUT_SPLIT_POLICY = (
 )
 
 
-def sample_key(record: Dict[str, Any]) -> str:
+def sample_key(record: dict[str, Any]) -> str:
     """Stable identifier that is unique across official splits."""
 
     return f"{record['official_split']}/{record['source_sample_id']}"
 
 
-def _is_labeled_valid(record: Dict[str, Any]) -> bool:
+def _is_labeled_valid(record: dict[str, Any]) -> bool:
     return record.get("validation_status") == "VALID" and record.get("annotation_type") == "wound_segmentation"
 
 
 def _select_internal_val_groups(
-    groups: List[List[str]],
+    groups: list[list[str]],
     empty_keys: set,
     fraction: float,
     seed: int,
@@ -79,12 +79,12 @@ def _select_internal_val_groups(
 
 
 def derive_heldout_manifest(
-    manifest: Dict[str, Any],
-    phashes: Dict[str, int],
+    manifest: dict[str, Any],
+    phashes: dict[str, int],
     internal_val_fraction: float = 0.15,
     seed: int = 42,
     max_hamming_distance: int = DEFAULT_MAX_HAMMING_DISTANCE,
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Return ``(heldout_manifest, split_report)``.
 
     ``phashes`` maps :func:`sample_key` to a 64-bit pHash for every VALID
@@ -97,7 +97,7 @@ def derive_heldout_manifest(
         raise ValueError("Held-out derivation is defined for the FUSeg2021 manifest only")
 
     derived = copy.deepcopy(manifest)
-    records: List[Dict[str, Any]] = derived["samples"]
+    records: list[dict[str, Any]] = derived["samples"]
     labeled = [record for record in records if _is_labeled_valid(record)]
     missing = [sample_key(record) for record in labeled if sample_key(record) not in phashes]
     if missing:
@@ -109,7 +109,7 @@ def derive_heldout_manifest(
 
     official_split_by_key = {sample_key(record): record["official_split"] for record in labeled}
     # Guard 2: train images in a group that also contains a test image.
-    train_near_test = set()
+    train_near_test: set[str] = set()
     for group in groups:
         if any(official_split_by_key[key] == "validation" for key in group):
             train_near_test.update(key for key in group if official_split_by_key[key] == "train")

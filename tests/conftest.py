@@ -9,6 +9,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import time
+import uuid
 from pathlib import Path
 
 import numpy as np
@@ -56,6 +59,107 @@ def write_artifact(root: Path, *, seed: int = 0, threshold: float = 0.4, min_are
     config_path = root / "inference.json"
     config_path.write_text(json.dumps(inference), encoding="utf-8")
     return config_path
+
+
+@pytest.fixture(autouse=True)
+def database_url(tmp_path, monkeypatch):
+    """A fresh database per test: SQLite by default, or an empty PostgreSQL
+    schema when ``DFU_TEST_DATABASE_URL`` is set, so the suite runs on both."""
+
+    server = os.environ.get("DFU_TEST_DATABASE_URL")
+    if not server:
+        yield str(tmp_path / "test.sqlite3")
+        return
+
+    from sqlalchemy import text
+
+    from src.storage.database import create_database_engine, migrate
+
+    schema = f"test_{uuid.uuid4().hex}"
+    url = f"{server}{'&' if '?' in server else '?'}options=-csearch_path%3D{schema}"
+    admin = create_database_engine(server)
+    with admin.begin() as connection:
+        connection.execute(text(f"CREATE SCHEMA {schema}"))
+    migrate(url)
+    monkeypatch.setenv("DFU_DATABASE_URL", url)
+    yield url
+    with admin.begin() as connection:
+        connection.execute(text(f"DROP SCHEMA {schema} CASCADE"))
+    admin.dispose()
+
+
+@pytest.fixture(scope="session")
+def s3_endpoint():
+    """A real S3 API: MinIO when ``DFU_TEST_S3_ENDPOINT`` is set, else a local moto server."""
+
+    endpoint = os.environ.get("DFU_TEST_S3_ENDPOINT")
+    if endpoint:
+        yield endpoint
+        return
+
+    from moto.server import ThreadedMotoServer
+
+    server = ThreadedMotoServer(ip_address="127.0.0.1", port=0, verbose=False)
+    server.start()
+    host, port = server.get_host_and_port()
+    yield f"http://{host}:{port}"
+    server.stop()
+
+
+@pytest.fixture
+def s3_store(s3_endpoint, monkeypatch):
+    """An empty private bucket per test."""
+
+    for name, value in (("AWS_ACCESS_KEY_ID", "test-only"), ("AWS_SECRET_ACCESS_KEY", "test-only"),
+                        ("AWS_DEFAULT_REGION", "us-east-1")):
+        if not os.environ.get("DFU_TEST_S3_ENDPOINT"):
+            monkeypatch.setenv(name, value)
+
+    from src.storage.blobs import S3BlobStore
+
+    store = S3BlobStore(f"test-{uuid.uuid4().hex}", s3_endpoint)
+    store.client.create_bucket(Bucket=store.bucket)
+    return store
+
+
+class SignIn:
+    """A fake sign-in provider: one RSA key, its JWKS document, and token minting."""
+
+    issuer = "https://signin.test"
+    audience = "dfu-tests"
+    key_id = "test-key"
+
+    def __init__(self) -> None:
+        import jwt
+        from cryptography.hazmat.primitives.asymmetric import rsa
+
+        from src.api.auth import JwksCache, TokenVerifier
+
+        self.private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        public = json.loads(jwt.algorithms.RSAAlgorithm.to_jwk(self.private_key.public_key()))
+        self.jwks = {"keys": [{**public, "kid": self.key_id, "use": "sig", "alg": "RS256"}]}
+        self.verifier = TokenVerifier(self.issuer, self.audience, JwksCache("https://signin.test/jwks", lambda _: self.jwks))
+
+    def token(self, subject: str | None = "user-a", *, key=None, algorithm: str = "RS256", kid: str | None = "test-key",
+              without: tuple[str, ...] = (), **claims) -> str:
+        import jwt
+
+        now = int(time.time())
+        body = {"iss": self.issuer, "aud": self.audience, "exp": now + 300, "iat": now, "sub": subject, **claims}
+        return jwt.encode({name: value for name, value in body.items() if name not in without},
+                          key if key is not None else self.private_key, algorithm=algorithm,
+                          headers={"kid": kid} if kid else None)
+
+    def headers(self, subject: str = "user-a") -> dict[str, str]:
+        return {"Authorization": f"Bearer {self.token(subject)}"}
+
+    def repository(self, state, subject: str = "user-a"):
+        return state.db.for_owner(state.db.ensure_user(f"{self.issuer}|{subject}"))
+
+
+@pytest.fixture(scope="session")
+def auth() -> SignIn:
+    return SignIn()
 
 
 @pytest.fixture(scope="session")

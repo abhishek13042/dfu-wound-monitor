@@ -13,11 +13,8 @@ Coding Style: Beginner-Understandable Python
 """
 
 import json
-import os
 import sys
-import tempfile
 from pathlib import Path
-from typing import Any, Dict, List
 
 import numpy as np
 import pytest
@@ -26,6 +23,8 @@ import torch
 # Add project root to Python path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
+
+from PIL import Image
 
 from src.segmentation.dataset import (
     WoundSegmentationDataset,
@@ -44,9 +43,6 @@ from src.segmentation.model import (
     count_model_parameters,
     verify_model_forward_pass,
 )
-
-from PIL import Image
-
 
 # ============================================================
 # FIXTURES

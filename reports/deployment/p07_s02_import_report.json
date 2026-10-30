@@ -1,0 +1,29 @@
+{
+  "status": "IMPORTED",
+  "tables": {
+    "cases": {
+      "rows": 1,
+      "sha256": "d0babe7c6be5fd9c3472da0aa26689036e7c8fedaec0b905395329e4491b9c04"
+    },
+    "model_versions": {
+      "rows": 1,
+      "sha256": "61f3364d73159f9925215fb89a3273b5fd51690dc9caf15416368989b336b1b9"
+    },
+    "examinations": {
+      "rows": 2,
+      "sha256": "014e9a7a2469dd6a208f9949ad82eb81676f71971cbdd9bc71356aef19ed5e4a"
+    },
+    "images": {
+      "rows": 4,
+      "sha256": "5ad6cfa9b61d98cce7a776428c31180456650182201b76b7ed10af1813fe3fe2"
+    },
+    "analyses": {
+      "rows": 4,
+      "sha256": "7bd5b53cbb4be8758e0a517fa1b57109975763101bf72ad61020fe7f7b4d3c63"
+    },
+    "artifacts": {
+      "rows": 8,
+      "sha256": "59c61696b6a59e7fd6945bdca5a20cde10a9001fcba45c3a2995c25f6cc32223"
+    }
+  }
+}

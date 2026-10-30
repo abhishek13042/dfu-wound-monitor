@@ -1,26 +1,37 @@
-.PHONY: help install lint format test clean
+.PHONY: help install lint format test smoke run docker clean
 
 help:
-	@echo "DFU-WoundMonitor - Development Commands"
-	@echo "  make install     Install package in editable mode with dev dependencies"
-	@echo "  make lint        Run static analysis and linting checks"
-	@echo "  make format      Format codebase with black and ruff"
-	@echo "  make test        Run test suite"
-	@echo "  make clean       Remove temporary files and Python caches"
+	@echo "DFU-WoundMonitor - development commands"
+	@echo "  make install   Install runtime and dev dependencies (editable)"
+	@echo "  make lint      Run ruff and mypy"
+	@echo "  make format    Apply ruff auto-fixes"
+	@echo "  make test      Run the test suite"
+	@echo "  make smoke     Run the end-to-end smoke test (needs the checkpoint)"
+	@echo "  make run       Start the API and dashboard on port 8000"
+	@echo "  make docker    Build the production image"
+	@echo "  make clean     Remove caches"
 
 install:
-	pip install -e .[dev]
+	python -m pip install -e ".[dev]"
 
 lint:
 	ruff check .
-	mypy src tests
+	mypy src
 
 format:
-	ruff format .
-	black .
+	ruff check --fix .
 
 test:
-	pytest tests
+	python -m pytest -q
+
+smoke:
+	python scripts/deployment/smoke_test.py
+
+run:
+	python -m uvicorn src.api.app:app --host 127.0.0.1 --port 8000
+
+docker:
+	docker build -f docker/production/Dockerfile -t dfu-woundmonitor .
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

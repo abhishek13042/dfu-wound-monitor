@@ -7,13 +7,14 @@ contract: a breaking change bumps ``API_VERSION`` and the URL prefix.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 API_VERSION = "v1"
+API_V2 = "v2"
 ErrorCategory = Literal["INVALID_INPUT", "QUALITY_REJECTED", "MODEL_FAILURE", "MODEL_NOT_READY",
-                        "INFRASTRUCTURE_FAILURE", "NOT_FOUND", "CONFLICT"]
+                        "INFRASTRUCTURE_FAILURE", "NOT_FOUND", "CONFLICT", "UNAUTHENTICATED", "BUSY"]
 # REQ-P06-S02-003: every failure belongs to exactly one operational class.
 FailureClass = Literal["INPUT", "QUALITY", "MODEL", "PERSISTENCE", "SERVICE"]
 
@@ -28,13 +29,13 @@ class ErrorBody(BaseModel):
     failure_class: FailureClass
     code: str
     message: str
-    details: Dict[str, Any] = Field(default_factory=dict)
+    details: dict[str, Any] = Field(default_factory=dict)
 
 
 class ErrorResponse(_Response):
     error: ErrorBody
-    request_id: Optional[str] = None
-    analysis: Optional["AnalysisResponse"] = None
+    request_id: str | None = None
+    analysis: AnalysisResponse | None = None
 
 
 class LiveResponse(_Response):
@@ -47,72 +48,83 @@ class ReadinessResponse(_Response):
     service: Literal["READY"] = "READY"
     model: Literal["READY", "NOT_READY"]
     database: Literal["READY", "NOT_READY"]
-    model_version: Optional[str] = None
-    schema_version: Optional[int] = None
-    detail: Optional[Dict[str, Any]] = None
+    storage: Literal["READY", "NOT_READY"]
+    queue: Literal["READY", "NOT_READY"]
+    model_version: str | None = None
+    schema_version: int | None = None
+    detail: dict[str, Any] | None = None
 
 
 class ModelInfoResponse(_Response):
-    model: Dict[str, Any]
-    quality_config: Dict[str, Any]
-    measurement_config: Dict[str, Any]
-    limitations: List[str]
+    model: dict[str, Any]
+    quality_config: dict[str, Any]
+    measurement_config: dict[str, Any]
+    limitations: list[str]
 
 
 class CaseCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     identity_status: Literal["VERIFIED", "UNVERIFIED", "UNKNOWN"] = "UNKNOWN"
-    external_reference: Optional[str] = Field(default=None, max_length=200)
-    label: Optional[str] = Field(default=None, max_length=200)
+    external_reference: str | None = Field(default=None, max_length=200)
+    label: str | None = Field(default=None, max_length=200)
     data_source: str = Field(default="USER_UPLOAD", max_length=64)
 
 
 class ExaminationCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    captured_at: Optional[datetime] = None
+    captured_at: datetime | None = None
     timestamp_source: Literal["EXIF", "USER_ENTERED", "DEVICE", "UNKNOWN"] = "UNKNOWN"
-    notes: Optional[str] = Field(default=None, max_length=2000)
+    notes: str | None = Field(default=None, max_length=2000)
 
 
 class CaseResponse(_Response):
-    case: Dict[str, Any]
-    examinations: Optional[List[Dict[str, Any]]] = None
+    case: dict[str, Any]
+    examinations: list[dict[str, Any]] | None = None
 
 
 class CaseListResponse(_Response):
-    cases: List[Dict[str, Any]]
+    cases: list[dict[str, Any]]
 
 
 class ExaminationResponse(_Response):
-    examination: Dict[str, Any]
-    analyses: Optional[List[Dict[str, Any]]] = None
+    examination: dict[str, Any]
+    analyses: list[dict[str, Any]] | None = None
 
 
 class AnalysisResponse(_Response):
     schema_name: Literal["AnalysisResponse"] = "AnalysisResponse"
     analysis_id: str
     status: Literal["COMPLETED", "QUALITY_REJECTED", "FAILED"]
-    image: Dict[str, Any]
-    quality: Dict[str, Any]
-    model_version: Optional[str]
-    measurement: Optional[Dict[str, Any]]
-    inference: Optional[Dict[str, Any]]
-    warnings: List[Dict[str, Any]]
-    provenance: Dict[str, Any]
-    links: Dict[str, str]
+    image: dict[str, Any]
+    quality: dict[str, Any]
+    model_version: str | None
+    measurement: dict[str, Any] | None
+    inference: dict[str, Any] | None
+    warnings: list[dict[str, Any]]
+    provenance: dict[str, Any]
+    links: dict[str, str]
     limitation: str
 
 
 class TrendResponse(_Response):
-    trend: Dict[str, Any]
+    trend: dict[str, Any]
 
 
 class ComparisonResponse(_Response):
-    comparison: Dict[str, Any]
+    comparison: dict[str, Any]
 
 
 class DeleteResponse(_Response):
-    deleted: Dict[str, Any]
+    deleted: dict[str, Any]
+
+
+class ExportResponse(_Response):
+    cases: list[dict[str, Any]]
+    examinations: list[dict[str, Any]]
+    images: list[dict[str, Any]]
+    analyses: list[dict[str, Any]]
+    artifacts: list[dict[str, Any]]
+    url_expires_in_seconds: int
 
 
 ErrorResponse.model_rebuild()

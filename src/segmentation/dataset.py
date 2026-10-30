@@ -12,8 +12,9 @@ import json
 import logging
 import math
 import random
+from collections.abc import Callable, Sequence
 from pathlib import Path, PurePosixPath, PureWindowsPath
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -23,7 +24,7 @@ from torch.utils.data import DataLoader, Dataset
 LOGGER = logging.getLogger(__name__)
 
 
-def resolve_manifest_path(path_value: Optional[str], manifest_path: str) -> Path:
+def resolve_manifest_path(path_value: str | None, manifest_path: str) -> Path:
     """Resolve a manifest path relative to the repository containing the manifest.
 
     Relative paths are preferred.  Legacy absolute Windows paths are accepted
@@ -77,9 +78,9 @@ def resolve_manifest_path(path_value: Optional[str], manifest_path: str) -> Path
 def load_manifest_samples(
     manifest_path: str,
     split: str,
-    allowed_annotation_types: Optional[List[str]] = None,
-    data_root: Optional[str] = None,
-) -> List[Dict[str, Any]]:
+    allowed_annotation_types: list[str] | None = None,
+    data_root: str | None = None,
+) -> list[dict[str, Any]]:
     """Load only valid, annotated samples assigned to ``split``.
 
     The loader preserves the manifest's official split and excludes records
@@ -99,7 +100,7 @@ def load_manifest_samples(
     with manifest_file.open("r", encoding="utf-8") as manifest_handle:
         manifest_data = json.load(manifest_handle)
 
-    selected_samples: List[Dict[str, Any]] = []
+    selected_samples: list[dict[str, Any]] = []
     for sample in manifest_data.get("samples", []):
         if sample.get("split") != split:
             continue
@@ -132,7 +133,7 @@ def load_manifest_samples(
     return selected_samples
 
 
-def _validate_normalization(mean: List[float], std: List[float]) -> None:
+def _validate_normalization(mean: list[float], std: list[float]) -> None:
     if len(mean) != 3 or len(std) != 3:
         raise ValueError("normalize_mean and normalize_std must each contain three values")
     if not all(math.isfinite(value) for value in [*mean, *std]):
@@ -145,8 +146,8 @@ def preprocess_image(
     image_pil: Image.Image,
     target_height: int,
     target_width: int,
-    normalize_mean: List[float],
-    normalize_std: List[float],
+    normalize_mean: list[float],
+    normalize_std: list[float],
 ) -> torch.Tensor:
     """Convert an image to normalized ``float32`` RGB ``(3,H,W)`` tensor."""
 
@@ -187,14 +188,14 @@ def apply_random_horizontal_flip(
     image_tensor: torch.Tensor,
     mask_tensor: torch.Tensor,
     flip_probability: float,
-    random_source: Optional[random.Random] = None,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    random_source: random.Random | None = None,
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Apply the same horizontal flip decision to image and mask."""
 
     if not 0.0 <= flip_probability <= 1.0:
         raise ValueError("flip_probability must be in [0, 1]")
-    random_source = random_source or random
-    if random_source.random() < flip_probability:
+    source: Any = random_source or random
+    if source.random() < flip_probability:
         return torch.flip(image_tensor, dims=[-1]), torch.flip(mask_tensor, dims=[-1])
     return image_tensor, mask_tensor
 
@@ -203,36 +204,36 @@ def apply_random_vertical_flip(
     image_tensor: torch.Tensor,
     mask_tensor: torch.Tensor,
     flip_probability: float,
-    random_source: Optional[random.Random] = None,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    random_source: random.Random | None = None,
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Apply the same vertical flip decision to image and mask."""
 
     if not 0.0 <= flip_probability <= 1.0:
         raise ValueError("flip_probability must be in [0, 1]")
-    random_source = random_source or random
-    if random_source.random() < flip_probability:
+    source: Any = random_source or random
+    if source.random() < flip_probability:
         return torch.flip(image_tensor, dims=[-2]), torch.flip(mask_tensor, dims=[-2])
     return image_tensor, mask_tensor
 
 
-class WoundSegmentationDataset(Dataset[Tuple[torch.Tensor, torch.Tensor, str]]):
+class WoundSegmentationDataset(Dataset[tuple[torch.Tensor, torch.Tensor, str]]):
     """Manifest-backed supervised segmentation dataset."""
 
     def __init__(
         self,
-        samples: List[Dict[str, Any]],
+        samples: list[dict[str, Any]],
         input_height: int,
         input_width: int,
-        normalize_mean: List[float],
-        normalize_std: List[float],
+        normalize_mean: list[float],
+        normalize_std: list[float],
         mask_threshold: int = 128,
         is_training: bool = False,
         horizontal_flip_prob: float = 0.5,
         vertical_flip_prob: float = 0.0,
         random_seed: int = 42,
         require_annotations: bool = True,
-        expected_source_mask_values: Optional[Sequence[int]] = (0, 255),
-        augmenter: Optional[Callable[[torch.Tensor, torch.Tensor, torch.Generator], Tuple[torch.Tensor, torch.Tensor]]] = None,
+        expected_source_mask_values: Sequence[int] | None = (0, 255),
+        augmenter: Callable[[torch.Tensor, torch.Tensor, torch.Generator], tuple[torch.Tensor, torch.Tensor]] | None = None,
     ) -> None:
         self.samples = list(samples)
         # SPEC-02-03 synchronized augmentation; replaces the flip-only path
@@ -272,7 +273,7 @@ class WoundSegmentationDataset(Dataset[Tuple[torch.Tensor, torch.Tensor, str]]):
         self._validate_file_paths()
 
     def _validate_file_paths(self) -> None:
-        missing: List[str] = []
+        missing: list[str] = []
         for sample in self.samples:
             sample_id = sample.get("source_sample_id", "unknown")
             if sample.get("validation_status") not in (None, "VALID"):
@@ -302,7 +303,7 @@ class WoundSegmentationDataset(Dataset[Tuple[torch.Tensor, torch.Tensor, str]]):
     def __len__(self) -> int:
         return len(self.samples)
 
-    def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor, str]:
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor, str]:
         if not 0 <= index < len(self.samples):
             raise IndexError(f"Sample index {index} is outside dataset length {len(self.samples)}")
         sample = self.samples[index]
@@ -417,7 +418,7 @@ def _make_loader(
         raise ValueError("persistent_workers requires num_workers > 0")
     generator = torch.Generator()
     generator.manual_seed(seed)
-    loader_kwargs: Dict[str, Any] = {
+    loader_kwargs: dict[str, Any] = {
         "dataset": dataset,
         "batch_size": batch_size,
         "shuffle": shuffle,
@@ -437,8 +438,8 @@ def create_dataloaders(
     manifest_path: str,
     input_height: int,
     input_width: int,
-    normalize_mean: List[float],
-    normalize_std: List[float],
+    normalize_mean: list[float],
+    normalize_std: list[float],
     mask_threshold: int,
     batch_size: int,
     horizontal_flip_prob: float,
@@ -448,10 +449,10 @@ def create_dataloaders(
     pin_memory: bool = False,
     persistent_workers: bool = False,
     test_batch_size: int = 1,
-    expected_source_mask_values: Optional[Sequence[int]] = (0, 255),
-    data_root: Optional[str] = None,
+    expected_source_mask_values: Sequence[int] | None = (0, 255),
+    data_root: str | None = None,
     include_test: bool = True,
-) -> Tuple[DataLoader, DataLoader, Optional[DataLoader]]:
+) -> tuple[DataLoader, DataLoader, DataLoader | None]:
     """Create train/validation loaders and an optional labeled test loader.
 
     FUSeg2021 public test images are intentionally returned as ``None`` here
@@ -493,7 +494,7 @@ def create_dataloaders(
         random_seed=random_seed,
         expected_source_mask_values=expected_source_mask_values,
     )
-    test_loader: Optional[DataLoader] = None
+    test_loader: DataLoader | None = None
     if test_samples:
         test_dataset = WoundSegmentationDataset(
             test_samples,
