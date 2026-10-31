@@ -21,6 +21,8 @@ All dates are commit dates. The project is a research prototype; see the medical
 - Scripts moved into `scripts/data`, `training`, `evaluation`, `verification` and `deployment`. `kaggle_jobs/` moved into `scripts/training/kaggle/`.
 - README rewritten around current status, quick start and documentation links.
 - Lint fixes across `src/`, `scripts/` and `tests/`, with no intended change in behaviour.
+- The CI `object-storage` job now runs on SeaweedFS 4.51, pinned by digest, because the `minio/minio` image no longer exists. The planned MinIO evidence for REQ-P07-S03-001 was never produced. The real-server claim is now local SeaweedFS runs, and the CI job has still not run.
+- Blob contract tests gained real-server checks that the store refuses a forged signature, an expired URL and a body longer than signed. moto accepts all three, so these skip without `DFU_TEST_S3_ENDPOINT`. `test_public_bucket_is_detected` now runs on a server that records public grants, instead of always skipping on a real server.
 
 ### Fixed
 - Two FUSeg2021 data tests now skip when the images are absent, so the suite passes on a fresh clone.

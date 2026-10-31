@@ -157,7 +157,7 @@ Quality-rejected and failed analyses are stored for audit, and the error body in
 | `DFU_DATA_DIR` | `runtime/` | Location of the default SQLite database and blob store |
 | `DFU_DATABASE_URL` | SQLite under `DFU_DATA_DIR` | PostgreSQL URL. Run `scripts/deployment/migrate_db.py` first |
 | `DFU_STORAGE_BACKEND` | `local` | `local` or `s3` |
-| `DFU_S3_BUCKET`, `DFU_S3_ENDPOINT` | none | Bucket, and endpoint for a non-AWS store such as R2 or MinIO. Credentials come from the standard AWS variables |
+| `DFU_S3_BUCKET`, `DFU_S3_ENDPOINT` | none | Bucket, and endpoint for a non-AWS store such as R2 or SeaweedFS. Credentials come from the standard AWS variables |
 | `DFU_BLOB_URL_SECRET` | random per process | Signs URLs for the local backend. Set it when several processes share a data directory |
 | `DFU_INFERENCE_CONFIG` | `configs/inference/spec_02_03_inference.json` | Inference config, which pins the checkpoint hash |
 | `DFU_AUTH_ISSUER`, `DFU_AUTH_AUDIENCE`, `DFU_AUTH_JWKS_URL` | none | Turn on `/api/v2`. Setting the issuer also removes `/api/v1` and the dashboard |

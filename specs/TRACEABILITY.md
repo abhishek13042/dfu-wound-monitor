@@ -363,11 +363,11 @@ These requirements are specified and not implemented. The paths are planned loca
 | REQ-P07-S02-003 | Parametrised test fixture | `DFU_TEST_DATABASE_URL`; CI `postgres` job | Local PostgreSQL 16: all passed. CI awaits a push | IN_PROGRESS |
 | REQ-P07-S02-004 | `scripts/deployment/import_sqlite.py` | `test_import_verifies_counts` | `reports/deployment/p07_s02_import_report.json` | COMPLETED |
 | REQ-P07-S02-005 | `src/api/app.py` | `tests/api/`, `tests/storage/test_database_outage.py` | Smoke test 8/8 with the real model on PostgreSQL | COMPLETED |
-| REQ-P07-S03-001 | `src/storage/blobs.py` | `tests/storage/test_blob_contract.py` | Contract tests pass on local disk and moto. MinIO in CI awaits a push | IN_PROGRESS |
+| REQ-P07-S03-001 | `src/storage/blobs.py` | `tests/storage/test_blob_contract.py` | Contract tests pass on local disk, moto and local SeaweedFS 4.51: `reports/deployment/p07_s03_seaweedfs_tests.txt`. SeaweedFS in CI awaits a push | IN_PROGRESS |
 | REQ-P07-S03-002 | `src/storage/blobs.py` | `test_corrupt_blob_detected` | Test run | COMPLETED |
-| REQ-P07-S03-003 | `src/api/uploads.py` | `test_upload_url_limits` | Test run | COMPLETED |
+| REQ-P07-S03-003 | `src/api/uploads.py` | `test_upload_url_limits`, `test_store_refuses_a_body_longer_than_signed` | Test run. The store's refusal of a longer body is shown on SeaweedFS only, because moto accepts it | COMPLETED |
 | REQ-P07-S03-004 | `src/api/uploads.py` | `test_rejects_disguised_file` | Test run | COMPLETED |
-| REQ-P07-S03-005 | `src/storage/blobs.py` | `test_no_public_access` | Test run on moto. A hosted bucket has not been created or reviewed | IN_PROGRESS |
+| REQ-P07-S03-005 | `src/storage/blobs.py` | `test_no_public_access` | Test run on moto and local SeaweedFS 4.51. A hosted bucket has not been created or reviewed | IN_PROGRESS |
 | REQ-P07-S04-001 | `src/api/auth.py` | `tests/api/test_auth.py` | Test run | COMPLETED |
 | REQ-P07-S04-002 | Repository owner filter | `test_cross_user_isolation`, for every route | Test run | COMPLETED |
 | REQ-P07-S04-003 | `src/api/auth.py` | `test_rejects_bad_tokens` | `reports/deployment/p07_s04_security_review.md` | COMPLETED |

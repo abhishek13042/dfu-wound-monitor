@@ -155,7 +155,7 @@ class LocalBlobStore(BlobStore):
 
 
 class S3BlobStore(BlobStore):
-    """Any S3-compatible store.  Cloudflare R2 is the default target; MinIO runs in CI."""
+    """Any S3-compatible store.  Cloudflare R2 is the default target; SeaweedFS runs in CI."""
 
     def __init__(self, bucket: str, endpoint_url: str | None = None, client: Any = None) -> None:
         import boto3

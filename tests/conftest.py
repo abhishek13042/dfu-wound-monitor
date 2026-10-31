@@ -90,7 +90,7 @@ def database_url(tmp_path, monkeypatch):
 
 @pytest.fixture(scope="session")
 def s3_endpoint():
-    """A real S3 API: MinIO when ``DFU_TEST_S3_ENDPOINT`` is set, else a local moto server."""
+    """A real S3 server when ``DFU_TEST_S3_ENDPOINT`` is set, else a local moto server."""
 
     endpoint = os.environ.get("DFU_TEST_S3_ENDPOINT")
     if endpoint:

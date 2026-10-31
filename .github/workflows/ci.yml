@@ -66,7 +66,8 @@ jobs:
       - name: Tests on PostgreSQL
         run: python -m pytest -q
 
-  # REQ-P07-S03-001: the storage and upload tests against a real MinIO server.
+  # REQ-P07-S03-001: the storage and upload tests against a real SeaweedFS server.
+  # moto cannot do this job: it accepts forged signatures, expired URLs and oversized uploads.
   object-storage:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -82,20 +83,23 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
           cache-dependency-path: requirements*.txt
-      - name: Start MinIO
+      - name: Start SeaweedFS
         run: |
-          docker run -d --name minio -p 9000:9000 -e MINIO_ROOT_USER=ci-only \
-            -e MINIO_ROOT_PASSWORD=ci-only-secret minio/minio server /data
+          docker run -d --name seaweedfs -p 9000:8333 -e AWS_ACCESS_KEY_ID=ci-only \
+            -e AWS_SECRET_ACCESS_KEY=ci-only-secret \
+            chrislusf/seaweedfs:4.51@sha256:f7a49e3f3972ebed5be2ed4befa4a0c68eb7bdddba6e692d42729ceb545134b8 \
+            server -s3 -dir=/data
           for attempt in $(seq 1 30); do
-            curl -fsS http://127.0.0.1:9000/minio/health/live && exit 0
+            curl -fsS http://127.0.0.1:9000/healthz && exit 0
             sleep 2
           done
+          docker logs seaweedfs
           exit 1
       - name: Install CPU torch and dependencies
         run: |
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
           python -m pip install -r requirements-dev.txt
-      - name: Tests on MinIO
+      - name: Tests on SeaweedFS
         run: python -m pytest tests/storage/test_blob_contract.py tests/storage/test_blob_migration.py tests/api/test_uploads.py -q
 
   # REQ-P07-S05: real arq workers against a real Redis.

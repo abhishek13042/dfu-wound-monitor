@@ -1,6 +1,6 @@
 # P07-S03 — Object Storage and Pre-Signed Uploads
 
-**Status:** `IN_PROGRESS`. Code complete and verified against a local S3 server (moto). The MinIO CI job has not run yet because nothing has been pushed, and bucket CORS from a real browser waits for P08-S02.
+**Status:** `IN_PROGRESS`. Code complete and verified on moto and on a local SeaweedFS 4.51 server in Docker. The planned real server was MinIO, whose image was withdrawn before the CI job ever ran, so no MinIO evidence exists. The SeaweedFS CI job has not run yet because nothing has been pushed, no hosted bucket has been tested, and bucket CORS from a real browser waits for P08-S02.
 
 ## 1. Objective
 
@@ -30,7 +30,7 @@ Move images and artifacts to S3-compatible storage, so that any instance can rea
 ## 5. Assumptions
 
 - Cloudflare R2 is the default because it charges no egress fee; any S3-compatible store works.
-- Tests use a local S3 emulator (MinIO in CI).
+- Tests use moto by default and a real SeaweedFS server in CI. moto does not check signatures, expiry or a signed length, so only the real server can show that the store refuses those requests.
 
 ## 6. Dependencies
 
@@ -64,7 +64,7 @@ Move images and artifacts to S3-compatible storage, so that any instance can rea
 ## 12. Implementation Tasks
 
 1. Extract the interface from the current store.
-2. Add the S3 backend and a MinIO CI service.
+2. Add the S3 backend and a SeaweedFS CI service.
 3. Add upload routes and verification.
 4. Migrate existing blobs and verify every hash.
 
@@ -82,6 +82,7 @@ Move images and artifacts to S3-compatible storage, so that any instance can rea
 - Shared backend contract tests
 - Expiry and size limits
 - Disguised and corrupted files
+- Forged signatures, expired URLs and a body longer than signed, refused by a real server
 
 ## 15. Acceptance Criteria
 
@@ -90,7 +91,8 @@ Move images and artifacts to S3-compatible storage, so that any instance can rea
 
 ## 16. Evidence
 
-- CI run with MinIO
+- CI run with SeaweedFS (not yet run)
+- `reports/deployment/p07_s03_seaweedfs_tests.txt`: local run on the pinned CI image
 - Migration report with hash verification
 
 ## 17. Reproducibility
@@ -104,13 +106,14 @@ python scripts/deployment/migrate_blobs.py --verify
 
 - CORS settings on the bucket are easy to get wrong and must be tested from a browser.
 - Pre-signed URLs grant access until they expire, so their lifetime stays short.
+- SeaweedFS is a stand-in for the target store. Passing on it shows that the S3 calls and URL handling work against a server that enforces signatures. It does not show how R2 or any other hosted bucket behaves.
 
 ## 19. Traceability
 
 | Requirement | Implementation | Test | Evidence | Status |
 |---|---|---|---|---|
-| `REQ-P07-S03-001` | `src/storage/blobs.py` | `tests/storage/test_blob_contract.py` | Contract tests pass on local disk and moto. MinIO in CI awaits a push | IN_PROGRESS |
+| `REQ-P07-S03-001` | `src/storage/blobs.py` | `tests/storage/test_blob_contract.py` | Contract tests pass on local disk, moto and local SeaweedFS 4.51: `reports/deployment/p07_s03_seaweedfs_tests.txt`. SeaweedFS in CI awaits a push | IN_PROGRESS |
 | `REQ-P07-S03-002` | `src/storage/blobs.py` | `test_corrupt_blob_detected` | Test run | COMPLETED |
-| `REQ-P07-S03-003` | `src/api/uploads.py` | `test_upload_url_limits` | Test run | COMPLETED |
+| `REQ-P07-S03-003` | `src/api/uploads.py` | `test_upload_url_limits`, `test_store_refuses_a_body_longer_than_signed` | Test run. The store's refusal of a longer body is shown on SeaweedFS only, because moto accepts it | COMPLETED |
 | `REQ-P07-S03-004` | `src/api/uploads.py` | `test_rejects_disguised_file` | Test run | COMPLETED |
-| `REQ-P07-S03-005` | `src/storage/blobs.py` | `test_no_public_access` | Test run on moto. A hosted bucket has not been created or reviewed | IN_PROGRESS |
+| `REQ-P07-S03-005` | `src/storage/blobs.py` | `test_no_public_access` | Test run on moto and local SeaweedFS 4.51. A hosted bucket has not been created or reviewed | IN_PROGRESS |

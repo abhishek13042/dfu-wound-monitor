@@ -13,6 +13,8 @@ import pytest
 from src.storage.blobs import LocalBlobStore, S3BlobStore, create_blob_store, staging_key
 from src.storage.database import NotFoundError, StorageError
 
+real_server = pytest.mark.skipif(not os.environ.get("DFU_TEST_S3_ENDPOINT"), reason="moto does not check signatures")
+
 
 @pytest.fixture(params=["local", "s3"])
 def store(request, tmp_path):
@@ -124,9 +126,43 @@ def test_s3_upload_url_signs_the_length(s3_store):
     assert "content-length" in url.split("X-Amz-SignedHeaders=")[1].split("&")[0]
 
 
-@pytest.mark.skipif(bool(os.environ.get("DFU_TEST_S3_ENDPOINT")), reason="MinIO has no public bucket ACL to detect")
+@real_server
+def test_store_refuses_a_forged_signature(s3_store):
+    key, _ = s3_store.put(b"private bytes", ".png")
+    signed = s3_store.presign(key, "GET", 60)
+    forged = signed[:-4] + ("0000" if not signed.endswith("0000") else "1111")
+    with pytest.raises(urllib.error.HTTPError) as error:
+        urllib.request.urlopen(forged, timeout=30)
+    assert error.value.code == 403
+
+
+@real_server
+def test_store_refuses_an_expired_url(s3_store):
+    key, _ = s3_store.put(b"private bytes", ".png")
+    signed = s3_store.presign(key, "GET", 1)
+    time.sleep(3)
+    with pytest.raises(urllib.error.HTTPError) as error:
+        urllib.request.urlopen(signed, timeout=30)
+    assert error.value.code == 403
+
+
+@real_server
+def test_store_refuses_a_body_longer_than_signed(s3_store):
+    key = staging_key("upl-4")
+    url = s3_store.presign(key, "PUT", 600, 5)
+    request = urllib.request.Request(url, data=b"1234567890", method="PUT",
+                                     headers={"Content-Type": "application/octet-stream"})
+    with pytest.raises(urllib.error.HTTPError) as error:
+        urllib.request.urlopen(request, timeout=30)
+    assert error.value.code == 403
+    assert not s3_store.exists(key)
+
+
 def test_public_bucket_is_detected(s3_store):
     s3_store.client.put_bucket_acl(Bucket=s3_store.bucket, ACL="public-read")
+    grants = s3_store.client.get_bucket_acl(Bucket=s3_store.bucket)["Grants"]
+    if not any(str(grant.get("Grantee", {}).get("URI", "")).endswith("AllUsers") for grant in grants):
+        pytest.skip("This server does not record public bucket grants")
     original = s3_store.client.put_public_access_block
     s3_store.client.put_public_access_block = lambda **_: None
     try:

@@ -36,8 +36,13 @@ These variables point the same tests at a real service. CI sets them.
 | Variable | Runs on |
 |---|---|
 | `DFU_TEST_DATABASE_URL` | PostgreSQL, for `tests/storage`, `tests/api` and `tests/worker` |
-| `DFU_TEST_S3_ENDPOINT` | MinIO or another S3-compatible store, for the blob contract tests |
+| `DFU_TEST_S3_ENDPOINT` | SeaweedFS (CI) or another S3-compatible store, for the blob contract, blob migration and upload tests |
 | `DFU_TEST_REDIS_URL` | An existing Redis instead of a private one |
+
+moto does not check signatures, expiry or a signed length, so the tests that prove the store refuses those requests
+skip without `DFU_TEST_S3_ENDPOINT`. Do not point it at moto, because those tests then fail. To run them locally, use
+the pinned image and start command from the `object-storage` job in `.github/workflows/ci.yml`, with
+`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_DEFAULT_REGION` set as in that job.
 
 ## Rules
 

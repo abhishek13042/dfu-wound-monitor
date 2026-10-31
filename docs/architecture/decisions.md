@@ -28,3 +28,4 @@ decision by adding an entry that supersedes it, so the history stays readable.
 | 19 | arq on Redis, with the database row as the source of truth | A message can be lost or delivered twice, so a conditional claim on the row gives idempotency | `src/worker/tasks.py` |
 | 20 | The API holds no model when a queue is configured | API instances stay small, and workers scale on their own | `src/api/app.py` |
 | 21 | The API row is written before the message is sent, and removed if sending fails | A job can never be queued with no row, and a failed submit leaves no orphan | `src/api/analyses_v2.py` |
+| 22 | The CI object storage job uses SeaweedFS pinned by digest, not moto | The MinIO image was withdrawn. moto accepts forged signatures, expired URLs and oversized uploads, so it cannot show that the store refuses them | `.github/workflows/ci.yml` |
