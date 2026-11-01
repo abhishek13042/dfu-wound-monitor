@@ -22,7 +22,7 @@
 | phase-04 | Longitudinal Wound-Monitoring Workflow | 3 | 3 | COMPLETED |
 | phase-05 | Product Integration | 3 | 3 | COMPLETED |
 | phase-06 | System Validation & Release | 3 | 3 | COMPLETED |
-| phase-07 | Production Backend | 6 | 0 | NOT_STARTED |
+| phase-07 | Production Backend | 6 | 0 | IN_PROGRESS |
 | phase-08 | Web Frontend | 3 | 0 | NOT_STARTED |
 | phase-09 | Computer Vision Features | 4 | 0 | NOT_STARTED |
 | phase-10 | Production Readiness | 4 | 0 | NOT_STARTED |
