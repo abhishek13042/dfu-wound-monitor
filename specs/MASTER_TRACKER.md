@@ -7,7 +7,8 @@
 **Release:** v1.0.0 on `main` (see `CHANGELOG.md`). Check at release 2026-10-29: 265 tests passed, smoke test 8/8. Latest local check 2026-10-30: 395 passed on SQLite, and 171 passed on PostgreSQL 16 (`tests/storage`, `tests/api`, `tests/worker`).  
 **Deployment:** Docker image and Hugging Face Space bundle are built (`docs/deployment/HUGGINGFACE.md`); the Space is not yet published.  
 **Phase 07:** P07-S01 to P07-S05 are `IN_PROGRESS`. Their code and tests pass locally. Each one waits on proof that needs outside access: a CI run, a hosted service, or a real sign-in provider.  
-**Next:** P07-S06 and Phases 08–10 are `NOT_STARTED`. Each specification needs approval before implementation.
+**Phase 08 design:** P08-S04 is `IN_PROGRESS`. Every page is built in `web/` against a labelled mock layer. Detection is clean, the audit's P1 and P2 findings are fixed, the finish review returned ship, and `DESIGN.md` is recorded from the build. It waits on the user's approval of the direction and on P08-S01 to replace the mock layer.  
+**Next:** P07-S06 and the other Phase 08–10 specifications are `NOT_STARTED`. Each specification needs approval before implementation.
 
 ---
 
@@ -88,6 +89,7 @@ from `specs/SPEC_TEMPLATE.md` before implementation begins.
 | P08-S01 | Next.js application shell, auth, typed API client | NOT_STARTED | P07-S04 | `specs/phase-08/01-frontend-foundation.md` |
 | P08-S02 | Upload, progress, results, case management | NOT_STARTED | P08-S01, P07-S03, P07-S05 | `specs/phase-08/02-analysis-and-case-workflows.md` |
 | P08-S03 | Timeline, trend chart, side-by-side comparison | NOT_STARTED | P08-S02, P04-S03 | `specs/phase-08/03-longitudinal-views.md` |
+| P08-S04 | Design system and screen specification, built against a mock layer | IN_PROGRESS | None | `specs/phase-08/04-design-system-and-screens.md` |
 | P09-S01 | ArUco detection for millimetre measurements | NOT_STARTED | P03-S03, P08-S02 | `specs/phase-09/01-reference-marker-calibration.md` |
 | P09-S02 | Probability heatmap and uncertainty signal | NOT_STARTED | P03-S01, P08-S02 | `specs/phase-09/02-confidence-visualisation.md` |
 | P09-S03 | Canvas mask editing with stored corrections | NOT_STARTED | P08-S02, P03-S03, P07-S02 | `specs/phase-09/03-mask-correction-editor.md` |

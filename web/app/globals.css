@@ -1,0 +1,353 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--secondary);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--secondary);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--rule-strong);
+  --color-ring: var(--ring);
+
+  --color-aubergine: var(--aubergine);
+  --color-aubergine-2: var(--aubergine-2);
+  --color-rail-ink: var(--rail-ink);
+  --color-rail-muted: var(--rail-muted);
+  --color-ground: var(--ground);
+  --color-panel: var(--panel);
+  --color-ink: var(--foreground);
+  --color-ink-2: var(--muted-foreground);
+  --color-rule: var(--border);
+  --color-rule-strong: var(--rule-strong);
+  --color-pass: var(--pass);
+  --color-pass-wash: var(--pass-wash);
+  --color-reject: var(--reject);
+  --color-reject-wash: var(--reject-wash);
+  --color-failure: var(--destructive);
+  --color-failure-wash: var(--failure-wash);
+  --color-warn: var(--warn);
+  --color-warn-ink: var(--warn-ink);
+  --color-warn-wash: var(--warn-wash);
+  --color-series: var(--series);
+  --color-series-wash: var(--series-wash);
+
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-spline-mono), ui-monospace, monospace;
+  --font-heading: var(--font-archivo), system-ui, sans-serif;
+
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-13: 13px;
+  --text-13--line-height: 18px;
+  --text-sm: 14px;
+  --text-sm--line-height: 20px;
+  --text-base: 16px;
+  --text-base--line-height: 24px;
+  --text-lg: 20px;
+  --text-lg--line-height: 26px;
+  --text-xl: 28px;
+  --text-xl--line-height: 32px;
+  --text-2xl: 40px;
+  --text-2xl--line-height: 42px;
+  --text-3xl: 72px;
+  --text-3xl--line-height: 72px;
+
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+  --radius-3xl: 2px;
+  --radius-4xl: 2px;
+
+  --shadow-menu: 0 6px 20px rgb(42 21 48 / 0.2);
+}
+
+:root {
+  --aubergine: #2a1530;
+  --aubergine-2: #41254a;
+  --rail-ink: #f3ecf4;
+  --rail-muted: #cdbcd1;
+
+  --background: #e9f0e4;
+  --ground: #e9f0e4;
+  --panel: #fdfefb;
+  --card: #fdfefb;
+  --foreground: #1d1620;
+  --muted-foreground: #4b4451;
+  --primary: #2a1530;
+  --primary-foreground: #f3ecf4;
+  --secondary: #dfe7d9;
+  --border: #bcc7b4;
+  --rule-strong: #7f8a79;
+  --ring: #41254a;
+
+  --pass: #1f7a4a;
+  --pass-wash: #dceee2;
+  --reject: #ad3a17;
+  --reject-wash: #f8e4dc;
+  --destructive: #a3146b;
+  --failure-2: #7f0f53;
+  --failure-wash: #f7e0ee;
+  --warn: #d9a514;
+  --warn-ink: #664800;
+  --warn-wash: #fbf1cf;
+  --series: #33578f;
+  --series-wash: #dfe6f1;
+  --pad-none: #dfe7d9;
+
+  --photo-1: #a79c93;
+  --photo-2: #8d8279;
+  --photo-3: #6f655e;
+  --photo-ink: #f6f2ee;
+
+  --radius: 2px;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    @apply font-sans;
+    background: var(--ground);
+    scrollbar-color: var(--rule-strong) var(--ground);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--ground);
+    color: var(--foreground);
+    caret-color: var(--aubergine);
+    font-size: 16px;
+    line-height: 24px;
+    min-height: 100dvh;
+  }
+  ::selection {
+    background: var(--aubergine);
+    color: var(--rail-ink);
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+    font-stretch: 78%;
+    font-weight: 700;
+  }
+  p, dd, li {
+    text-wrap: pretty;
+  }
+  a {
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .on-aubergine :focus-visible {
+    outline-color: var(--rail-ink);
+  }
+  input, select, textarea {
+    font: inherit;
+  }
+  input[type="range"] {
+    accent-color: var(--aubergine);
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--rule-strong);
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--ground);
+  }
+}
+
+@layer components {
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  .value {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .text-link {
+    text-decoration: underline;
+    text-decoration-color: var(--rule-strong);
+  }
+  .text-link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .field {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 12px;
+    background: var(--panel);
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    font-size: 16px;
+  }
+  .field:hover {
+    border-color: var(--foreground);
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--reject);
+  }
+  .field:disabled {
+    background: var(--secondary);
+    color: var(--muted-foreground);
+  }
+
+  .pad {
+    display: grid;
+    place-items: center;
+    flex: none;
+    border-radius: 2px;
+    color: var(--panel);
+  }
+  .pad[data-state="pass"] {
+    background: var(--pass);
+  }
+  .pad[data-state="fail"] {
+    background: var(--reject);
+  }
+  .pad[data-state="none"] {
+    background: var(--pad-none);
+    color: var(--muted-foreground);
+    box-shadow: inset 0 0 0 1px var(--rule-strong);
+  }
+  .on-aubergine .pad[data-state="none"] {
+    box-shadow: inset 0 0 0 1px var(--rail-muted);
+  }
+  .pad[data-step] {
+    animation: pad-hold calc((var(--step) + 1) * 90ms) steps(1, end) backwards;
+  }
+
+  /* Tables keep their columns from tablet up. On a phone each row becomes a labelled block.
+     The cases table stacks by its own width, which the rail narrows. From 600 to 820 px it keeps
+     its rows and folds Basis under the area value. */
+  @media (max-width: 639px) {
+    .stack-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .stack-table,
+    .stack-table tbody {
+      display: block;
+    }
+    .stack-table tr {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 16px;
+      padding: 12px 16px;
+      height: auto !important;
+      border-bottom: 1px solid var(--border);
+    }
+    .stack-table td {
+      display: block;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      height: auto;
+      white-space: normal;
+    }
+    .stack-table td[data-wide] {
+      grid-column: 1 / -1;
+    }
+    .stack-table td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--muted-foreground);
+    }
+  }
+  @container cases (max-width: 599px) {
+    .stack-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .stack-table,
+    .stack-table tbody {
+      display: block;
+    }
+    .stack-table tr {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px 16px;
+      padding: 12px 16px;
+      height: auto !important;
+      border-bottom: 1px solid var(--border);
+    }
+    .stack-table td {
+      display: block;
+      min-width: 0;
+      padding: 0;
+      border: 0;
+      height: auto;
+      white-space: normal;
+    }
+    .stack-table td[data-wide] {
+      grid-column: 1 / -1;
+    }
+    .stack-table td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      line-height: 16px;
+      color: var(--muted-foreground);
+    }
+  }
+}
+
+@keyframes pad-hold {
+  from {
+    background: var(--pad-none);
+    color: transparent;
+    box-shadow: inset 0 0 0 1px var(--rule-strong);
+  }
+  to {
+    background: var(--pad-none);
+    color: transparent;
+    box-shadow: inset 0 0 0 1px var(--rule-strong);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pad[data-step] {
+    animation: none;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none;
+  }
+}

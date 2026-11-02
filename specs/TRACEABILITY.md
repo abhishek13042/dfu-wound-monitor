@@ -400,6 +400,11 @@ These requirements are specified and not implemented. The paths are planned loca
 | REQ-P08-S03-003 | `web/components/TrendChart.tsx` | Component test | Test report | NOT_STARTED |
 | REQ-P08-S03-004 | `web/components/TrendNotice.tsx` | Playwright check | Test report | NOT_STARTED |
 | REQ-P08-S03-005 | `web/components/Compare.tsx` | Component test | Test report | NOT_STARTED |
+| REQ-P08-S04-001 to 003 | `web/app/globals.css` | Detection and contrast check | Review capture | IN_PROGRESS |
+| REQ-P08-S04-004 to 007 | `web/components/ReadingStrip.tsx` | Browser check | Review capture | IN_PROGRESS |
+| REQ-P08-S04-008 to 016 | `web/app/` | Browser check at 1440 and 375 px | Review capture | IN_PROGRESS |
+| REQ-P08-S04-017 to 018 | `web/lib/api/` | Build and browser check | Build log | IN_PROGRESS |
+| REQ-P08-S04-019 | `web/scripts/check-wording.mjs` | `npm run test:wording` | Script output | IN_PROGRESS |
 | REQ-P09-S01-001 | `src/measurement/marker.py` | `tests/measurement/test_marker.py` | Test run | NOT_STARTED |
 | REQ-P09-S01-002 | `src/measurement/marker.py` | `test_marker_fallbacks` | Test run | NOT_STARTED |
 | REQ-P09-S01-003 | `scripts/evaluation/run_marker_validation.py` | Validation run | `reports/final/p09_s01_marker_validation.json` | NOT_STARTED |
