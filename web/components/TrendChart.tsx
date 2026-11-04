@@ -28,7 +28,10 @@ export function TrendChart({ trend }: { trend: Trend }) {
   const baseline = Date.parse(trend.rows[0].captured_at);
   const tick = { fill: "var(--muted-foreground)", fontSize: 12, fontFamily: "var(--font-spline-mono)" };
   const stroke = trend.basis === "PHYSICALLY_CALIBRATED" ? "var(--series)" : "var(--muted-foreground)";
-  const excluded = trend.excluded.map((item) => Math.round((Date.parse(item.captured_at) - baseline) / 86_400_000));
+  // Only for placing the excluded markers on the time axis; no plotted value is computed here.
+  const excluded = trend.excluded
+    .filter((item) => item.captured_at)
+    .map((item) => Math.round((Date.parse(item.captured_at!) - baseline) / 86_400_000));
   const days = [...trend.rows.map((row) => row.days_since_baseline), ...excluded].sort((a, b) => a - b);
   const peak = Math.max(...trend.rows.map((row) => row.values.area));
   const step = 10 ** Math.floor(Math.log10(peak));

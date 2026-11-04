@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { CircleAlert } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -8,7 +9,15 @@ import { cn } from "@/lib/utils";
 
 const USER_SIDE: ErrorCategory[] = ["INVALID_INPUT", "UNAUTHENTICATED", "NOT_FOUND", "CONFLICT"];
 
-export function ErrorPanel({ category, requestId, details }: { category: ErrorCategory; requestId?: string; details?: string }) {
+interface Props {
+  category: ErrorCategory;
+  requestId?: string;
+  details?: string;
+  retryAfter?: number;
+  action?: ReactNode;
+}
+
+export function ErrorPanel({ category, requestId, details, retryAfter, action }: Props) {
   const copy = errorCopy[category];
   const refused = category === "QUALITY_REJECTED";
   const neutral = USER_SIDE.includes(category);
@@ -27,7 +36,12 @@ export function ErrorPanel({ category, requestId, details }: { category: ErrorCa
             Request ID <span className="value text-ink">{requestId}</span>
           </p>
         )}
-        {category === "BUSY" ? (
+        {category === "BUSY" && retryAfter !== undefined && (
+          <p className="mt-1 text-sm">The service asked for a pause of {retryAfter} seconds before the next attempt.</p>
+        )}
+        {action ? (
+          <div className="mt-3">{action}</div>
+        ) : category === "BUSY" ? (
           <button type="button" disabled className={cn(buttonVariants({ variant: "outline" }), "mt-3")}>{copy.action}</button>
         ) : (
           <Link href={copy.href} className={cn(buttonVariants({ variant: "outline" }), "mt-3")}>{copy.action}</Link>

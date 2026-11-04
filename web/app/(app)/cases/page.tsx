@@ -5,19 +5,21 @@ import { Plus } from "lucide-react";
 import { CasesTable, type CaseRow } from "@/components/CasesTable";
 import { PageHeader } from "@/components/PageHeader";
 import { buttonVariants } from "@/components/ui/button";
-import { latestAnalysis, listCases } from "@/lib/api";
+import { isMock, latestAnalysis, listCases } from "@/lib/api";
 
 export const metadata: Metadata = { title: "Cases" };
 
 export default async function CasesPage({ searchParams }: { searchParams: Promise<{ state?: string }> }) {
   const { state } = await searchParams;
-  const cases = state === "empty" ? [] : await listCases();
+  // ?state=empty previews the empty state against constructed data only.
+  const cases = isMock && state === "empty" ? [] : await listCases();
+  const latest = await Promise.all(cases.map((item) => latestAnalysis(item)));
   const rows: CaseRow[] = await Promise.all(
-    cases.map(async (item) => {
-      const analysis = await latestAnalysis(item);
+    cases.map(async (item, index) => {
+      const analysis = latest[index];
       return {
         id: item.case_id,
-        label: item.label,
+        label: item.label ?? item.case_id,
         identity: item.identity_status,
         examinations: item.examinations.length,
         latestAt: item.examinations.at(-1)?.captured_at ?? null,
@@ -28,6 +30,8 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
       };
     }),
   );
+
+  const models = [...new Set(latest.map((item) => item?.model_version).filter(Boolean))];
 
   return (
     <>
@@ -50,7 +54,12 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
         <>
           <CasesTable rows={rows} />
           <p className="mt-2 text-13 text-ink-2">
-            Area comes from model <span className="value">spec-02-03-resnet34-unet-512-v1</span>. A refused photo has no value.
+            {models.length > 0 && (
+              <>
+                Area comes from model{models.length > 1 ? "s" : ""} <span className="value">{models.join(", ")}</span>.{" "}
+              </>
+            )}
+            A refused photo has no value.
           </p>
         </>
       )}

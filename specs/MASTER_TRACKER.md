@@ -7,8 +7,9 @@
 **Release:** v1.0.0 on `main` (see `CHANGELOG.md`). Check at release 2026-10-29: 265 tests passed, smoke test 8/8. Latest local check 2026-10-30: 395 passed on SQLite, and 171 passed on PostgreSQL 16 (`tests/storage`, `tests/api`, `tests/worker`).  
 **Deployment:** Docker image and Hugging Face Space bundle are built (`docs/deployment/HUGGINGFACE.md`); the Space is not yet published.  
 **Phase 07:** P07-S01 to P07-S05 are `IN_PROGRESS`. Their code and tests pass locally. Each one waits on proof that needs outside access: a CI run, a hosted service, or a real sign-in provider.  
-**Phase 08 design:** P08-S04 is `IN_PROGRESS`. Every page is built in `web/` against a labelled mock layer. Detection is clean, the audit's P1 and P2 findings are fixed, the finish review returned ship, and `DESIGN.md` is recorded from the build. It waits on the user's approval of the direction and on P08-S01 to replace the mock layer.  
-**Next:** P07-S06 and the other Phase 08–10 specifications are `NOT_STARTED`. Each specification needs approval before implementation.
+**Phase 08 design:** P08-S04 is `IN_PROGRESS`. Every page is built in `web/` against a labelled mock layer. Detection is clean, the audit's P1 and P2 findings are fixed, the finish review returned ship, and `DESIGN.md` is recorded from the build. It waits on the user's approval of the direction now that P08-S01 to S03 connect the pages to `/api/v2`.  
+**Phase 08 build:** P08-S01 to P08-S03 are `IN_PROGRESS`. Their code is done, local checks pass, and the end-to-end test passed against a local API, worker and OIDC provider (`reports/frontend/p08_s01_s03_verification.md`). They wait on a CI run, which needs a push.  
+**Next:** P07-S06, P08-S04's approval and the Phase 09–10 specifications are `NOT_STARTED`. Each specification needs approval before implementation.
 
 ---
 
@@ -86,9 +87,9 @@ from `specs/SPEC_TEMPLATE.md` before implementation begins.
 | P07-S04 | Managed sign-in, per-user data isolation | IN_PROGRESS | P07-S02 | `specs/phase-07/04-authentication-and-ownership.md` |
 | P07-S05 | Redis queue, worker processes, job status | IN_PROGRESS | P07-S02, P07-S03 | `specs/phase-07/05-async-job-queue.md` |
 | P07-S06 | ONNX Runtime serving with measured parity | NOT_STARTED | P03-S01, P07-S01 | `specs/phase-07/06-onnx-export-and-serving.md` |
-| P08-S01 | Next.js application shell, auth, typed API client | NOT_STARTED | P07-S04 | `specs/phase-08/01-frontend-foundation.md` |
-| P08-S02 | Upload, progress, results, case management | NOT_STARTED | P08-S01, P07-S03, P07-S05 | `specs/phase-08/02-analysis-and-case-workflows.md` |
-| P08-S03 | Timeline, trend chart, side-by-side comparison | NOT_STARTED | P08-S02, P04-S03 | `specs/phase-08/03-longitudinal-views.md` |
+| P08-S01 | Next.js application shell, auth, typed API client | IN_PROGRESS | P07-S04 | `specs/phase-08/01-frontend-foundation.md` |
+| P08-S02 | Upload, progress, results, case management | IN_PROGRESS | P08-S01, P07-S03, P07-S05 | `specs/phase-08/02-analysis-and-case-workflows.md` |
+| P08-S03 | Timeline, trend chart, side-by-side comparison | IN_PROGRESS | P08-S02, P04-S03 | `specs/phase-08/03-longitudinal-views.md` |
 | P08-S04 | Design system and screen specification, built against a mock layer | IN_PROGRESS | None | `specs/phase-08/04-design-system-and-screens.md` |
 | P09-S01 | ArUco detection for millimetre measurements | NOT_STARTED | P03-S03, P08-S02 | `specs/phase-09/01-reference-marker-calibration.md` |
 | P09-S02 | Probability heatmap and uncertainty signal | NOT_STARTED | P03-S01, P08-S02 | `specs/phase-09/02-confidence-visualisation.md` |

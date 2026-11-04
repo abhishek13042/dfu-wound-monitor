@@ -384,22 +384,22 @@ These requirements are specified and not implemented. The paths are planned loca
 | REQ-P07-S06-003 | `scripts/evaluation/run_onnx_parity.py` | Parity run | `reports/final/p07_s06_onnx_parity.json` | NOT_STARTED |
 | REQ-P07-S06-004 | `scripts/evaluation/run_phase_06_benchmark.py` | Benchmark run | `reports/final/p07_s06_onnx_benchmark.json` | NOT_STARTED |
 | REQ-P07-S06-005 | `configs/inference/` | Decision entry | `docs/architecture/decisions.md` | NOT_STARTED |
-| REQ-P08-S01-001 | `web/lib/api/` | CI schema diff | CI log | NOT_STARTED |
-| REQ-P08-S01-002 | `web/components/MedicalNotice.tsx` | Playwright check over all routes | Test report | NOT_STARTED |
-| REQ-P08-S01-003 | `web/middleware.ts` | Playwright auth test | Test report | NOT_STARTED |
-| REQ-P08-S01-004 | `web/lib/errors.ts` | Unit test over all categories | Test report | NOT_STARTED |
-| REQ-P08-S01-005 | `web/` layouts | axe and Playwright | Test report | NOT_STARTED |
-| REQ-P08-S02-001 | `web/components/Upload.tsx` | Playwright upload test | Test report | NOT_STARTED |
-| REQ-P08-S02-002 | `web/app/analyses/[id]/` | Playwright with mocked states | Test report | NOT_STARTED |
-| REQ-P08-S02-003 | `web/components/QualityResult.tsx` | Component test | Test report | NOT_STARTED |
-| REQ-P08-S02-004 | `web/components/Measurements.tsx` | Component test | Test report | NOT_STARTED |
-| REQ-P08-S02-005 | `web/components/Provenance.tsx` | Playwright check | Test report | NOT_STARTED |
-| REQ-P08-S02-006 | `web/e2e/` | Playwright in CI | Test report | NOT_STARTED |
-| REQ-P08-S03-001 | `web/components/TrendChart.tsx` | Component test | Test report | NOT_STARTED |
-| REQ-P08-S03-002 | `web/components/Exclusions.tsx` | Component test | Test report | NOT_STARTED |
-| REQ-P08-S03-003 | `web/components/TrendChart.tsx` | Component test | Test report | NOT_STARTED |
-| REQ-P08-S03-004 | `web/components/TrendNotice.tsx` | Playwright check | Test report | NOT_STARTED |
-| REQ-P08-S03-005 | `web/components/Compare.tsx` | Component test | Test report | NOT_STARTED |
+| REQ-P08-S01-001 | `web/lib/api/`, `web/scripts/export_openapi.py` | `npm run api:check` in the CI `web` job | Local exit 0; no CI log yet | IN_PROGRESS |
+| REQ-P08-S01-002 | `web/components/MedicalNotice.tsx` in both layouts | `e2e/pages.spec.ts`, 20 routes at two widths | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S01-003 | `web/middleware.ts` | `middleware.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S01-004 | `web/lib/errors.ts`, `web/components/ErrorPanel.tsx` | `lib/errors.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S01-005 | `web/app/` layouts | `e2e/pages.spec.ts`: axe WCAG 2.1 A/AA and overflow at 375 px | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S02-001 | `web/components/UploadForm.tsx`, `web/lib/upload.ts`; the server check is the P07 upload verify | `lib/upload.test.ts`; consent step in `e2e/workflow.spec.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S02-002 | `web/components/AnalysisPoller.tsx`, `web/app/(app)/analyses/[id]/` | `e2e/workflow.spec.ts` waits on the real worker; mock states in `e2e/pages.spec.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S02-003 | `web/app/(app)/analyses/[id]/`, `web/lib/copy.ts` | Live `QUALITY_REJECTED` result in `e2e/workflow.spec.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S02-004 | `web/components/Measurements.tsx`, `web/lib/format.ts` | `lib/format.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S02-005 | `web/components/Provenance.tsx` | `e2e/pages.spec.ts` on mock results | `reports/frontend/p08_s01_s03_verification.md`, mock layer only | COMPLETED |
+| REQ-P08-S02-006 | `web/e2e/workflow.spec.ts`, `web/e2e/oidc.mjs` | Local run passed; not in CI | Local run in `reports/frontend/p08_s01_s03_verification.md` | IN_PROGRESS |
+| REQ-P08-S03-001 | `web/app/(app)/cases/[id]/trend/`, `web/components/TrendChart.tsx` | Code review: values are formatted from `/trend`, not computed | Review; `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S03-002 | `web/components/Exclusions.tsx` | `e2e/pages.spec.ts` exclusions test | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S03-003 | `web/components/TrendChart.tsx` | `e2e/pages.spec.ts` one-point test; `lib/format.test.ts` units | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S03-004 | `web/components/TrendNotice.tsx` | `e2e/pages.spec.ts` trend-notice test; `npm run test:wording` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| REQ-P08-S03-005 | `web/app/(app)/compare/` | `e2e/pages.spec.ts` refused-pair test | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
 | REQ-P08-S04-001 to 003 | `web/app/globals.css` | Detection and contrast check | Review capture | IN_PROGRESS |
 | REQ-P08-S04-004 to 007 | `web/components/ReadingStrip.tsx` | Browser check | Review capture | IN_PROGRESS |
 | REQ-P08-S04-008 to 016 | `web/app/` | Browser check at 1440 and 375 px | Review capture | IN_PROGRESS |

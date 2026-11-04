@@ -130,6 +130,44 @@ jobs:
       - name: Tests on Redis
         run: python -m pytest tests/worker -q
 
+  # REQ-P08-S01-001 and -005: the web client matches the API schema, and every page passes axe at 375 px.
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install CPU torch and dependencies
+        working-directory: .
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install -r requirements-dev.txt
+      - run: npm ci
+      - name: Generated client is current
+        run: npm run api:check
+      - name: Types
+        run: npx tsc --noEmit
+      - name: Wording
+        run: npm run test:wording
+      - name: Unit tests
+        run: npm test
+      - name: Pages, notice and accessibility
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e -- --project=pages
+
   # REQ-P07-S01-002: a fresh clone in an empty environment, on Linux and Windows.
   install:
     strategy:

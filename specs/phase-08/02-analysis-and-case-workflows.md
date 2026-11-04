@@ -1,6 +1,6 @@
 # P08-S02 — Analysis and Case Workflows
 
-**Status:** `NOT_STARTED`. Nothing in this specification is implemented. It needs approval before work begins.
+**Status:** `IN_PROGRESS`. Code is done and the end-to-end test passes on a local stack with the real API, worker, Redis and a local OIDC provider. It is not in CI, and the constructed photo was refused, so the measured path was checked on the mock layer only.
 
 ## 1. Objective
 
@@ -93,15 +93,15 @@ The overlay view uses the original image with the mask drawn on a canvas layer a
 
 ## 16. Evidence
 
-- Playwright report
-- Screen recording of the flow
+- `reports/frontend/p08_s01_s03_verification.md`
+- No screen recording was made
 
 ## 17. Reproducibility
 
-Planned commands. These do not work until the specification is implemented.
-
 ```bash
-cd web && npx playwright test e2e/
+cd web && npx playwright test --project=pages
+# with the local stack described in the report running:
+DFU_E2E_BASE_URL=http://localhost:3200 npx playwright test --project=workflow
 ```
 
 ## 18. Risks / Limitations
@@ -111,11 +111,11 @@ cd web && npx playwright test e2e/
 
 ## 19. Traceability
 
-| Requirement | Planned implementation | Planned test | Planned evidence | Status |
+| Requirement | Implementation | Test | Evidence | Status |
 |---|---|---|---|---|
-| `REQ-P08-S02-001` | `web/components/Upload.tsx` | Playwright upload test | Test report | NOT_STARTED |
-| `REQ-P08-S02-002` | `web/app/analyses/[id]/` | Playwright with mocked states | Test report | NOT_STARTED |
-| `REQ-P08-S02-003` | `web/components/QualityResult.tsx` | Component test | Test report | NOT_STARTED |
-| `REQ-P08-S02-004` | `web/components/Measurements.tsx` | Component test | Test report | NOT_STARTED |
-| `REQ-P08-S02-005` | `web/components/Provenance.tsx` | Playwright check | Test report | NOT_STARTED |
-| `REQ-P08-S02-006` | `web/e2e/` | Playwright in CI | Test report | NOT_STARTED |
+| `REQ-P08-S02-001` | `web/components/UploadForm.tsx`, `web/lib/upload.ts`; the server check is the P07 upload verify | `lib/upload.test.ts`; consent step in `e2e/workflow.spec.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S02-002` | `web/components/AnalysisPoller.tsx`, `web/app/(app)/analyses/[id]/` | `e2e/workflow.spec.ts` waits on the real worker; mock states in `e2e/pages.spec.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S02-003` | `web/app/(app)/analyses/[id]/`, `web/lib/copy.ts` | Live `QUALITY_REJECTED` result in `e2e/workflow.spec.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S02-004` | `web/components/Measurements.tsx`, `web/lib/format.ts` | `lib/format.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S02-005` | `web/components/Provenance.tsx` | `e2e/pages.spec.ts` on mock results | `reports/frontend/p08_s01_s03_verification.md`, mock layer only | COMPLETED |
+| `REQ-P08-S02-006` | `web/e2e/workflow.spec.ts`, `web/e2e/oidc.mjs` | Local run passed; not in CI | Local run in `reports/frontend/p08_s01_s03_verification.md` | IN_PROGRESS |

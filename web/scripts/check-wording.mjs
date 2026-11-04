@@ -3,7 +3,8 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const FORBIDDEN = /\b(heal(s|ed|ing)?|deteriorat\w*|improving|worsening|treatment response|prognosis|clinical recommendation)\b/i;
-const ALLOWED = ["Not a clinical assessment of healing, prognosis or treatment response."];
+// The trend notice is required wording (REQ-P08-S03-004): it names healing only to disclaim it.
+const ALLOWED = ["Not a clinical assessment of healing, prognosis or treatment response.", "Image-derived technical trends, not a healing assessment."];
 const ROOTS = ["app", "components", "lib"];
 
 function* files(directory) {

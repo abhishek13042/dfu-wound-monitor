@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { Exclusions } from "@/components/Exclusions";
 import { PageHeader } from "@/components/PageHeader";
+import { TrendNotice } from "@/components/TrendNotice";
 import { TrendChart } from "@/components/TrendChart";
 import { Warnings } from "@/components/Warnings";
 import { buttonVariants } from "@/components/ui/button";
@@ -17,26 +19,37 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
   const item = await getCase(id);
   if (!item) notFound();
   const trend = await getTrend(id);
+  if (!trend) notFound();
   const digits = trend.basis === "PHYSICALLY_CALIBRATED" ? 1 : 0;
-  const change = (value: { absolute_change: number; percent_change: number } | null) =>
-    value ? `${signed(value.absolute_change, digits)} (${signed(value.percent_change)}%)` : "None";
+  // Every figure below is the service's own; the browser only formats it (REQ-P08-S03-001).
+  const change = (value: { absolute_change: number; percent_change: number | null } | null) =>
+    value ? `${signed(value.absolute_change, digits)}${value.percent_change === null ? "" : ` (${signed(value.percent_change)}%)`}` : "None";
+  const day = (value: number) => formatNumber(value, Number.isInteger(value) ? 0 : 1);
+  const plotted = trend.status === "AVAILABLE" && trend.rows.length >= 2;
 
   return (
     <>
       <p className="mb-1 text-sm">
-        <Link href={`/cases/${id}`} className="text-link text-ink-2">{item.label}</Link>
+        <Link href={`/cases/${id}`} className="text-link text-ink-2">{item.label ?? item.case_id}</Link>
       </p>
       <PageHeader title="Trend" />
 
-      <p className="panel mb-4 max-w-[80ch] px-4 py-3 text-sm font-medium">{trend.label}</p>
+      <TrendNotice label={trend.label} />
 
-      {trend.status === "UNAVAILABLE" ? (
+      {!plotted ? (
         <section className="panel px-6 py-10">
           <h2 className="text-lg">No trend for this case</h2>
           <ul className="mt-2 text-ink-2">
-            {trend.reason_codes.map((code) => (
-              <li key={code}>{trendReasonCopy[code]}</li>
-            ))}
+            {trend.rows.length < 2 && (
+              <li>
+                {trend.rows.length === 0 ? "No examination" : "Only one examination"} has a usable measurement. A trend needs at least two.
+              </li>
+            )}
+            {trend.reason_codes
+              .filter((code) => !(trend.rows.length < 2 && code === "INSUFFICIENT_POINTS"))
+              .map((code) => (
+                <li key={code}>{trendReasonCopy[code] ?? code}</li>
+              ))}
           </ul>
           <Link href={`/analyse?case=${id}`} className={`${buttonVariants()} mt-4`}>Add a photo</Link>
         </section>
@@ -72,7 +85,7 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
                       <Link href={`/analyses/${row.analysis_id}`} className="font-semibold hover:underline">{formatDate(row.captured_at)}</Link>
                       {row.is_baseline && <span className="ml-2 font-sans text-13 text-ink-2">Baseline</span>}
                     </td>
-                    <td data-label="Day" className="px-4 sm:text-right">{row.days_since_baseline}</td>
+                    <td data-label="Day" className="px-4 sm:text-right">{day(row.days_since_baseline)}</td>
                     <td data-label={`Area (${trend.unit.area})`} className="px-4 sm:text-right">{formatNumber(row.values.area, digits)}</td>
                     <td data-label="From baseline" className="px-4 sm:text-right">{change(row.from_baseline)}</td>
                     <td data-label="From previous" className="px-4 sm:text-right">{change(row.from_previous)}</td>
@@ -81,26 +94,17 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
               </tbody>
             </table>
           </section>
+        </div>
+      )}
 
-          {trend.excluded.length > 0 && (
-            <section aria-labelledby="excluded" className="panel px-4 py-3">
-              <h2 id="excluded" className="text-lg">Left out of this trend</h2>
-              <ul className="mt-1 text-sm">
-                {trend.excluded.map((entry) => (
-                  <li key={entry.examination_id} className="border-t border-rule py-2 first:border-t-0">
-                    <Link href={`/analyses/${entry.analysis_id}`} className="value font-semibold hover:underline">{formatDate(entry.captured_at)}</Link>
-                    <span className="ml-2 text-ink-2">{entry.reason_codes.map((code) => trendReasonCopy[code] ?? code).join(" ")}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
+      <div className="mt-4 space-y-4">
+        <Exclusions excluded={trend.excluded} />
+        {plotted && (
           <p className="text-13 text-ink-2">
             Trend method <span className="value">{trend.version}</span>. Values come from the service, never from the browser.
           </p>
-        </div>
-      )}
+        )}
+      </div>
     </>
   );
 }

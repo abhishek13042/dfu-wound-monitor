@@ -2,8 +2,8 @@ import { outline, seedOf, toPath } from "@/lib/shape";
 import { cn } from "@/lib/utils";
 
 // Stands in for a photograph until real sample images are supplied.
-// The label is HTML so it stays 13px whatever size the image is drawn at.
-export function ConstructedPhoto({ id, className }: { id: string; className?: string }) {
+// The label is HTML so it stays 13px whatever size the image is drawn at. Stacked views draw it once themselves.
+export function ConstructedPhoto({ id, className, labelled = true }: { id: string; className?: string; labelled?: boolean }) {
   const seed = seedOf(id);
   return (
     <div className={cn("relative", className)}>
@@ -15,9 +15,15 @@ export function ConstructedPhoto({ id, className }: { id: string; className?: st
           <rect key={index} x={20 + index * 9} y={270} width="1" height={index % 5 === 0 ? 14 : 8} fill="var(--photo-ink)" />
         ))}
       </svg>
-      <span aria-hidden="true" className="absolute top-3 left-3 bg-[var(--photo-3)] px-1.5 text-13 text-[var(--photo-ink)]">
-        Constructed placeholder, no photograph
-      </span>
+      {labelled && <PlaceholderLabel />}
     </div>
+  );
+}
+
+export function PlaceholderLabel() {
+  return (
+    <span aria-hidden="true" className="absolute top-3 left-3 bg-[var(--photo-3)] px-1.5 text-13 text-[var(--photo-ink)]">
+      Constructed placeholder, no photograph
+    </span>
   );
 }

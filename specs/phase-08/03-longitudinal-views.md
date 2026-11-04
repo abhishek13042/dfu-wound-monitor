@@ -1,6 +1,6 @@
 # P08-S03 — Longitudinal Views
 
-**Status:** `NOT_STARTED`. Nothing in this specification is implemented. It needs approval before work begins.
+**Status:** `IN_PROGRESS`. Code is done and the checks pass against constructed series on the mock layer. No live trend has been drawn, because the constructed photos are refused by quality control, and CI has not run.
 
 ## 1. Objective
 
@@ -88,15 +88,13 @@ Time is the x-axis with true spacing, so uneven visits do not look regular. Comp
 
 ## 16. Evidence
 
-- Playwright report
-- Screenshots
+- `reports/frontend/p08_s01_s03_verification.md`
+- Playwright output, `npx playwright test --project=pages`
 
 ## 17. Reproducibility
 
-Planned commands. These do not work until the specification is implemented.
-
 ```bash
-cd web && npx playwright test e2e/longitudinal.spec.ts
+cd web && npm run test:wording && npx playwright test --project=pages
 ```
 
 ## 18. Risks / Limitations
@@ -105,10 +103,10 @@ cd web && npx playwright test e2e/longitudinal.spec.ts
 
 ## 19. Traceability
 
-| Requirement | Planned implementation | Planned test | Planned evidence | Status |
+| Requirement | Implementation | Test | Evidence | Status |
 |---|---|---|---|---|
-| `REQ-P08-S03-001` | `web/components/TrendChart.tsx` | Component test | Test report | NOT_STARTED |
-| `REQ-P08-S03-002` | `web/components/Exclusions.tsx` | Component test | Test report | NOT_STARTED |
-| `REQ-P08-S03-003` | `web/components/TrendChart.tsx` | Component test | Test report | NOT_STARTED |
-| `REQ-P08-S03-004` | `web/components/TrendNotice.tsx` | Playwright check | Test report | NOT_STARTED |
-| `REQ-P08-S03-005` | `web/components/Compare.tsx` | Component test | Test report | NOT_STARTED |
+| `REQ-P08-S03-001` | `web/app/(app)/cases/[id]/trend/`, `web/components/TrendChart.tsx` | Code review: values are formatted from `/trend`, not computed | Review; `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S03-002` | `web/components/Exclusions.tsx` | `e2e/pages.spec.ts` exclusions test | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S03-003` | `web/components/TrendChart.tsx` | `e2e/pages.spec.ts` one-point test; `lib/format.test.ts` units | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S03-004` | `web/components/TrendNotice.tsx` | `e2e/pages.spec.ts` trend-notice test; `npm run test:wording` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S03-005` | `web/app/(app)/compare/` | `e2e/pages.spec.ts` refused-pair test | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |

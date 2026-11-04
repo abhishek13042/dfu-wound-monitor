@@ -2,17 +2,26 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 
-import { ConstructedPhoto } from "@/components/ConstructedPhoto";
+import { Photo } from "@/components/Photo";
 import { outline, seedOf } from "@/lib/shape";
 
 const SIZE = { width: 800, height: 600 };
 
-export function MaskOverlay({ id, areaShare }: { id: string; areaShare: number }) {
+interface Props {
+  id: string;
+  areaShare: number;
+  image?: string;
+  mask?: string;
+}
+
+// With signed URLs the stored mask is drawn over the stored photo; without them a constructed outline stands in.
+export function MaskOverlay({ id, areaShare, image, mask }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const control = useId();
   const [opacity, setOpacity] = useState(55);
 
   useEffect(() => {
+    if (mask) return;
     const context = canvas.current?.getContext("2d");
     if (!context || !canvas.current) return;
     const styles = getComputedStyle(canvas.current);
@@ -24,19 +33,34 @@ export function MaskOverlay({ id, areaShare }: { id: string; areaShare: number }
     context.closePath();
     context.fillStyle = styles.getPropertyValue("--series");
     context.fill();
-  }, [id, areaShare]);
+  }, [id, areaShare, mask]);
 
   return (
     <figure className="panel overflow-hidden">
       <div className="relative">
-        <ConstructedPhoto id={id} className="block h-auto w-full" />
-        <canvas
-          ref={canvas}
-          {...SIZE}
-          aria-hidden="true"
-          style={{ opacity: opacity / 100 }}
-          className="pointer-events-none absolute inset-0 size-full"
-        />
+        <Photo id={id} src={image} className="block h-auto w-full" />
+        {mask ? (
+          <div
+            aria-hidden="true"
+            style={{
+              opacity: opacity / 100,
+              maskImage: `url(${mask})`,
+              WebkitMaskImage: `url(${mask})`,
+              maskSize: "100% 100%",
+              WebkitMaskSize: "100% 100%",
+              maskMode: "luminance",
+            }}
+            className="pointer-events-none absolute inset-0 bg-[var(--series)]"
+          />
+        ) : (
+          <canvas
+            ref={canvas}
+            {...SIZE}
+            aria-hidden="true"
+            style={{ opacity: opacity / 100 }}
+            className="pointer-events-none absolute inset-0 size-full"
+          />
+        )}
       </div>
       <figcaption className="flex items-center gap-3 border-t border-rule px-4 py-2 text-sm">
         <label htmlFor={control} className="flex-none">Mask opacity</label>

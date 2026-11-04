@@ -7,11 +7,11 @@ export function Provenance({ analysis }: { analysis: Analysis }) {
   const rows = [
     ["Analysis", analysis.analysis_id],
     ["Captured", formatDate(analysis.captured_at)],
-    ["Image", `${analysis.image.width} × ${analysis.image.height} px`],
-    ["SHA-256", `${analysis.image.sha256.slice(0, 16)}…`],
-    ["Model", analysis.model_version],
-    ["Threshold", analysis.threshold.toFixed(2)],
-    ["Quality gate", analysis.quality.config_version],
+    ["Image", analysis.image ? `${analysis.image.width} × ${analysis.image.height} px` : "—"],
+    ["SHA-256", analysis.image ? `${analysis.image.sha256.slice(0, 16)}…` : "—"],
+    ["Model", analysis.model_version ?? "—"],
+    ["Threshold", analysis.threshold === null ? "—" : analysis.threshold.toFixed(2)],
+    ["Quality gate", analysis.quality.config_version ?? "—"],
   ];
   if (analysis.inference) rows.push(["Inference", `${formatNumber(analysis.inference.duration_ms / 1000)} s on ${analysis.inference.device}`]);
   return (

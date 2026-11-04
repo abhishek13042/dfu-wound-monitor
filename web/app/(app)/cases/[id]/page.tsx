@@ -18,7 +18,9 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const item = await getCase(id);
   if (!item) notFound();
-  const rows = await Promise.all(item.examinations.map(async (exam) => ({ exam, analysis: await getAnalysis(exam.analysis_id) })));
+  const rows = await Promise.all(
+    item.examinations.map(async (exam) => ({ exam, analysis: exam.analysis_id ? await getAnalysis(exam.analysis_id) : undefined })),
+  );
   const facts: [string, React.ReactNode][] = [
     ["Case ID", <span key="id" className="value">{item.case_id}</span>],
     ["Identity", identityCopy[item.identity_status]],
@@ -32,7 +34,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
         <Link href="/cases" className="text-link text-ink-2">Cases</Link>
       </p>
       <PageHeader
-        title={item.label}
+        title={item.label ?? item.case_id}
         actions={
           <>
             <Link href={`/analyse?case=${item.case_id}`} className={buttonVariants()}>
@@ -82,7 +84,11 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
                 return (
                   <tr key={exam.examination_id} className="border-b border-rule last:border-b-0 sm:h-11 hover:bg-secondary">
                     <td data-wide className="px-3 py-1.5">
-                      <Link href={`/analyses/${exam.analysis_id}`} className="value font-semibold hover:underline">{formatDate(exam.captured_at)}</Link>
+                      {exam.analysis_id ? (
+                        <Link href={`/analyses/${exam.analysis_id}`} className="value font-semibold hover:underline">{formatDate(exam.captured_at)}</Link>
+                      ) : (
+                        <span className="value font-semibold">{formatDate(exam.captured_at)}</span>
+                      )}
                       {exam.notes && <span className="block max-w-[32ch] text-13 text-ink-2">{exam.notes}</span>}
                     </td>
                     <td data-label="Time source" className="px-3 text-13">{timestampCopy[exam.timestamp_source]}</td>
@@ -109,6 +115,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
           body="The case, its examinations, photos and analyses will be removed. This cannot be undone."
           word={item.case_id}
           redirect="/cases"
+          endpoint={`/cases/${item.case_id}`}
         />
       </div>
     </>

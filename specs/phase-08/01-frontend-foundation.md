@@ -1,6 +1,6 @@
 # P08-S01 — Next.js Frontend Foundation
 
-**Status:** `NOT_STARTED`. Nothing in this specification is implemented. It needs approval before work begins.
+**Status:** `IN_PROGRESS`. Code and local tests are done and pass. The CI job has not run because nothing is pushed, and the client-freshness check only bites once `openapi.json` and `lib/api/schema.d.ts` are committed.
 
 ## 1. Objective
 
@@ -92,15 +92,14 @@ App Router with server components for public pages and client components for int
 
 ## 16. Evidence
 
-- Playwright report
-- Preview deployment URL
+- `reports/frontend/p08_s01_s03_verification.md`
+- Playwright output, `npx playwright test --project=pages`: 43 passed
+- No preview deployment: deployment belongs to the owner
 
 ## 17. Reproducibility
 
-Planned commands. These do not work until the specification is implemented.
-
 ```bash
-cd web && npm ci && npm run build && npx playwright test
+cd web && npm ci && npx tsc --noEmit && npm test && npm run api:check && npx playwright test --project=pages
 ```
 
 ## 18. Risks / Limitations
@@ -110,10 +109,10 @@ cd web && npm ci && npm run build && npx playwright test
 
 ## 19. Traceability
 
-| Requirement | Planned implementation | Planned test | Planned evidence | Status |
+| Requirement | Implementation | Test | Evidence | Status |
 |---|---|---|---|---|
-| `REQ-P08-S01-001` | `web/lib/api/` | CI schema diff | CI log | NOT_STARTED |
-| `REQ-P08-S01-002` | `web/components/MedicalNotice.tsx` | Playwright check over all routes | Test report | NOT_STARTED |
-| `REQ-P08-S01-003` | `web/middleware.ts` | Playwright auth test | Test report | NOT_STARTED |
-| `REQ-P08-S01-004` | `web/lib/errors.ts` | Unit test over all categories | Test report | NOT_STARTED |
-| `REQ-P08-S01-005` | `web/` layouts | axe and Playwright | Test report | NOT_STARTED |
+| `REQ-P08-S01-001` | `web/lib/api/`, `web/scripts/export_openapi.py` | `npm run api:check` in the CI `web` job | Local exit 0; no CI log yet | IN_PROGRESS |
+| `REQ-P08-S01-002` | `web/components/MedicalNotice.tsx` in both layouts | `e2e/pages.spec.ts`, 20 routes at two widths | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S01-003` | `web/middleware.ts` | `middleware.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S01-004` | `web/lib/errors.ts`, `web/components/ErrorPanel.tsx` | `lib/errors.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
+| `REQ-P08-S01-005` | `web/app/` layouts | `e2e/pages.spec.ts`: axe WCAG 2.1 A/AA and overflow at 375 px | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |

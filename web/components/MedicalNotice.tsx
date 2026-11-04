@@ -1,4 +1,4 @@
-import { isMock } from "@/lib/api";
+import { isMock } from "@/lib/api/mode";
 import { NOTICE } from "@/lib/copy";
 
 export function MedicalNotice({ constructed = true }: { constructed?: boolean }) {
