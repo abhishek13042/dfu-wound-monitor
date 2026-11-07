@@ -33,3 +33,10 @@ redis==5.3.1
 pytest==8.3.5
 setuptools==81.0.0
 PyJWT[crypto]==2.15.1
+
+# Phase 07 ONNX runtime (P07-S06)
+onnx==1.22.0
+onnxruntime==1.29.0
+
+# Phase 10 observability (P10-S01)
+prometheus_client==0.25.0

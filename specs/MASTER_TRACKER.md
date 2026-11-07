@@ -2,14 +2,16 @@
 
 ## Project Status
 
-**Phase:** Phase 07 — Production Platform (in progress; Phases 08–10 specified)  
+**Phase:** Phases 07–10 in progress. All specifications are built; most wait on outside inputs (see Next)  
 **Overall Status:** Phases 00–06 COMPLETED. Model: held-out pooled Dice 0.922, macro 0.841 (independently verified). Service, dashboard, validation, benchmark and release are in `reports/final/` and `docs/release/RELEASE.md`. One partial item: REQ-P06-S03-001 fresh-machine install was not exercised.  
 **Release:** v1.0.0 on `main` (see `CHANGELOG.md`). Check at release 2026-10-29: 265 tests passed, smoke test 8/8. Latest local check 2026-10-30: 395 passed on SQLite, and 171 passed on PostgreSQL 16 (`tests/storage`, `tests/api`, `tests/worker`).  
 **Deployment:** Docker image and Hugging Face Space bundle are built (`docs/deployment/HUGGINGFACE.md`); the Space is not yet published.  
-**Phase 07:** P07-S01 to P07-S05 are `IN_PROGRESS`. Their code and tests pass locally. Each one waits on proof that needs outside access: a CI run, a hosted service, or a real sign-in provider.  
+**Phase 07:** P07-S01 to P07-S06 are `IN_PROGRESS`. Their code and tests pass locally. Each one waits on proof that needs outside access: a CI run, a hosted service, or a real sign-in provider. P07-S06 also waits on a GPU parity run.  
 **Phase 08 design:** P08-S04 is `IN_PROGRESS`. Every page is built in `web/` against a labelled mock layer. Detection is clean, the audit's P1 and P2 findings are fixed, the finish review returned ship, and `DESIGN.md` is recorded from the build. It waits on the user's approval of the direction now that P08-S01 to S03 connect the pages to `/api/v2`.  
 **Phase 08 build:** P08-S01 to P08-S03 are `IN_PROGRESS`. Their code is done, local checks pass, and the end-to-end test passed against a local API, worker and OIDC provider (`reports/frontend/p08_s01_s03_verification.md`). They wait on a CI run, which needs a push.  
-**Next:** P07-S06, P08-S04's approval and the Phase 09–10 specifications are `NOT_STARTED`. Each specification needs approval before implementation.
+**Phase 09 (2026-11-05):** P09-S02 and P09-S03 are `COMPLETED`. P09-S01 is `IN_PROGRESS`; millimetre accuracy on real marker photos is `BLOCKED`. P09-S04 is `IN_PROGRESS`: the annotation hypothesis was tested and is partly supported (`reports/experiments/p09_s04_report.md`); retraining is `BLOCKED` on a new external set and GPU time.
+**Phase 10 (2026-11-05):** P10-S01 to P10-S04 are `IN_PROGRESS`. Logs, metrics, a single-machine load baseline with provisional SLOs (`docs/deployment/SLO.md`), privacy controls, the model registry and drift checks are built and tested locally. Staging runs, dependency and image scans, and dashboards on a hosted stack are `BLOCKED`.
+**Next:** outside inputs, not code. A push and CI run; a staging deployment with Redis and separate workers; Kaggle GPU time; real marker photos and clinician review; approval to install Locust, pip-audit and Trivy and to upgrade `next`.
 
 ---
 
@@ -25,9 +27,9 @@
 | phase-05 | Product Integration | 3 | 3 | COMPLETED |
 | phase-06 | System Validation & Release | 3 | 3 | COMPLETED |
 | phase-07 | Production Backend | 6 | 0 | IN_PROGRESS |
-| phase-08 | Web Frontend | 3 | 0 | NOT_STARTED |
-| phase-09 | Computer Vision Features | 4 | 0 | NOT_STARTED |
-| phase-10 | Production Readiness | 4 | 0 | NOT_STARTED |
+| phase-08 | Web Frontend | 4 | 0 | IN_PROGRESS |
+| phase-09 | Computer Vision Features | 4 | 2 | IN_PROGRESS |
+| phase-10 | Production Readiness | 4 | 0 | IN_PROGRESS |
 
 The retired legacy numbering (old phases 03–12) was mapped into phases 03–06. The current phases 07–10 are new work and are unrelated to those legacy numbers.
 
@@ -86,19 +88,19 @@ from `specs/SPEC_TEMPLATE.md` before implementation begins.
 | P07-S03 | S3-compatible blobs and direct browser uploads | IN_PROGRESS | P07-S02 | `specs/phase-07/03-object-storage.md` |
 | P07-S04 | Managed sign-in, per-user data isolation | IN_PROGRESS | P07-S02 | `specs/phase-07/04-authentication-and-ownership.md` |
 | P07-S05 | Redis queue, worker processes, job status | IN_PROGRESS | P07-S02, P07-S03 | `specs/phase-07/05-async-job-queue.md` |
-| P07-S06 | ONNX Runtime serving with measured parity | NOT_STARTED | P03-S01, P07-S01 | `specs/phase-07/06-onnx-export-and-serving.md` |
+| P07-S06 | ONNX Runtime serving with measured parity | IN_PROGRESS | P03-S01, P07-S01 | `specs/phase-07/06-onnx-export-and-serving.md` |
 | P08-S01 | Next.js application shell, auth, typed API client | IN_PROGRESS | P07-S04 | `specs/phase-08/01-frontend-foundation.md` |
 | P08-S02 | Upload, progress, results, case management | IN_PROGRESS | P08-S01, P07-S03, P07-S05 | `specs/phase-08/02-analysis-and-case-workflows.md` |
 | P08-S03 | Timeline, trend chart, side-by-side comparison | IN_PROGRESS | P08-S02, P04-S03 | `specs/phase-08/03-longitudinal-views.md` |
 | P08-S04 | Design system and screen specification, built against a mock layer | IN_PROGRESS | None | `specs/phase-08/04-design-system-and-screens.md` |
-| P09-S01 | ArUco detection for millimetre measurements | NOT_STARTED | P03-S03, P08-S02 | `specs/phase-09/01-reference-marker-calibration.md` |
-| P09-S02 | Probability heatmap and uncertainty signal | NOT_STARTED | P03-S01, P08-S02 | `specs/phase-09/02-confidence-visualisation.md` |
-| P09-S03 | Canvas mask editing with stored corrections | NOT_STARTED | P08-S02, P03-S03, P07-S02 | `specs/phase-09/03-mask-correction-editor.md` |
-| P09-S04 | Test the annotation-protocol hypothesis, then improve generalisation | NOT_STARTED | SPEC-02-03, P06-S01 | `specs/phase-09/04-generalisation-study.md` |
-| P10-S01 | Structured logs, metrics, error tracking, dashboards | NOT_STARTED | P07-S05 | `specs/phase-10/01-observability.md` |
-| P10-S02 | Locust load tests, stated SLOs, capacity plan | NOT_STARTED | P10-S01, P07-S06 | `specs/phase-10/02-load-testing-and-slos.md` |
-| P10-S03 | Retention, EXIF stripping, consent, rate limits, threat review | NOT_STARTED | P07-S03, P07-S04, P08-S02 | `specs/phase-10/03-security-and-privacy.md` |
-| P10-S04 | Model registry, promotion, rollback, input drift | NOT_STARTED | P07-S06, P09-S03, P10-S01 | `specs/phase-10/04-mlops-and-drift.md` |
+| P09-S01 | ArUco detection for millimetre measurements | IN_PROGRESS (REQ-003 BLOCKED: needs real marker photos) | P03-S03, P08-S02 | `specs/phase-09/01-reference-marker-calibration.md` |
+| P09-S02 | Probability heatmap and uncertainty signal | COMPLETED | P03-S01, P08-S02 | `specs/phase-09/02-confidence-visualisation.md` |
+| P09-S03 | Canvas mask editing with stored corrections | COMPLETED | P08-S02, P03-S03, P07-S02 | `specs/phase-09/03-mask-correction-editor.md` |
+| P09-S04 | Test the annotation-protocol hypothesis, then improve generalisation | IN_PROGRESS | SPEC-02-03, P06-S01 | `specs/phase-09/04-generalisation-study.md` |
+| P10-S01 | Structured logs, metrics, error tracking, dashboards | IN_PROGRESS | P07-S05 | `specs/phase-10/01-observability.md` |
+| P10-S02 | Locust load tests, stated SLOs, capacity plan | IN_PROGRESS | P10-S01, P07-S06 | `specs/phase-10/02-load-testing-and-slos.md` |
+| P10-S03 | Retention, EXIF stripping, consent, rate limits, threat review | IN_PROGRESS (REQ-006 BLOCKED: scans not run, critical `next` advisory) | P07-S03, P07-S04, P08-S02 | `specs/phase-10/03-security-and-privacy.md` |
+| P10-S04 | Model registry, promotion, rollback, input drift | IN_PROGRESS | P07-S06, P09-S03, P10-S01 | `specs/phase-10/04-mlops-and-drift.md` |
 
 The former phase-03 through phase-12 entries are retained only as historical
 planning references; they are no longer independent execution gates.

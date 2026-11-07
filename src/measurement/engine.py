@@ -46,9 +46,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MEASUREMENT_CONFIG = PROJECT_ROOT / "configs" / "measurement" / "measurement_v1.json"
 ENGINE_VERSION = "p03-s03-1.0"
 PIXEL_BASED, PHYSICALLY_CALIBRATED = "PIXEL_BASED", "PHYSICALLY_CALIBRATED"
-CALIBRATION_METHODS = ("REFERENCE_MARKER", "USER_ENTERED")
+CALIBRATION_METHODS = ("ARUCO_MARKER", "REFERENCE_MARKER", "USER_ENTERED")
 LIMITATION = ("Image-derived 2-D projected geometry. Foot curvature, camera angle and lens distortion are not "
-              "corrected. Not a clinical measurement.")
+              "corrected, so sizes from a single photo are estimates. Not a clinical measurement.")
 
 # Perimeter weights for the 4-connected border convolution (values 0..49).
 _PERIMETER_WEIGHTS = np.zeros(50, dtype=np.float64)

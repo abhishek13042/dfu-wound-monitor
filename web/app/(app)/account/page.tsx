@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getServerSession } from "next-auth";
 
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ExportButton } from "@/components/ExportButton";
 import { PageHeader } from "@/components/PageHeader";
-import { isMock } from "@/lib/api";
+import { getConsent, isMock } from "@/lib/api";
+import { formatDate } from "@/lib/format";
 import { authOptions } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Account" };
@@ -12,10 +14,12 @@ export const metadata: Metadata = { title: "Account" };
 export default async function AccountPage() {
   const session = isMock ? null : await getServerSession(authOptions);
   const user = session?.user;
+  const consent = await getConsent();
   const facts = [
     ["Signed in as", isMock ? "Constructed demonstration user" : (user?.email ?? user?.name ?? "Signed in")],
     ["Sign-in provider", isMock ? "None in this demonstration" : (process.env.AUTH_OIDC_NAME ?? "Organisation sign-in")],
-    ["Photo retention", "Placeholder until a period is decided"],
+    ["Photo retention", consent.retention_hours > 0 ? `${consent.retention_hours} hours, unless a case is kept` : "Off on this service"],
+    ["Upload consent", consent.accepted_at ? `Given on ${formatDate(consent.accepted_at)}, text ${consent.text_version}` : "Not given yet. It is asked before the first upload."],
   ];
 
   return (
@@ -29,6 +33,9 @@ export default async function AccountPage() {
           </div>
         ))}
       </dl>
+      <p className="-mt-3 mb-6 text-sm">
+        <Link href="/privacy" className="text-link">How photos and data are handled</Link>
+      </p>
 
       <section className="border-t border-rule pt-4">
         <h2 className="text-lg">Export your data</h2>

@@ -4,11 +4,12 @@ import { notFound } from "next/navigation";
 import { ImageUp, LineChart } from "lucide-react";
 
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { KeepToggle } from "@/components/KeepToggle";
 import { PageHeader } from "@/components/PageHeader";
 import { ReadingStrip } from "@/components/ReadingStrip";
 import { StateTag } from "@/components/StateTag";
 import { buttonVariants } from "@/components/ui/button";
-import { getAnalysis, getCase } from "@/lib/api";
+import { getAnalysis, getCase, getKeep } from "@/lib/api";
 import { basisCopy, identityCopy, timestampCopy } from "@/lib/copy";
 import { areaOf, formatDate } from "@/lib/format";
 
@@ -16,7 +17,7 @@ export const metadata: Metadata = { title: "Case" };
 
 export default async function CasePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const item = await getCase(id);
+  const [item, keep] = await Promise.all([getCase(id), getKeep(id)]);
   if (!item) notFound();
   const rows = await Promise.all(
     item.examinations.map(async (exam) => ({ exam, analysis: exam.analysis_id ? await getAnalysis(exam.analysis_id) : undefined })),
@@ -106,7 +107,14 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
         </div>
       )}
 
-      <div className="mt-10 border-t border-rule pt-4">
+      {keep && (
+        <div className="mt-10 border-t border-rule pt-4">
+          <h2 className="mb-2 text-lg">Retention</h2>
+          <KeepToggle caseId={item.case_id} initial={keep.keep} hours={keep.retention_hours} />
+        </div>
+      )}
+
+      <div className="mt-8 border-t border-rule pt-4">
         <h2 className="text-lg">Delete this case</h2>
         <p className="mt-1 mb-3 max-w-[70ch] text-sm text-ink-2">Removes the case, its examinations, photos and analyses. This cannot be undone.</p>
         <ConfirmDialog

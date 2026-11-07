@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -16,6 +17,8 @@ from typing import Any
 from src.api.analysis_flow import analyse_and_store, parse_calibration
 from src.api.errors import ApiError
 from src.api.service import ServiceState
+from src.observability import bind_request_id
+from src.observability.metrics import record_error, record_job, set_queue_depth
 from src.storage.database import NotFoundError
 from src.storage.repository import Repository
 from src.worker.queue import JobQueue, QueueUnavailable
@@ -75,6 +78,9 @@ def process_job(state: ServiceState, analysis_id: str) -> JobResult:
     if saved is not None:  # an earlier worker died after saving the result and before finishing the job
         return _finish(state, db, job, saved)
     request = job["request"]
+    # REQ-P10-S01-001: the worker logs under the ID of the API request that created the job.
+    bind_request_id(request.get("request_id"))
+    log.info("job started", extra={"analysis_id": analysis_id, "attempt": job["attempts"]})
     try:
         upload = db.get_upload(job["upload_id"])
         calibration = parse_calibration(request.get("pixels_per_mm"), request.get("calibration_method"),
@@ -84,17 +90,24 @@ def process_job(state: ServiceState, analysis_id: str) -> JobResult:
                                    threshold=request.get("threshold"), analysis_id=analysis_id, db=db)
     except ApiError as error:
         failure = _error(error.body.code, error.body.message)
+        record_error(error.body.failure_class, error.body.category, source="worker")
         return _retry(state, job, failure) if error.body.category in RETRYABLE_CATEGORIES else _fail(state, job, failure)
     except NotFoundError as error:
+        record_error("INPUT", "NOT_FOUND", source="worker")
         return _fail(state, job, _error(error.code, error.message))
     except Exception as error:  # noqa: BLE001 - an unknown failure is treated as infrastructure and retried
         log.warning("Job %s attempt %s failed: %s", analysis_id, job["attempts"], type(error).__name__)
+        record_error("SERVICE", "INFRASTRUCTURE_FAILURE", source="worker")
         return _retry(state, job, _error("WORKER_ERROR", f"The job failed with {type(error).__name__}"))
+    log.info("job finished", extra={"analysis_id": analysis_id, "outcome": stored.record.status})
     return _finish(state, db, job, stored.record.status)
 
 
 async def run_job(state: ServiceState, queue: JobQueue, analysis_id: str) -> JobResult:
+    started = time.perf_counter()
     result = await asyncio.to_thread(process_job, state, analysis_id)
+    if result.status is not None:
+        record_job(result.status, time.perf_counter() - started)
     if result.retry_attempt is not None:
         try:
             await queue.enqueue(analysis_id, result.retry_attempt, result.retry_in)
@@ -116,7 +129,23 @@ def sweep(state: ServiceState) -> list[tuple[str, int]]:
     for job in state.db.overdue_jobs(QUEUED, (now - timedelta(seconds=QUEUED_TIMEOUT_SECONDS)).isoformat()):
         again.append((job["analysis_id"], job["attempts"]))
     state.db.expire_uploads(state.blobs)
+    retain(state, now)
     return again
+
+
+def retain(state: ServiceState, now: datetime | None = None) -> dict[str, int] | None:
+    """REQ-P10-S03-001: delete what is older than DFU_RETENTION_HOURS in cases nobody kept."""
+
+    hours = state.settings.retention_hours
+    if hours <= 0:
+        return None
+    cutoff = ((now or datetime.now(UTC)) - timedelta(hours=hours)).isoformat()
+    counts = state.db.apply_retention(state.blobs, cutoff)
+    if any(counts.values()):
+        log.info("Retention pass", extra={"retention": counts, "cutoff": cutoff})
+    if counts["blobs_failed"]:
+        log.warning("Retention left %d images past the limit", state.db.retention_overdue(cutoff))
+    return counts
 
 
 async def maintain(state: ServiceState, queue: JobQueue, beat: Any = None) -> None:
@@ -131,6 +160,7 @@ async def maintain(state: ServiceState, queue: JobQueue, beat: Any = None) -> No
                 since_sweep = 0
                 for analysis_id, attempt in await asyncio.to_thread(sweep, state):
                     await queue.enqueue(analysis_id, attempt)
+            set_queue_depth(await queue.depth())
         except Exception as error:  # noqa: BLE001 - the next pass tries again
             log.warning("Maintenance pass failed: %s", type(error).__name__)
         await asyncio.sleep(20)

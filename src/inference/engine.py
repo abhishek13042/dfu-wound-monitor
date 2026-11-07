@@ -39,9 +39,10 @@ from src.inference.errors import (
     InputError,
     ModelExecutionError,
 )
+from src.inference.uncertainty import UncertaintyConfig, tta_disagreement
 from src.preprocessing.decode import DecodedImage, ImageSource, decode_image
 from src.segmentation.dataset import preprocess_image
-from src.segmentation.inference import predict_logits_tta, remove_small_components
+from src.segmentation.inference import mean_of_views, predict_tta_views, remove_small_components
 from src.segmentation.resnet_unet import ResNetUNet
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -188,6 +189,7 @@ class InferenceResult:
     binary_mask: np.ndarray           # uint8 (H, W) in {0, 1}, after post-processing
     provenance: dict[str, Any]
     warnings: list[dict[str, Any]]
+    uncertainty: dict[str, Any] | None = None   # REQ-P09-S02-002; None when TTA is off
 
     def summary(self) -> dict[str, Any]:
         return {
@@ -196,12 +198,15 @@ class InferenceResult:
             "width": int(self.binary_mask.shape[1]),
             "warnings": self.warnings,
             "provenance": self.provenance,
+            "uncertainty": self.uncertainty,
         }
 
 
 class InferenceEngine:
-    def __init__(self, config: InferenceConfig, device: str | None = None, verify_checksum: bool = True) -> None:
+    def __init__(self, config: InferenceConfig, device: str | None = None, verify_checksum: bool = True,
+                 uncertainty_config: UncertaintyConfig | None = None) -> None:
         self.config = config
+        self.uncertainty_config = uncertainty_config or UncertaintyConfig.load()
         self.device = torch.device(device or config.device)
         if self.device.type == "cuda" and not torch.cuda.is_available():
             raise ConfigError("Config requests CUDA but no CUDA device is available")
@@ -259,10 +264,16 @@ class InferenceEngine:
         }
         return model, info
 
+    @property
+    def model_version(self) -> str:
+        """The version results are recorded under; the ONNX engine has its own."""
+
+        return self.config.model_version
+
     def describe(self) -> dict[str, Any]:
         cfg = self.config
         return {
-            "model_version": cfg.model_version,
+            "model_version": self.model_version,
             "experiment_id": cfg.experiment_id,
             "architecture": f"ResNetUNet/{cfg.encoder_name}",
             **self.checkpoint_info,
@@ -283,6 +294,16 @@ class InferenceEngine:
             return source
         return decode_image(source, self.config.allowed_formats, self.config.max_pixels,
                             self.config.apply_exif_orientation)
+
+    def _view_probabilities(self, batch: torch.Tensor) -> list[torch.Tensor]:
+        """Each flip view's sigmoid probabilities ``(1,1,h,w)`` at model resolution, flipped back."""
+
+        return predict_tta_views(self.model, batch.to(self.device), tta=self.config.tta)
+
+    def _probabilities(self, batch: torch.Tensor) -> torch.Tensor:
+        """Mean sigmoid probabilities ``(1,1,h,w)`` at model resolution, flip TTA per the config."""
+
+        return mean_of_views(self._view_probabilities(batch))
 
     @torch.inference_mode()
     def predict(self, request: InferenceRequest) -> InferenceResult:
@@ -305,8 +326,8 @@ class InferenceEngine:
         try:
             tensor = preprocess_image(decoded.image, cfg.input_height, cfg.input_width,
                                       list(cfg.normalize_mean), list(cfg.normalize_std))
-            batch = tensor.unsqueeze(0).to(self.device)
-            probabilities = predict_logits_tta(self.model, batch, tta=cfg.tta)
+            views = self._view_probabilities(tensor.unsqueeze(0))
+            probabilities = mean_of_views(views)
             native = F.interpolate(probabilities.float(), size=(decoded.height, decoded.width),
                                    mode="bilinear", align_corners=False)
             probability = native[0, 0].clamp(0, 1).cpu().numpy().astype(np.float32)
@@ -314,6 +335,15 @@ class InferenceEngine:
             raise ModelExecutionError(f"Model forward pass failed: {error}") from error
         if not np.isfinite(probability).all():
             raise ModelExecutionError("Model produced non-finite probabilities")
+
+        # REQ-P09-S02-002: summarised at model resolution from the views already computed; it reads the mask's
+        # region but never changes it.
+        model_mask = (probabilities[0, 0] >= threshold).cpu().numpy()
+        uncertainty = tta_disagreement(torch.cat(views, dim=1)[0].cpu().numpy(), model_mask,
+                                       self.uncertainty_config.band_px)
+        if uncertainty is not None:
+            uncertainty.update(config_version=self.uncertainty_config.version,
+                               summary_shown=self.uncertainty_config.summary_shown)
 
         raw_binary = (probability >= threshold).astype(np.uint8)
         binary = remove_small_components(raw_binary, cfg.min_component_area)
@@ -349,4 +379,4 @@ class InferenceEngine:
                 "completed_at": datetime.now(UTC).isoformat(),
             },
         }
-        return InferenceResult(probability, binary, provenance, warnings)
+        return InferenceResult(probability, binary, provenance, warnings, uncertainty)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import logging
 import time
 
@@ -9,6 +10,7 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi.testclient import TestClient
+from PIL import Image
 
 from src.api.app import create_app
 from src.api.auth import JwksCache, TokenVerifier
@@ -16,6 +18,7 @@ from src.api.errors import ApiError
 from src.api.service import ApiSettings
 from src.storage.blobs import staging_key
 from src.storage.models import DEMO_OWNER
+from tests.conftest import accept_consent
 
 PUBLIC = {("GET", "/api/v2/model")}
 
@@ -30,6 +33,7 @@ def client(tiny_engine, tmp_path, auth):
 def _analysis(client, headers, data: bytes, examination_id: str | None = None) -> str:
     import hashlib
 
+    accept_consent(client, headers)
     created = client.post("/api/v2/uploads", headers=headers, json={
         "filename": "wound.png", "size_bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}).json()
     assert client.put(created["url"], content=data).status_code in (200, 204)
@@ -172,6 +176,11 @@ def test_cross_user_isolation(client, auth, make_image):
     upload = client.post("/api/v2/uploads", headers=owner, json={
         "filename": "a.png", "size_bytes": 3, "sha256": "a" * 64}).json()["upload_id"]
     analysis, case, examination = ids["analysis_id"], ids["case_id"], ids["examination_id"]
+    mask = io.BytesIO()
+    Image.new("L", (256, 200)).save(mask, format="PNG")
+    mask_file = {"file": ("mask.png", mask.getvalue(), "image/png")}
+    correction = client.post(f"/api/v2/analyses/{analysis}/corrections", headers=owner,
+                             files=mask_file).json()["correction_id"]
     probes = {
         ("GET", "/api/v2/cases/{case_id}"): ("get", f"/api/v2/cases/{case}", {}),
         ("DELETE", "/api/v2/cases/{case_id}"): ("delete", f"/api/v2/cases/{case}", {}),
@@ -183,9 +192,18 @@ def test_cross_user_isolation(client, auth, make_image):
         ("GET", "/api/v2/compare"): ("get", "/api/v2/compare", {"params": {"analysis_a": analysis, "analysis_b": analysis}}),
         ("POST", "/api/v2/uploads/{upload_id}/verify"): ("post", f"/api/v2/uploads/{upload}/verify", {}),
         ("POST", "/api/v2/analyses"): ("post", "/api/v2/analyses", {"json": {"upload_id": upload}}),
+        ("GET", "/api/v2/cases/{case_id}/keep"): ("get", f"/api/v2/cases/{case}/keep", {}),
+        ("PUT", "/api/v2/cases/{case_id}/keep"): ("put", f"/api/v2/cases/{case}/keep", {"json": {"keep": True}}),
+        ("POST", "/api/v2/analyses/{analysis_id}/corrections"): ("post", f"/api/v2/analyses/{analysis}/corrections",
+                                                                 {"files": mask_file}),
+        ("GET", "/api/v2/analyses/{analysis_id}/corrections"): ("get", f"/api/v2/analyses/{analysis}/corrections", {}),
+        ("GET", "/api/v2/corrections/{correction_id}/mask"): ("get", f"/api/v2/corrections/{correction}/mask", {}),
+        ("PUT", "/api/v2/corrections/{correction_id}/research"): ("put", f"/api/v2/corrections/{correction}/research",
+                                                                  {"json": {"opt_in": True}}),
     }
     own_data = {("POST", "/api/v2/cases"), ("GET", "/api/v2/cases"), ("POST", "/api/v2/uploads"),
-                ("GET", "/api/v2/account/export"), ("DELETE", "/api/v2/account")}
+                ("GET", "/api/v2/account/export"), ("DELETE", "/api/v2/account"),
+                ("GET", "/api/v2/consent"), ("POST", "/api/v2/consent")}
     routes = {(method.upper(), path) for path, item in client.app.openapi()["paths"].items()
               for method in item if path.startswith("/api/v2")}
     assert routes - PUBLIC == set(probes) | own_data, "add a probe for each new route"
@@ -193,7 +211,7 @@ def test_cross_user_isolation(client, auth, make_image):
     for method, path in sorted(routes - PUBLIC):
         call, url, kwargs = probes.get((method, path), (method.lower(), path, {}))
         request = getattr(client, call)
-        if call in ("post",):
+        if call in ("post", "put"):
             kwargs = {"json": {}, **kwargs}
         assert request(url, **kwargs).status_code == 401, (method, path)
     for key, (call, url, kwargs) in probes.items():
@@ -213,6 +231,7 @@ def test_cannot_attach_an_analysis_to_someone_elses_examination(client, auth, ma
     import hashlib
 
     data = make_image(size=(256, 200), seed=3).read_bytes()
+    accept_consent(client, intruder)
     created = client.post("/api/v2/uploads", headers=intruder, json={
         "filename": "w.png", "size_bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}).json()
     client.put(created["url"], content=data)

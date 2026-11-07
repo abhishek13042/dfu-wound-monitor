@@ -2,7 +2,7 @@
 // and the browser tests; otherwise every call goes to /api/v2 and no constructed record can appear.
 
 import { isMock } from "./mode";
-import type { Analysis, Artifact, Case, Comparison, Readiness, Trend } from "./types";
+import type { Analysis, Artifact, Case, Comparison, Consent, Correction, Keep, Readiness, Trend } from "./types";
 
 export * from "./types";
 export { isMock };
@@ -43,4 +43,16 @@ export async function getReadiness(): Promise<Readiness> {
 
 export async function getArtifact(id: string, kind: "image" | "mask" | "probability"): Promise<Artifact | undefined> {
   return (await source()).getArtifact(id, kind);
+}
+
+export async function getConsent(): Promise<Consent> {
+  return (await source()).getConsent();
+}
+
+export async function getKeep(caseId: string): Promise<Keep | undefined> {
+  return (await source()).getKeep(caseId);
+}
+
+export async function listCorrections(analysisId: string): Promise<Correction[]> {
+  return (await source()).listCorrections(analysisId);
 }

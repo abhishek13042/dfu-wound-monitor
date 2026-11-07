@@ -128,7 +128,7 @@ class LocalQueue:
 
     async def worker_model(self) -> str | None:
         pipeline = self.state.pipeline
-        return pipeline.engine.config.model_version if pipeline is not None else None
+        return pipeline.engine.model_version if pipeline is not None else None
 
     async def close(self) -> None:
         for task in list(self._tasks):

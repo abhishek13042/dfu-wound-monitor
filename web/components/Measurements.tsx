@@ -1,9 +1,9 @@
 import type { Measurement } from "@/lib/api";
-import { basisCopy } from "@/lib/copy";
+import { basisCopy, scaleSourceCopy } from "@/lib/copy";
 import { formatNumber } from "@/lib/format";
 
 export function Measurements({ measurement, model }: { measurement: Measurement; model: string }) {
-  const { pixel, physical } = measurement;
+  const { pixel, physical, calibration } = measurement;
   const rows: [string, string, string][] = physical
     ? [
         ["Area", formatNumber(physical.area_mm2), "mm²"],
@@ -24,6 +24,15 @@ export function Measurements({ measurement, model }: { measurement: Measurement;
       <p className="px-4 pb-2 text-13 text-ink-2">
         {basisCopy[measurement.measurement_basis].long}. Model <span className="value">{model}</span>
       </p>
+      {calibration && (
+        <p className="px-4 pb-2 text-13 text-ink-2">
+          {scaleSourceCopy[calibration.method] ?? "Scale supplied"}: <span className="value">{formatNumber(calibration.pixels_per_mm, 2)}</span> px/mm
+          {calibration.uncertainty_pct !== null && (
+            <>, about <span className="value">±{formatNumber(calibration.uncertainty_pct, 1)}%</span></>
+          )}
+          . Sizes from a single photo are estimates.
+        </p>
+      )}
       <table className="w-full border-collapse">
         <caption className="sr-only">Measured values of the segmented region</caption>
         <thead className="sr-only">

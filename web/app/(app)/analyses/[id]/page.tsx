@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AnalysisPoller } from "@/components/AnalysisPoller";
+import { Corrections } from "@/components/Corrections";
 import { ErrorPanel } from "@/components/ErrorPanel";
+import { UncertaintyPanel } from "@/components/Heatmap";
 import { MaskOverlay } from "@/components/MaskOverlay";
 import { Measurements } from "@/components/Measurements";
 import { PageHeader } from "@/components/PageHeader";
@@ -13,7 +15,7 @@ import { ReadingStrip } from "@/components/ReadingStrip";
 import { StateTag } from "@/components/StateTag";
 import { Warnings } from "@/components/Warnings";
 import { buttonVariants } from "@/components/ui/button";
-import { getAnalysis, getArtifact, getCase } from "@/lib/api";
+import { getAnalysis, getArtifact, getCase, listCorrections } from "@/lib/api";
 import { LIMITATION, reasonCopy, statusCopy } from "@/lib/copy";
 import { formatDate } from "@/lib/format";
 import { PADS } from "@/lib/pads";
@@ -30,10 +32,13 @@ export default async function AnalysisPage({ params }: { params: Promise<{ id: s
   const refused = analysis.status === "QUALITY_REJECTED";
   const completed = analysis.status === "COMPLETED";
   // Signed URLs exist only for stored records; constructed data has none and falls back to placeholders.
-  const [image, mask] = await Promise.all([
+  const [image, mask, probability, corrections] = await Promise.all([
     refused || completed ? getArtifact(analysis.analysis_id, "image") : undefined,
     completed ? getArtifact(analysis.analysis_id, "mask") : undefined,
+    completed ? getArtifact(analysis.analysis_id, "probability") : undefined,
+    completed ? listCorrections(analysis.analysis_id) : [],
   ]);
+  const size = analysis.image ?? { width: 1600, height: 1200 };
   const retake = analysis.case_id ? `/analyse?case=${analysis.case_id}` : "/analyse";
   const failedPads = PADS.filter((pad) => analysis.quality.reason_codes.includes(pad.reason));
 
@@ -100,16 +105,30 @@ export default async function AnalysisPage({ params }: { params: Promise<{ id: s
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
           <MaskOverlay
             id={analysis.analysis_id}
-            areaShare={analysis.image ? analysis.measurement.pixel.area_px / (analysis.image.width * analysis.image.height) : 0.1}
+            areaShare={analysis.measurement.pixel.area_px / (size.width * size.height)}
             image={image?.url}
             mask={mask?.url}
+            probability={probability?.url}
           />
           <div className="space-y-4">
             <Warnings warnings={analysis.warnings} />
             <Measurements measurement={analysis.measurement} model={analysis.model_version ?? "unknown"} />
+            <UncertaintyPanel uncertainty={analysis.uncertainty} />
             <p className="text-13 text-ink-2">{analysis.limitation ?? LIMITATION}</p>
           </div>
         </div>
+      )}
+
+      {completed && analysis.measurement && (
+        <Corrections
+          id={analysis.analysis_id}
+          width={size.width}
+          height={size.height}
+          areaShare={analysis.measurement.pixel.area_px / (size.width * size.height)}
+          image={image?.url}
+          mask={mask?.url}
+          corrections={corrections}
+        />
       )}
 
       <div className="mt-4">

@@ -16,6 +16,7 @@ from typing import Any
 from src.api.errors import ApiError
 from src.inference.engine import DEFAULT_INFERENCE_CONFIG, InferenceEngine
 from src.inference.errors import InferenceError
+from src.inference.onnx_engine import create_engine
 from src.inference.pipeline import AnalysisPipeline
 from src.measurement.engine import MeasurementConfig
 from src.quality.gate import QualityGate
@@ -43,6 +44,13 @@ class ApiSettings:
     auth_jwks_url: str | None = field(default_factory=lambda: os.environ.get("DFU_AUTH_JWKS_URL"))
     redis_url: str | None = field(default_factory=lambda: os.environ.get("DFU_REDIS_URL"))
     max_queue_depth: int = field(default_factory=lambda: int(os.environ.get("DFU_MAX_QUEUE", "100")))
+    metrics_token: str | None = field(default_factory=lambda: os.environ.get("DFU_METRICS_TOKEN"))
+    # P10-S03.  Retention 0 keeps everything; a rate limit of 0 turns that limit off.
+    retention_hours: int = field(default_factory=lambda: int(os.environ.get("DFU_RETENTION_HOURS", "24")))
+    rate_limit_user: int = field(default_factory=lambda: int(os.environ.get("DFU_RATE_LIMIT_USER", "120")))
+    rate_limit_ip: int = field(default_factory=lambda: int(os.environ.get("DFU_RATE_LIMIT_IP", "600")))
+    cors_origins: tuple[str, ...] = field(default_factory=lambda: tuple(
+        origin.strip() for origin in os.environ.get("DFU_CORS_ORIGINS", "").split(",") if origin.strip()))
 
 
 class ServiceState:
@@ -92,7 +100,7 @@ class ServiceState:
 
     def load_model(self) -> None:
         try:
-            self._attach(InferenceEngine.from_config(self.settings.inference_config))
+            self._attach(create_engine(self.settings.inference_config))
             self.model_error = None
         except InferenceError as error:
             self.model_error = error.to_dict()

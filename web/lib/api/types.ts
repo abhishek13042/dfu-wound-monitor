@@ -33,6 +33,15 @@ export interface Warning {
   message?: string;
 }
 
+export interface Uncertainty {
+  tta_disagreement: number;
+  method: string;
+  region: "MASK_AND_BAND" | "WHOLE_IMAGE";
+  empty_mask: boolean;
+  // Set by the study (REQ-P09-S02-003): the number is shown only when it tracked error on validation.
+  summary_shown: boolean;
+}
+
 export interface Measurement {
   measurement_basis: MeasurementBasis;
   pixel: {
@@ -48,6 +57,8 @@ export interface Measurement {
     max_feret_mm: number;
     min_feret_mm: number;
   } | null;
+  // Where the scale came from; null when the values are in pixels.
+  calibration?: { pixels_per_mm: number; method: string; source: string | null; uncertainty_pct: number | null } | null;
 }
 
 export interface Analysis {
@@ -64,6 +75,8 @@ export interface Analysis {
   threshold: number | null;
   measurement: Measurement | null;
   inference: { duration_ms: number; device: string } | null;
+  // REQ-P09-S02-002: how much the flipped views disagree; absent when TTA was off or the record predates it.
+  uncertainty?: Uncertainty | null;
   warnings: Warning[];
   // The external-validation limitation the service attaches to every stored result.
   limitation?: string;
@@ -99,6 +112,9 @@ export interface TrendRow {
   // Area change, as the service computed it.
   from_baseline: { absolute_change: number; percent_change: number | null } | null;
   from_previous: { absolute_change: number; percent_change: number | null } | null;
+  // REQ-P09-S03-004: CORRECTED when the value comes from an outline the user redrew.
+  mask_source?: MaskSource;
+  correction_id?: string | null;
 }
 
 export interface Trend {
@@ -135,6 +151,20 @@ export interface Comparison {
   label: string;
 }
 
+export type MaskSource = "MODEL" | "CORRECTED";
+
+// A user's redrawn outline (P09-S03). Each save is a new version; the model's own result is never changed.
+export interface Correction {
+  correction_id: string;
+  analysis_id: string;
+  version: number;
+  author: string;
+  created_at: string;
+  measurement: { status: string; pixel: Measurement["pixel"]; physical: Measurement["physical"]; warnings: Warning[] };
+  research_opt_in: boolean;
+  links: { self: string; mask: string };
+}
+
 export interface Artifact {
   url: string;
   expires_at: string;
@@ -145,4 +175,17 @@ export interface Readiness {
   database: "READY" | "NOT_READY";
   storage: "READY" | "NOT_READY";
   queue: "READY" | "NOT_READY";
+}
+
+// Consent is per user and per text version; a null accepted_at means it is asked before the first upload.
+export interface Consent {
+  text_version: string;
+  accepted_at: string | null;
+  retention_hours: number;
+}
+
+export interface Keep {
+  case_id: string;
+  keep: boolean;
+  retention_hours: number;
 }

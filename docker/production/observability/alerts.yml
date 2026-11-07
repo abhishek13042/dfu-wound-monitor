@@ -1,0 +1,45 @@
+# REQ-P10-S01-004: alerts on sustained error rate, queue backlog and model-not-ready.
+# Quality rejections never reach dfu_errors_total, and INPUT errors are the caller's,
+# so neither can page anyone.  Tested by alerts_test.yml (`promtool test rules`).
+groups:
+  - name: dfu
+    rules:
+      - alert: DfuHighErrorRate
+        expr: |
+          sum(rate(dfu_errors_total{source="api", failure_class!="INPUT"}[5m]))
+            / sum(rate(dfu_http_requests_total[5m])) > 0.05
+        for: 10m
+        labels:
+          severity: page
+        annotations:
+          summary: More than 5% of API requests failed for 10 minutes
+          runbook: docs/runbooks/observability.md#high-error-rate
+
+      - alert: DfuJobFailures
+        expr: |
+          sum(rate(dfu_analyses_total{outcome="FAILED"}[15m]))
+            / sum(rate(dfu_analyses_total[15m])) > 0.2
+        for: 15m
+        labels:
+          severity: ticket
+        annotations:
+          summary: More than 20% of analysis jobs failed for 15 minutes
+          runbook: docs/runbooks/observability.md#job-failures
+
+      - alert: DfuQueueBacklog
+        expr: max(dfu_queue_depth) > 20
+        for: 10m
+        labels:
+          severity: page
+        annotations:
+          summary: More than 20 analyses waited in the queue for 10 minutes
+          runbook: docs/runbooks/observability.md#queue-backlog
+
+      - alert: DfuModelNotReady
+        expr: max(dfu_model_ready) == 0 or absent(dfu_model_ready)
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: No verified model has been able to take jobs for 5 minutes
+          runbook: docs/runbooks/observability.md#model-not-ready

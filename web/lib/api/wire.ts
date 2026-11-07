@@ -1,7 +1,7 @@
 // Inner shapes of /api/v2 responses. OpenAPI types these as plain objects, so they are written out here
 // from captured responses of the running service (P08-S01). The envelopes come from schema.d.ts.
 
-import type { IdentityStatus, MeasurementBasis, TimestampSource } from "./types";
+import type { IdentityStatus, MeasurementBasis, TimestampSource, Uncertainty } from "./types";
 
 export interface WireCase {
   case_id: string;
@@ -67,6 +67,7 @@ export interface WireAnalysis {
     postprocessing?: { threshold: number };
     execution?: { device: string; duration_ms: number };
   };
+  inference?: { uncertainty?: Uncertainty | null } | null;
   links: Record<string, string>;
   limitation: string;
 }
@@ -102,6 +103,8 @@ export interface WireTrend {
     from_baseline: Record<string, WireChange> | null;
     from_previous: Record<string, WireChange> | null;
     flags: string[];
+    mask_source?: "MODEL" | "CORRECTED";
+    correction_id?: string | null;
   }[];
   excluded: { examination_id: string; analysis_id: string | null; reason_codes: string[] }[];
   warnings: WireWarning[];

@@ -1,6 +1,6 @@
 // Constructed demonstration records. None of this is patient data, and every screen that shows it says so.
 
-import type { Analysis, Case, Comparison, Readiness, Trend } from "./types";
+import type { Analysis, Case, Comparison, Correction, Readiness, Trend } from "./types";
 
 const MODEL = "spec-02-03-resnet34-unet-512-v1";
 const QC = "p03-s02-v1";
@@ -21,6 +21,7 @@ const calibrated = (area: number, perimeter: number, max: number, min: number, s
     component_count: 1,
   },
   physical: { area_mm2: area, perimeter_mm: perimeter, max_feret_mm: max, min_feret_mm: min },
+  calibration: { pixels_per_mm: scale, method: "ARUCO_MARKER", source: "aruco DICT_4X4_50 id 7", uncertainty_pct: 1.2 },
 });
 
 const accepted = { status: "ACCEPTED" as const, reason_codes: [], config_version: QC };
@@ -50,6 +51,7 @@ function completed(
     threshold: 0.4,
     measurement,
     inference: { duration_ms: 5812, device: "cpu" },
+    uncertainty: { tta_disagreement: 0.0184, method: "flip_tta_v1", region: "MASK_AND_BAND", empty_mask: false, summary_shown: true },
     warnings: measurement?.measurement_basis === "PIXEL_BASED" ? [noPixelScale] : [],
   };
 }
@@ -246,6 +248,27 @@ const row = (
       : { absolute_change: +(area - previous).toFixed(1), percent_change: +(((area - previous) / previous) * 100).toFixed(1) },
 });
 
+// One constructed correction, so the corrected-outline marks can be reviewed in mock mode.
+export const corrections: Record<string, Correction[]> = {
+  a1d079: [
+    {
+      correction_id: "cor-0704a",
+      analysis_id: "a1d079",
+      version: 1,
+      author: "demo",
+      created_at: "2026-10-14T11:02:00Z",
+      measurement: {
+        status: "MEASURED",
+        pixel: { area_px: 86412, perimeter_px: 1198, max_feret_px: 441, min_feret_px: 264, component_count: 1 },
+        physical: { area_mm2: 341.7, perimeter_mm: 77.5, max_feret_mm: 28.2, min_feret_mm: 16.9 },
+        warnings: [{ code: "CORRECTED_MASK", message: "Measured from an outline corrected by hand, not the model's own outline" }],
+      },
+      research_opt_in: false,
+      links: { self: "/api/v2/corrections/cor-0704a", mask: "/api/v2/corrections/cor-0704a/mask" },
+    },
+  ],
+};
+
 export const trends: Record<string, Trend> = {
   "c-0007": {
     status: "AVAILABLE",
@@ -255,7 +278,7 @@ export const trends: Record<string, Trend> = {
     rows: [
       row("e-0701", "a1d04e", "2026-09-02T09:40:00Z", 0, 412.6, 86.2, 31.4, null, null),
       row("e-0702", "a1d052", "2026-09-16T10:05:00Z", 14, 388.1, 82.9, 30.1, 412.6, 412.6),
-      row("e-0704", "a1d079", "2026-10-14T09:15:00Z", 42, 341.7, 77.5, 28.2, 412.6, 388.1),
+      { ...row("e-0704", "a1d079", "2026-10-14T09:15:00Z", 42, 341.7, 77.5, 28.2, 412.6, 388.1), mask_source: "CORRECTED", correction_id: "cor-0704a" },
       row("e-0705", "a1d093", "2026-10-28T09:50:00Z", 56, 322.4, 75.1, 27.3, 412.6, 341.7),
     ],
     excluded: [

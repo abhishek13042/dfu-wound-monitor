@@ -1,6 +1,6 @@
 # P09-S04 — External Generalisation Study
 
-**Status:** `NOT_STARTED`. Nothing in this specification is implemented. It needs approval before work begins.
+**Status:** `IN_PROGRESS`. The annotation hypothesis was tested under a frozen protocol, and the outcome is reported: **H1 partly supported** (REQ-001 and REQ-004 `COMPLETED`). Training work is `BLOCKED` (REQ-002, REQ-003, REQ-005). It needs a new external set or relabelled masks, and Kaggle GPU time.
 
 ## 1. Objective
 
@@ -67,6 +67,13 @@ Every experiment records dataset versions, split hashes, config and seed, as SPE
 
 Start with analysis that needs no training: compare mask styles, then retrain only if that shows a real shift. Then try combined-source training and appearance augmentation. Use the resized-224 and native-331 mask groups from Phase 06 as separate strata, not as one mixed score.
 
+As built:
+
+- **`reports/experiments/p09_s04_protocol.md`:** frozen before the run. It states H1 and H0, two tests with fixed bars, and a decision table.
+  - **T1, colour:** in each native-331 image, is the labelled-but-missed region closer in CIELAB colour to the skin ring 5–15 px outside the label than to the region the model found? H1 is supported if at least 60 % of eligible images say yes.
+  - **T2, shape:** H1 is supported if the median native-331 label solidity is at least 0.05 above FUSeg2021's.
+- **`scripts/evaluation/run_annotation_hypothesis.py`:** reruns the frozen v1.0.0 model and threshold on the 148 accepted P06 external images, in both strata. No training or tuning. It writes numbers only.
+
 ## 12. Implementation Tasks
 
 1. Write and freeze the protocol.
@@ -98,11 +105,24 @@ Start with analysis that needs no training: compare mask styles, then retrain on
 
 - `reports/experiments/p09_s04_report.md`
 
+Recorded on 2026-11-05.
+
+- **Run:** complete, 148 images (`reports/final/p09_s04_annotation_hypothesis.json`, log `reports/final/p09_s04_run.log`).
+- **T1, colour:** 71.8 % of 78 eligible native-331 images have a skin-like missed region. That passes the 60 % bar and supports H1. Resized-224: 63.6 % of 11.
+- **T2, shape:** native-331 median solidity 0.815 against FUSeg2021's 0.912, a difference of −0.097. That fails the +0.05 bar: native labels are less convex, the opposite of the prediction.
+- **Outcome:** H1 partly supported.
+  - Native-331 labels cover a median 7.7 % of the image against 0.7 % for FUSeg2021.
+  - In the missed region the model's median probability is 0.007, so it is confident there is no wound there.
+- **Model card:** the 0.26 stays, with the study beside it.
+- **Tests:** `tests/unit/test_annotation_hypothesis.py`, 3 passed.
+- **Not done:** the new external split, candidate training and a new model. See §18.
+
 ## 17. Reproducibility
 
-Planned commands. These do not work until the specification is implemented.
-
 ```bash
+python -m pytest tests/unit/test_annotation_hypothesis.py -q
+python scripts/evaluation/run_annotation_hypothesis.py
+# once a new external set and GPU time exist (BLOCKED):
 python scripts/data/check_near_duplicates.py
 python scripts/training/run_spec_02_03.py --train --evaluate --external
 ```
@@ -112,13 +132,16 @@ python scripts/training/run_spec_02_03.py --train --evaluate --external
 - Sources share images, so leakage is a real risk.
 - GPU limits bound the search.
 - Improvement is not guaranteed.
+- The colour test shows that the missed region looks like skin. It does not show that no wound tissue is in it. A FUSeg-style relabelling by a clinician would settle that, and it is `BLOCKED`.
+- Only 78 of 132 native-331 images had large enough regions for T1.
+- REQ-002 is `BLOCKED`: LowerLimb V3 cannot serve as an untouched test again, and no new licensed source is available. REQ-003 and REQ-005 are `BLOCKED` because there is no GPU time and no candidate.
 
 ## 19. Traceability
 
-| Requirement | Planned implementation | Planned test | Planned evidence | Status |
+| Requirement | Implementation | Test | Evidence | Status |
 |---|---|---|---|---|
-| `REQ-P09-S04-001` | `reports/experiments/p09_s04_protocol.md` | Review of the protocol | Study report | NOT_STARTED |
-| `REQ-P09-S04-002` | `data/manifests/` | Split leakage test | Manifest | NOT_STARTED |
-| `REQ-P09-S04-003` | `scripts/evaluation/` | Evaluation run | Comparison report | NOT_STARTED |
-| `REQ-P09-S04-004` | `docs/deployment/MODEL_CARD.md` | Claim-check test | Model card | NOT_STARTED |
-| `REQ-P09-S04-005` | `configs/inference/` | Hash test | Release record | NOT_STARTED |
+| `REQ-P09-S04-001` | `reports/experiments/p09_s04_protocol.md`, `scripts/evaluation/run_annotation_hypothesis.py` | `tests/unit/test_annotation_hypothesis.py`; study run 2026-11-05 | `reports/experiments/p09_s04_report.md` | COMPLETED |
+| `REQ-P09-S04-002` | `data/manifests/` | Split leakage test | Manifest | BLOCKED |
+| `REQ-P09-S04-003` | `scripts/evaluation/` | Evaluation run | Comparison report | BLOCKED |
+| `REQ-P09-S04-004` | `docs/deployment/MODEL_CARD.md` | Model card keeps 0.26 beside the study | Model card | COMPLETED |
+| `REQ-P09-S04-005` | `configs/inference/` | Hash test | Release record | BLOCKED |

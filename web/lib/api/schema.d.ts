@@ -89,6 +89,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/analyses/{analysis_id}/corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List All */
+        get: operations["list_all_api_v2_analyses__analysis_id__corrections_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_v2_analyses__analysis_id__corrections_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/cases": {
         parameters: {
             query?: never;
@@ -142,6 +160,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/cases/{case_id}/keep": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Keep */
+        get: operations["get_keep_api_v2_cases__case_id__keep_get"];
+        /** Set Keep */
+        put: operations["set_keep_api_v2_cases__case_id__keep_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/cases/{case_id}/trend": {
         parameters: {
             query?: never;
@@ -169,6 +205,58 @@ export interface paths {
         /** Compare Analyses */
         get: operations["compare_analyses_api_v2_compare_get"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/consent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Consent */
+        get: operations["get_consent_api_v2_consent_get"];
+        put?: never;
+        /** Accept Consent */
+        post: operations["accept_consent_api_v2_consent_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/corrections/{correction_id}/mask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mask Url */
+        get: operations["mask_url_api_v2_corrections__correction_id__mask_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/corrections/{correction_id}/research": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Research */
+        put: operations["set_research_api_v2_corrections__correction_id__research_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -365,6 +453,16 @@ export interface components {
             /** Threshold */
             threshold?: number | null;
         };
+        /** Body_create_api_v2_analyses__analysis_id__corrections_post */
+        Body_create_api_v2_analyses__analysis_id__corrections_post: {
+            /** File */
+            file: string;
+            /**
+             * Research Opt In
+             * @default false
+             */
+            research_opt_in: boolean;
+        };
         /** CaseCreate */
         CaseCreate: {
             /**
@@ -422,6 +520,57 @@ export interface components {
             comparison: {
                 [key: string]: unknown;
             };
+        };
+        /** ConsentAccept */
+        ConsentAccept: {
+            /** Text Version */
+            text_version: string;
+        };
+        /** ConsentResponse */
+        ConsentResponse: {
+            /** Accepted At */
+            accepted_at: string | null;
+            /** Retention Hours */
+            retention_hours: number;
+            /** Text Version */
+            text_version: string;
+        };
+        /** CorrectionList */
+        CorrectionList: {
+            /** Analysis Id */
+            analysis_id: string;
+            /**
+             * Api Version
+             * @default v2
+             */
+            api_version: string;
+            /** Corrections */
+            corrections: components["schemas"]["CorrectionOut"][];
+        };
+        /** CorrectionOut */
+        CorrectionOut: {
+            /** Analysis Id */
+            analysis_id: string;
+            /** Author */
+            author: string;
+            /** Correction Id */
+            correction_id: string;
+            /** Created At */
+            created_at: string;
+            /** Links */
+            links: {
+                [key: string]: string;
+            };
+            /** Measurement */
+            measurement: {
+                [key: string]: unknown;
+            };
+            /** Research Opt In */
+            research_opt_in: boolean;
+            /** Sha256 */
+            sha256: string;
+            /** Version */
+            version: number;
         };
         /** DeleteResponse */
         DeleteResponse: {
@@ -516,6 +665,20 @@ export interface components {
             cases: {
                 [key: string]: unknown;
             }[];
+            /**
+             * Consents
+             * @default []
+             */
+            consents: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Corrections
+             * @default []
+             */
+            corrections: {
+                [key: string]: unknown;
+            }[];
             /** Examinations */
             examinations: {
                 [key: string]: unknown;
@@ -551,6 +714,20 @@ export interface components {
             };
             /** Status */
             status: string;
+        };
+        /** KeepResponse */
+        KeepResponse: {
+            /** Case Id */
+            case_id: string;
+            /** Keep */
+            keep: boolean;
+            /** Retention Hours */
+            retention_hours: number;
+        };
+        /** KeepUpdate */
+        KeepUpdate: {
+            /** Keep */
+            keep: boolean;
         };
         /** LiveResponse */
         LiveResponse: {
@@ -636,6 +813,11 @@ export interface components {
              * @enum {string}
              */
             storage: "READY" | "NOT_READY";
+        };
+        /** ResearchUpdate */
+        ResearchUpdate: {
+            /** Opt In */
+            opt_in: boolean;
         };
         /** SignedUrlResponse */
         SignedUrlResponse: {
@@ -895,6 +1077,76 @@ export interface operations {
             };
         };
     };
+    list_all_api_v2_analyses__analysis_id__corrections_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                analysis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrectionList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_api_v2_analyses__analysis_id__corrections_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                analysis_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_create_api_v2_analyses__analysis_id__corrections_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_cases_api_v2_cases_get: {
         parameters: {
             query?: never;
@@ -1064,6 +1316,76 @@ export interface operations {
             };
         };
     };
+    get_keep_api_v2_cases__case_id__keep_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeepResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_keep_api_v2_cases__case_id__keep_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KeepUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeepResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     trend_api_v2_cases__case_id__trend_get: {
         parameters: {
             query?: never;
@@ -1118,6 +1440,142 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ComparisonResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_consent_api_v2_consent_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_consent_api_v2_consent_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentAccept"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mask_url_api_v2_corrections__correction_id__mask_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                correction_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignedUrlResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_research_api_v2_corrections__correction_id__research_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                correction_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResearchUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorrectionOut"];
                 };
             };
             /** @description Validation Error */

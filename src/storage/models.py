@@ -11,7 +11,7 @@ to their analysis.  The ``demo`` user has no subject, so no token can reach it.
 
 from __future__ import annotations
 
-from sqlalchemy import CheckConstraint, ForeignKey, Index, Integer, MetaData, Text
+from sqlalchemy import CheckConstraint, ForeignKey, Index, Integer, MetaData, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 NAMING_CONVENTION = {
@@ -59,6 +59,7 @@ class Case(Base):
     __tablename__ = "cases"
     __table_args__ = (
         CheckConstraint("identity_status IN ('VERIFIED', 'UNVERIFIED', 'UNKNOWN')", name="identity_status"),
+        CheckConstraint("keep IN (0, 1)", name="keep"),
         Index("idx_cases_owner", "owner_id"),
     )
 
@@ -70,6 +71,7 @@ class Case(Base):
     label: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[str] = mapped_column(Text)
     record_json: Mapped[str] = mapped_column(Text)
+    keep: Mapped[int] = mapped_column(Integer, server_default="0")  # P10-S03: exempt from retention
 
 
 class Examination(Base):
@@ -94,6 +96,7 @@ class Image(Base):
         CheckConstraint("length(sha256) = 64", name="sha256_length"),
         Index("idx_images_examination", "examination_id"),
         Index("idx_images_owner", "owner_id"),
+        Index("idx_images_created", "created_at"),
     )
 
     image_id: Mapped[str] = mapped_column(Text, primary_key=True)
@@ -113,6 +116,7 @@ class Analysis(Base):
         CheckConstraint("status != 'COMPLETED' OR model_version IS NOT NULL", name="completed_has_model"),
         Index("idx_analyses_examination", "examination_id", "created_at"),
         Index("idx_analyses_owner", "owner_id"),
+        Index("idx_analyses_created", "created_at"),
     )
 
     analysis_id: Mapped[str] = mapped_column(Text, primary_key=True)
@@ -133,6 +137,7 @@ class Upload(Base):
         CheckConstraint("length(declared_sha256) = 64", name="declared_sha256_length"),
         Index("idx_uploads_expires", "expires_at"),
         Index("idx_uploads_owner", "owner_id"),
+        Index("idx_uploads_created", "created_at"),
     )
 
     upload_id: Mapped[str] = mapped_column(Text, primary_key=True)
@@ -185,3 +190,37 @@ class Artifact(Base):
     storage_key: Mapped[str] = mapped_column(Text)
     sha256: Mapped[str] = mapped_column(Text)
     media_type: Mapped[str] = mapped_column(Text)
+
+
+class MaskCorrection(Base):
+    """P09-S03: a user's corrected mask.  The analysis it corrects is never changed."""
+
+    __tablename__ = "mask_corrections"
+    __table_args__ = (
+        CheckConstraint("length(sha256) = 64", name="sha256_length"),
+        CheckConstraint("version >= 1", name="version_positive"),
+        CheckConstraint("research_opt_in IN (0, 1)", name="research_opt_in"),
+        UniqueConstraint("analysis_id", "version", name="uq_mask_corrections_analysis_version"),
+        Index("idx_mask_corrections_owner", "owner_id"),
+    )
+
+    correction_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    analysis_id: Mapped[str] = mapped_column(Text, ForeignKey("analyses.analysis_id", ondelete="CASCADE"))
+    owner_id: Mapped[str] = _owner_column()
+    version: Mapped[int] = mapped_column(Integer)
+    author: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(Text)
+    storage_key: Mapped[str] = mapped_column(Text)
+    sha256: Mapped[str] = mapped_column(Text)
+    measurement_json: Mapped[str] = mapped_column(Text)
+    research_opt_in: Mapped[int] = mapped_column(Integer, server_default="0")
+
+
+class Consent(Base):
+    """P10-S03: which consent text a user accepted, and when."""
+
+    __tablename__ = "consents"
+
+    owner_id: Mapped[str] = mapped_column(Text, ForeignKey("users.user_id", ondelete="CASCADE"), primary_key=True)
+    text_version: Mapped[str] = mapped_column(Text, primary_key=True)
+    accepted_at: Mapped[str] = mapped_column(Text)

@@ -12,7 +12,7 @@ describe("signed-out access", () => {
 
   const visit = (path: string) => middleware(new NextRequest(new URL(path, "http://localhost:3000")));
 
-  it.each(["/", "/model", "/sign-in", "/unavailable", "/api/auth/session"])("lets %s through", async (path) => {
+  it.each(["/", "/model", "/privacy", "/sign-in", "/unavailable", "/api/auth/session"])("lets %s through", async (path) => {
     const response = await visit(path);
     expect(response.headers.get("location")).toBeNull();
     expect(response.status).toBe(200);

@@ -1,6 +1,6 @@
 # P10-S01 — Observability
 
-**Status:** `NOT_STARTED`. Nothing in this specification is implemented. It needs approval before work begins.
+**Status:** `IN_PROGRESS`. Request IDs, scrubbed JSON logs, `dfu_` metrics, alert rules, a dashboard and the runbook are built, and 29 local tests pass. Still to come: the `observability` CI job that runs `promtool test rules` has not run, because it needs a push and Docker. Sentry and Grafana Cloud are `BLOCKED` on accounts the deployer owns, and frontend Sentry is not wired.
 
 ## 1. Objective
 
@@ -83,26 +83,47 @@ Middleware sets a context ID, which passes in job metadata. Metric labels stay l
 
 ## 16. Evidence
 
-- Dashboard export
-- Fault-injection record
+- 2026-11-04: `tests/worker/test_p10_s01_observability.py` (23 tests) and `tests/integration/test_p10_s01_alerts.py` (6 tests): 29 passed. They show:
+  - an `X-Request-ID` supplied by the caller is kept, and a malformed one is replaced
+  - the error body's `request_id` matches the header
+  - the ID is stored in the job request, appears on the worker's `job started` and `job finished` log lines, and appears in the result provenance
+  - planted Bearer tokens, JWTs, signed-URL parameters, filenames, `data:` URLs, base64 runs and raw byte reprs are removed from messages, arguments and tracebacks
+  - an injected `MODEL_FAILURE` adds 1 to `dfu_errors_total{failure_class="MODEL",source="worker"}`, and its log lines lead to exactly one `analysis_id`
+  - a quality rejection adds to `dfu_analyses_total{outcome="QUALITY_REJECTED"}` and not to `dfu_errors_total`
+  - `/metrics` returns 404 to a public client and 200 to a private one or to the bearer token
+  - the queue being down, or a metric that raises, does not fail a request
+- Worker, API and integration suites after the change: 173 passed.
+- Dashboard export: `docker/production/observability/grafana-dashboard.json`.
+- Fault-injection record for alerts: `docker/production/observability/alerts_test.yml`, a `promtool` test in which each alert fires on an injected fault and stays quiet otherwise. **Pending:** the `observability` CI job has not run yet.
 
 ## 17. Reproducibility
 
-Planned commands. These do not work until the specification is implemented.
-
 ```bash
-python -m pytest tests/observability -q
+python -m pytest tests/worker/test_p10_s01_observability.py tests/integration/test_p10_s01_alerts.py -q
+# with Docker:
+docker run --rm -v "$PWD/docker/production/observability:/rules" -w /rules --entrypoint promtool prom/prometheus:v2.53.0 test rules alerts_test.yml
 ```
+
+Runtime switches:
+- `DFU_LOG_FORMAT=plain` and `DFU_LOG_LEVEL` control the logs.
+- `DFU_METRICS_TOKEN` lets a scraper outside the private network read `/metrics`.
+- `DFU_WORKER_METRICS_PORT` and `DFU_WORKER_METRICS_ADDR` set where the worker serves its metrics.
+- `SENTRY_DSN` turns on error reporting, only when `sentry_sdk` is installed.
+
+Runbook: `docs/runbooks/observability.md`.
 
 ## 18. Risks / Limitations
 
 - Filenames can contain personal data, which is why they are scrubbed.
+- Scrubbing works on patterns. A secret in a shape it does not know, such as a token without a `Bearer` prefix or key name, would pass through. To limit this, the code never logs request bodies or headers.
+- `BLOCKED`: Sentry (API, worker and frontend) and a hosted Grafana need accounts the deployer owns. The API and worker hook is in place but inactive until `SENTRY_DSN` is set. The frontend has no Sentry wiring.
+- The worker serves its metrics on its own port only when one is configured. Without that port, its job metrics are seen only by an in-process API (`LocalQueue`).
 
 ## 19. Traceability
 
-| Requirement | Planned implementation | Planned test | Planned evidence | Status |
+| Requirement | Implementation | Test | Evidence | Status |
 |---|---|---|---|---|
-| `REQ-P10-S01-001` | `src/api/middleware.py` | `test_request_id_propagates` | Test run | NOT_STARTED |
-| `REQ-P10-S01-002` | `src/observability/metrics.py` | `test_metrics_exposed` | Dashboard export | NOT_STARTED |
-| `REQ-P10-S01-003` | `src/observability/scrub.py` | `test_log_scrubbing` | Test run | NOT_STARTED |
-| `REQ-P10-S01-004` | `deploy/monitoring/alerts.yml` | Injected-fault test | Alert record | NOT_STARTED |
+| `REQ-P10-S01-001` | `src/observability/context.py`, `src/observability/http.py`, `src/api/errors.py`, `src/api/analyses_v2.py`, `src/worker/tasks.py` | `test_the_id_follows_the_job_into_the_worker_and_the_result`, `test_error_body_names_the_same_id_as_the_header` | Test run 2026-11-04 | COMPLETED |
+| `REQ-P10-S01-002` | `src/observability/metrics.py`, `/metrics` in `src/api/app.py` | `test_metrics_endpoint_reports_the_required_series`, `test_quality_rejection_is_an_outcome_not_an_error` | `grafana-dashboard.json`, test run | COMPLETED |
+| `REQ-P10-S01-003` | `src/observability/logs.py`, `src/observability/errors.py` | `test_scrub_removes_planted_secrets`, `test_error_events_are_scrubbed_before_sending` | Test run 2026-11-04 | COMPLETED |
+| `REQ-P10-S01-004` | `docker/production/observability/alerts.yml` | `alerts_test.yml` (promtool, CI), `test_every_alert_has_a_firing_promtool_case` | CI `observability` job (pending) | IN_PROGRESS |

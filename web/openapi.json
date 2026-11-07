@@ -252,6 +252,25 @@
         "title": "Body_analyze_api_v1_analyses_post",
         "type": "object"
       },
+      "Body_create_api_v2_analyses__analysis_id__corrections_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          },
+          "research_opt_in": {
+            "default": false,
+            "title": "Research Opt In",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_create_api_v2_analyses__analysis_id__corrections_post",
+        "type": "object"
+      },
       "CaseCreate": {
         "additionalProperties": false,
         "properties": {
@@ -375,6 +394,133 @@
           "comparison"
         ],
         "title": "ComparisonResponse",
+        "type": "object"
+      },
+      "ConsentAccept": {
+        "additionalProperties": false,
+        "properties": {
+          "text_version": {
+            "title": "Text Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text_version"
+        ],
+        "title": "ConsentAccept",
+        "type": "object"
+      },
+      "ConsentResponse": {
+        "properties": {
+          "accepted_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted At"
+          },
+          "retention_hours": {
+            "title": "Retention Hours",
+            "type": "integer"
+          },
+          "text_version": {
+            "title": "Text Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text_version",
+          "accepted_at",
+          "retention_hours"
+        ],
+        "title": "ConsentResponse",
+        "type": "object"
+      },
+      "CorrectionList": {
+        "properties": {
+          "analysis_id": {
+            "title": "Analysis Id",
+            "type": "string"
+          },
+          "api_version": {
+            "default": "v2",
+            "title": "Api Version",
+            "type": "string"
+          },
+          "corrections": {
+            "items": {
+              "$ref": "#/components/schemas/CorrectionOut"
+            },
+            "title": "Corrections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "analysis_id",
+          "corrections"
+        ],
+        "title": "CorrectionList",
+        "type": "object"
+      },
+      "CorrectionOut": {
+        "properties": {
+          "analysis_id": {
+            "title": "Analysis Id",
+            "type": "string"
+          },
+          "author": {
+            "title": "Author",
+            "type": "string"
+          },
+          "correction_id": {
+            "title": "Correction Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "links": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Links",
+            "type": "object"
+          },
+          "measurement": {
+            "additionalProperties": true,
+            "title": "Measurement",
+            "type": "object"
+          },
+          "research_opt_in": {
+            "title": "Research Opt In",
+            "type": "boolean"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "correction_id",
+          "analysis_id",
+          "version",
+          "author",
+          "created_at",
+          "sha256",
+          "measurement",
+          "research_opt_in",
+          "links"
+        ],
+        "title": "CorrectionOut",
         "type": "object"
       },
       "DeleteResponse": {
@@ -596,6 +742,24 @@
             "title": "Cases",
             "type": "array"
           },
+          "consents": {
+            "default": [],
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Consents",
+            "type": "array"
+          },
+          "corrections": {
+            "default": [],
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Corrections",
+            "type": "array"
+          },
           "examinations": {
             "items": {
               "additionalProperties": true,
@@ -683,6 +847,43 @@
           "links"
         ],
         "title": "JobResponse",
+        "type": "object"
+      },
+      "KeepResponse": {
+        "properties": {
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "keep": {
+            "title": "Keep",
+            "type": "boolean"
+          },
+          "retention_hours": {
+            "title": "Retention Hours",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "case_id",
+          "keep",
+          "retention_hours"
+        ],
+        "title": "KeepResponse",
+        "type": "object"
+      },
+      "KeepUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "keep": {
+            "title": "Keep",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "keep"
+        ],
+        "title": "KeepUpdate",
         "type": "object"
       },
       "LiveResponse": {
@@ -847,6 +1048,20 @@
           "queue"
         ],
         "title": "ReadinessResponse",
+        "type": "object"
+      },
+      "ResearchUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "opt_in": {
+            "title": "Opt In",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "opt_in"
+        ],
+        "title": "ResearchUpdate",
         "type": "object"
       },
       "SignedUrlResponse": {
@@ -1317,6 +1532,124 @@
         "summary": "Artifact Url"
       }
     },
+    "/api/v2/analyses/{analysis_id}/corrections": {
+      "get": {
+        "operationId": "list_all_api_v2_analyses__analysis_id__corrections_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "analysis_id",
+            "required": true,
+            "schema": {
+              "title": "Analysis Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List All"
+      },
+      "post": {
+        "operationId": "create_api_v2_analyses__analysis_id__corrections_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "analysis_id",
+            "required": true,
+            "schema": {
+              "title": "Analysis Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_api_v2_analyses__analysis_id__corrections_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create"
+      }
+    },
     "/api/v2/cases": {
       "get": {
         "operationId": "list_cases_api_v2_cases_get",
@@ -1590,6 +1923,124 @@
         "summary": "Create Examination"
       }
     },
+    "/api/v2/cases/{case_id}/keep": {
+      "get": {
+        "operationId": "get_keep_api_v2_cases__case_id__keep_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeepResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Keep"
+      },
+      "put": {
+        "operationId": "set_keep_api_v2_cases__case_id__keep_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeepUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeepResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Keep"
+      }
+    },
     "/api/v2/cases/{case_id}/trend": {
       "get": {
         "operationId": "trend_api_v2_cases__case_id__trend_get",
@@ -1707,6 +2158,226 @@
           }
         },
         "summary": "Compare Analyses"
+      }
+    },
+    "/api/v2/consent": {
+      "get": {
+        "operationId": "get_consent_api_v2_consent_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Consent"
+      },
+      "post": {
+        "operationId": "accept_consent_api_v2_consent_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentAccept"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Accept Consent"
+      }
+    },
+    "/api/v2/corrections/{correction_id}/mask": {
+      "get": {
+        "operationId": "mask_url_api_v2_corrections__correction_id__mask_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "correction_id",
+            "required": true,
+            "schema": {
+              "title": "Correction Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedUrlResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mask Url"
+      }
+    },
+    "/api/v2/corrections/{correction_id}/research": {
+      "put": {
+        "operationId": "set_research_api_v2_corrections__correction_id__research_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "correction_id",
+            "required": true,
+            "schema": {
+              "title": "Correction Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResearchUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Research"
       }
     },
     "/api/v2/examinations/{examination_id}": {

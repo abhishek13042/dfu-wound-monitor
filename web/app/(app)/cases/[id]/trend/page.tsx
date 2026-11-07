@@ -84,6 +84,10 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
                     <td data-wide className="px-4">
                       <Link href={`/analyses/${row.analysis_id}`} className="font-semibold hover:underline">{formatDate(row.captured_at)}</Link>
                       {row.is_baseline && <span className="ml-2 font-sans text-13 text-ink-2">Baseline</span>}
+                      {row.mask_source === "CORRECTED" && (
+                        // REQ-P09-S03-004: a value measured from a hand-corrected outline says so.
+                        <span className="ml-2 rounded-sm border border-rule px-1.5 py-0.5 font-sans text-13 text-ink-2">Corrected outline</span>
+                      )}
                     </td>
                     <td data-label="Day" className="px-4 sm:text-right">{day(row.days_since_baseline)}</td>
                     <td data-label={`Area (${trend.unit.area})`} className="px-4 sm:text-right">{formatNumber(row.values.area, digits)}</td>

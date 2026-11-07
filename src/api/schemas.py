@@ -124,6 +124,8 @@ class ExportResponse(_Response):
     images: list[dict[str, Any]]
     analyses: list[dict[str, Any]]
     artifacts: list[dict[str, Any]]
+    consents: list[dict[str, Any]] = []
+    corrections: list[dict[str, Any]] = []
     url_expires_in_seconds: int
 
 

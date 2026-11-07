@@ -22,7 +22,7 @@ from alembic.config import Config
 from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.engine import Connection, Engine, make_url
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 6
 MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 MIGRATION_LOCK_KEY = 120_712  # any constant shared by every instance
 LEGACY_VERSION = "0001"       # the only schema the hand-written migrator ever produced

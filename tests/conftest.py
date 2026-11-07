@@ -157,6 +157,15 @@ class SignIn:
         return state.db.for_owner(state.db.ensure_user(f"{self.issuer}|{subject}"))
 
 
+def accept_consent(client, headers: dict[str, str] | None = None) -> None:
+    """P10-S03: a user accepts the consent text before their first upload."""
+
+    from src.api.consent import CONSENT_VERSION
+
+    response = client.post("/api/v2/consent", headers=headers, json={"text_version": CONSENT_VERSION})
+    assert response.status_code == 200, response.text
+
+
 @pytest.fixture(scope="session")
 def auth() -> SignIn:
     return SignIn()

@@ -19,6 +19,7 @@ from src.api.app import create_app
 from src.api.service import ApiSettings
 from src.storage.blobs import staging_key
 from src.worker.queue import QueueUnavailable
+from tests.conftest import accept_consent
 
 GOOD_IMAGE = (256, 200)  # passes the quality gate
 WINDOWS_REDIS = "C:/Program Files/Redis/redis-server.exe"
@@ -53,6 +54,7 @@ class HeldQueue:
 
 
 def verified_upload(client: TestClient, data: bytes, headers: dict[str, str] | None = None) -> str:
+    accept_consent(client, headers)
     created = client.post("/api/v2/uploads", headers=headers, json={
         "filename": "wound.png", "size_bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()})
     assert created.status_code == 201, created.text

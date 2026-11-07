@@ -199,6 +199,9 @@ def build_trend(points: Sequence[MeasurementPoint], policy: CompatibilityPolicy 
             "days_since_baseline": round(days, 4),
             "is_baseline": point is baseline,
             "model_version": point.analysis.model_version,
+            # REQ-P09-S03-004: whether the value comes from the model's outline or one corrected by hand.
+            "mask_source": (point.analysis.provenance.get("mask_source") or {}).get("kind", "MODEL"),
+            "correction_id": (point.analysis.provenance.get("mask_source") or {}).get("correction_id"),
             "values": values,
             "from_baseline": from_baseline,
             "from_previous": from_previous,

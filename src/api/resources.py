@@ -11,6 +11,7 @@ from collections.abc import Callable
 from fastapi import APIRouter, Depends
 
 from src.api.analysis_flow import analysis_response
+from src.api.corrections import corrected_record
 from src.api.schemas import (
     API_VERSION,
     AnalysisResponse,
@@ -87,7 +88,13 @@ def router(state: ServiceState, version: str, current_repository: Callable[..., 
     def trend(case_id: str, db: Repository = Depends(current_repository)):
         case = db.get_case(case_id)
         pairs = db.latest_analysis_per_examination(case_id)
-        result = build_trend([MeasurementPoint(case, e, a) for e, a in pairs], CompatibilityPolicy()).to_dict()
+        points = []
+        for examination, analysis in pairs:
+            # REQ-P09-S03-004: the latest correction stands in for the model's outline, and the row says so.
+            correction = db.latest_correction(analysis.analysis_id) if analysis.status == "COMPLETED" else None
+            points.append(MeasurementPoint(case, examination,
+                                           corrected_record(analysis, correction) if correction else analysis))
+        result = build_trend(points, CompatibilityPolicy()).to_dict()
         analysed = {e.examination_id for e, _ in pairs}
         for examination in db.list_examinations(case_id):
             if examination.examination_id not in analysed:

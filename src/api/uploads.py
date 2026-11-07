@@ -17,12 +17,14 @@ from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.api.analysis_flow import FORMAT_SUFFIX
+from src.api.consent import require_consent
 from src.api.errors import ApiError
 from src.api.schemas import API_V2
 from src.api.service import ServiceState
 from src.inference.errors import InputError, InputTooLargeError
 from src.longitudinal.records import new_id
 from src.preprocessing.decode import decode_image
+from src.preprocessing.sanitise import sanitise_image
 from src.storage.blobs import MEDIA_BY_SUFFIX, LocalBlobStore, staging_key
 from src.storage.database import NotFoundError
 from src.storage.repository import Repository
@@ -96,15 +98,17 @@ def verify_upload(state: ServiceState, db: Repository, upload: dict) -> dict:
         raise _reject(state, db, upload_id, ApiError("INVALID_INPUT", "UPLOAD_HASH_MISMATCH",
                                                      "Stored file does not match the declared SHA-256"))
     try:
-        decoded = decode_image(data)
+        decode_image(data)
     except InputTooLargeError as error:
         raise _reject(state, db, upload_id, ApiError("INVALID_INPUT", error.code, error.message, error.details,
                                                      status=413)) from error
     except InputError as error:
         raise _reject(state, db, upload_id, ApiError("INVALID_INPUT", error.code, error.message,
                                                      error.details)) from error
-    final_key, _ = state.blobs.put(data, FORMAT_SUFFIX.get(decoded.source_format, ""))
-    verified = db.finish_upload(upload_id, "VERIFIED", storage_key=final_key, format=decoded.source_format,
+    # REQ-P10-S03-002: only the metadata-free copy is stored, and its hash is the content address.
+    clean, clean_format = sanitise_image(data)
+    final_key, _ = state.blobs.put(clean, FORMAT_SUFFIX.get(clean_format, ""))
+    verified = db.finish_upload(upload_id, "VERIFIED", storage_key=final_key, format=clean_format,
                                 expires_at=_timestamp(VERIFIED_ROW_SECONDS).isoformat())
     state.blobs.delete(key)
     return verified
@@ -125,6 +129,7 @@ def router(state: ServiceState, current_repository: Callable[..., Repository]) -
         limit = state.settings.max_upload_bytes
         if body.size_bytes > limit:
             raise ApiError("INVALID_INPUT", "INPUT_TOO_LARGE", f"Upload exceeds {limit} bytes", status=413)
+        require_consent(db)  # REQ-P10-S03-003
         db.expire_uploads(state.blobs)
         upload_id = new_id("upl")
         db.add_upload(upload_id, filename=body.filename, declared_size=body.size_bytes,

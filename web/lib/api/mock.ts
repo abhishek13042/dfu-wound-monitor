@@ -1,7 +1,7 @@
 // Constructed data for design review and the browser tests. Selected when NEXT_PUBLIC_DFU_MOCK=1.
 
-import { analyses, buildComparison, cases, readiness, trends, unavailableTrend } from "./mock-data";
-import type { Analysis, Artifact, Case, Comparison, Readiness, Trend } from "./types";
+import { analyses, buildComparison, cases, corrections, readiness, trends, unavailableTrend } from "./mock-data";
+import type { Analysis, Artifact, Case, Comparison, Consent, Correction, Keep, Readiness, Trend } from "./types";
 
 export async function listCases(): Promise<Case[]> {
   return cases;
@@ -47,4 +47,17 @@ export async function getReadiness(): Promise<Readiness> {
 // Constructed records have no stored photo; the screens draw a labelled placeholder instead.
 export async function getArtifact(): Promise<Artifact | undefined> {
   return undefined;
+}
+
+// The demonstration always asks for consent, so the step can be reviewed.
+export async function getConsent(): Promise<Consent> {
+  return { text_version: "2026-11-v1", accepted_at: null, retention_hours: 24 };
+}
+
+export async function getKeep(caseId: string): Promise<Keep | undefined> {
+  return cases.some((item) => item.case_id === caseId) ? { case_id: caseId, keep: caseId === cases[0]?.case_id, retention_hours: 24 } : undefined;
+}
+
+export async function listCorrections(analysisId: string): Promise<Correction[]> {
+  return corrections[analysisId] ?? [];
 }

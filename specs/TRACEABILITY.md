@@ -379,11 +379,11 @@ These requirements are specified and not implemented. The paths are planned loca
 | REQ-P07-S05-004 | `src/worker/tasks.py` | `test_retry_policy`, `test_input_and_model_errors_do_not_retry`, `test_a_retry_is_delivered_after_its_back_off` | Test run | COMPLETED |
 | REQ-P07-S05-005 | `src/worker/tasks.py` | `test_worker_matches_pipeline` | `reports/deployment/p07_s05_parity_report.json`: 5 real images, identical results and mask hashes | COMPLETED |
 | REQ-P07-S05-006 | `src/api/app.py` | `test_readiness_covers_the_queue`, `test_model_route_works_without_a_model_in_the_api` | Test run | COMPLETED |
-| REQ-P07-S06-001 | `scripts/deployment/export_onnx.py` | `test_export_records_provenance` | `models/metadata/` record | NOT_STARTED |
-| REQ-P07-S06-002 | `src/inference/onnx_engine.py` | `test_engine_interface_parity` | Test run | NOT_STARTED |
-| REQ-P07-S06-003 | `scripts/evaluation/run_onnx_parity.py` | Parity run | `reports/final/p07_s06_onnx_parity.json` | NOT_STARTED |
-| REQ-P07-S06-004 | `scripts/evaluation/run_phase_06_benchmark.py` | Benchmark run | `reports/final/p07_s06_onnx_benchmark.json` | NOT_STARTED |
-| REQ-P07-S06-005 | `configs/inference/` | Decision entry | `docs/architecture/decisions.md` | NOT_STARTED |
+| REQ-P07-S06-001 | `scripts/deployment/export_onnx.py` | `test_export_records_provenance` | `reports/final/p07_s06_onnx_export.json` | COMPLETED |
+| REQ-P07-S06-002 | `src/inference/onnx_engine.py` | `test_engine_interface_parity` | Test run 2026-11-04 | COMPLETED |
+| REQ-P07-S06-003 | `scripts/evaluation/run_onnx_parity.py` | Parity run | `reports/final/p07_s06_onnx_parity.json` | COMPLETED |
+| REQ-P07-S06-004 | `scripts/evaluation/run_phase_06_benchmark.py` | Benchmark run | `reports/final/p07_s06_onnx_benchmark.json`, `reports/final/p07_s06_image_size.json` | COMPLETED |
+| REQ-P07-S06-005 | `src/inference/onnx_engine.py` | `test_engine_choice_defaults_to_pytorch` | `docs/architecture/decisions.md`, decision 23 | COMPLETED |
 | REQ-P08-S01-001 | `web/lib/api/`, `web/scripts/export_openapi.py` | `npm run api:check` in the CI `web` job | Local exit 0; no CI log yet | IN_PROGRESS |
 | REQ-P08-S01-002 | `web/components/MedicalNotice.tsx` in both layouts | `e2e/pages.spec.ts`, 20 routes at two widths | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
 | REQ-P08-S01-003 | `web/middleware.ts` | `middleware.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
@@ -405,45 +405,45 @@ These requirements are specified and not implemented. The paths are planned loca
 | REQ-P08-S04-008 to 016 | `web/app/` | Browser check at 1440 and 375 px | Review capture | IN_PROGRESS |
 | REQ-P08-S04-017 to 018 | `web/lib/api/` | Build and browser check | Build log | IN_PROGRESS |
 | REQ-P08-S04-019 | `web/scripts/check-wording.mjs` | `npm run test:wording` | Script output | IN_PROGRESS |
-| REQ-P09-S01-001 | `src/measurement/marker.py` | `tests/measurement/test_marker.py` | Test run | NOT_STARTED |
-| REQ-P09-S01-002 | `src/measurement/marker.py` | `test_marker_fallbacks` | Test run | NOT_STARTED |
-| REQ-P09-S01-003 | `scripts/evaluation/run_marker_validation.py` | Validation run | `reports/final/p09_s01_marker_validation.json` | NOT_STARTED |
-| REQ-P09-S01-004 | `src/measurement/calibration.py` | `test_scale_conflict` | Test run | NOT_STARTED |
-| REQ-P09-S01-005 | API limitation text | `test_limitation_present` | Test run | NOT_STARTED |
-| REQ-P09-S02-001 | `web/components/Heatmap.tsx` | Component test | Test report | NOT_STARTED |
-| REQ-P09-S02-002 | `src/inference/uncertainty.py` | `test_disagreement_known_inputs` | Test run | NOT_STARTED |
-| REQ-P09-S02-003 | `scripts/evaluation/run_uncertainty_study.py` | Study run | `reports/final/p09_s02_uncertainty.json` | NOT_STARTED |
-| REQ-P09-S02-004 | `web/components/Heatmap.tsx` | Language test | Test report | NOT_STARTED |
-| REQ-P09-S03-001 | `web/components/MaskEditor/` | Playwright test | Test report | NOT_STARTED |
-| REQ-P09-S03-002 | `src/api/corrections.py` | `test_original_is_immutable` | Test run | NOT_STARTED |
-| REQ-P09-S03-003 | `src/api/corrections.py` | `test_measurements_from_corrected_mask` | Test run | NOT_STARTED |
-| REQ-P09-S03-004 | `src/longitudinal/` | `test_trend_marks_corrected` | Test run | NOT_STARTED |
-| REQ-P09-S03-005 | `src/api/corrections.py` | `test_export_requires_opt_in` | Test run | NOT_STARTED |
-| REQ-P09-S04-001 | `reports/experiments/p09_s04_protocol.md` | Review of the protocol | Study report | NOT_STARTED |
-| REQ-P09-S04-002 | `data/manifests/` | Split leakage test | Manifest | NOT_STARTED |
-| REQ-P09-S04-003 | `scripts/evaluation/` | Evaluation run | Comparison report | NOT_STARTED |
-| REQ-P09-S04-004 | `docs/deployment/MODEL_CARD.md` | Claim-check test | Model card | NOT_STARTED |
-| REQ-P09-S04-005 | `configs/inference/` | Hash test | Release record | NOT_STARTED |
-| REQ-P10-S01-001 | `src/api/middleware.py` | `test_request_id_propagates` | Test run | NOT_STARTED |
-| REQ-P10-S01-002 | `src/observability/metrics.py` | `test_metrics_exposed` | Dashboard export | NOT_STARTED |
-| REQ-P10-S01-003 | `src/observability/scrub.py` | `test_log_scrubbing` | Test run | NOT_STARTED |
-| REQ-P10-S01-004 | `deploy/monitoring/alerts.yml` | Injected-fault test | Alert record | NOT_STARTED |
-| REQ-P10-S02-001 | `tests/load/locustfile.py` | Load run | `reports/final/p10_s02_load.json` | NOT_STARTED |
-| REQ-P10-S02-002 | `scripts/evaluation/` | Load run | `reports/final/p10_s02_load.json` | NOT_STARTED |
-| REQ-P10-S02-003 | `docs/deployment/SLO.md` | Document review | SLO document | NOT_STARTED |
-| REQ-P10-S02-004 | `src/api/analyses_v2.py` | Overload run | Report | NOT_STARTED |
-| REQ-P10-S02-005 | `deploy/` | Scaling run | Report | NOT_STARTED |
-| REQ-P10-S03-001 | `src/worker/retention.py` | `test_retention_deletes_all` | Retention log | NOT_STARTED |
-| REQ-P10-S03-002 | `src/preprocessing/sanitise.py` | `test_exif_removed` | Test run | NOT_STARTED |
-| REQ-P10-S03-003 | `src/api/consent.py` | `test_upload_requires_consent` | Test run | NOT_STARTED |
-| REQ-P10-S03-004 | `src/api/limits.py` | `test_rate_limits` | Test run | NOT_STARTED |
-| REQ-P10-S03-005 | `docs/deployment/THREAT_MODEL.md` | Document review | Threat model | NOT_STARTED |
-| REQ-P10-S03-006 | `.github/workflows/ci.yml` | CI job | Scan report | NOT_STARTED |
-| REQ-P10-S04-001 | `src/mlops/registry.py` | `test_registry_requires_fields` | Test run | NOT_STARTED |
-| REQ-P10-S04-002 | `scripts/deployment/promote_model.py` | `test_gate_blocks_regression` | Promotion record | NOT_STARTED |
-| REQ-P10-S04-003 | `scripts/deployment/promote_model.py` | Rollback drill | Drill record | NOT_STARTED |
-| REQ-P10-S04-004 | `src/mlops/drift.py` | `test_drift_detects_shift` | Dashboard export | NOT_STARTED |
-| REQ-P10-S04-005 | `src/mlops/drift.py` | Text review | Alert sample | NOT_STARTED |
+| REQ-P09-S01-001 | `src/measurement/marker.py` | `test_a_facing_marker_gives_the_true_scale` | Test run 2026-11-05 | COMPLETED |
+| REQ-P09-S01-002 | `src/measurement/marker.py`, `src/measurement/calibration.py` | `test_an_unusable_marker_gives_a_reason_and_no_scale` | Test run 2026-11-05 | COMPLETED |
+| REQ-P09-S01-003 | `scripts/evaluation/run_marker_validation.py` | `test_the_validation_script_reads_a_manifest_of_photos` | `reports/final/p09_s01_marker_validation.json` (not yet produced) | BLOCKED: needs real marker photos |
+| REQ-P09-S01-004 | `src/measurement/calibration.py` | `test_the_marker_wins_and_a_disagreeing_user_scale_is_flagged` | Test run 2026-11-05 | COMPLETED |
+| REQ-P09-S01-005 | `LIMITATION` in `src/measurement/engine.py` | `test_results_say_a_single_photo_gives_an_estimate` | Test run 2026-11-05 | COMPLETED |
+| REQ-P09-S02-001 | `web/components/Heatmap.tsx`, `web/components/MaskOverlay.tsx` | `e2e/pages.spec.ts` heatmap test | Playwright run | COMPLETED |
+| REQ-P09-S02-002 | `src/inference/uncertainty.py`, `src/inference/engine.py` | `tests/inference/test_uncertainty.py` | Test run | COMPLETED |
+| REQ-P09-S02-003 | `scripts/evaluation/run_uncertainty_study.py` | Study run | `reports/final/p09_s02_uncertainty.json` (rho −0.659) | COMPLETED |
+| REQ-P09-S02-004 | `web/components/Heatmap.tsx` | `web/scripts/check-wording.mjs`, `e2e/pages.spec.ts` | Wording check, Playwright run | COMPLETED |
+| REQ-P09-S03-001 | `web/components/MaskEditor.tsx`, `web/components/Corrections.tsx` | `e2e/pages.spec.ts`: outline editor, finger drag | Playwright run, §16 | COMPLETED |
+| REQ-P09-S03-002 | `src/api/corrections.py`, `src/storage/repository.py` (`mask_corrections`) | `test_original_is_immutable` | Test run, §16 | COMPLETED |
+| REQ-P09-S03-003 | `src/api/corrections.py` (`measure_correction`) | `test_measurements_from_corrected_mask`, `test_empty_mask_is_accepted_and_marked_empty`, `test_bad_masks_are_invalid_input` | Test run, §16 | COMPLETED |
+| REQ-P09-S03-004 | `src/api/resources.py`, `src/longitudinal/trends.py`, trend page, `TrendChart` | `test_trend_marks_corrected`, `e2e/pages.spec.ts`: corrected trend value | Test run, §16 | COMPLETED |
+| REQ-P09-S03-005 | `PUT /corrections/{id}/research`, `scripts/data/export_corrections.py` | `test_export_requires_opt_in`, `test_research_export_holds_only_opted_in_masks` | Test run, §16 | COMPLETED |
+| REQ-P09-S04-001 | `reports/experiments/p09_s04_protocol.md`, `scripts/evaluation/run_annotation_hypothesis.py` | `tests/unit/test_annotation_hypothesis.py`; study run 2026-11-05 | `reports/experiments/p09_s04_report.md` | COMPLETED |
+| REQ-P09-S04-002 | `data/manifests/` | Split leakage test | Manifest | BLOCKED |
+| REQ-P09-S04-003 | `scripts/evaluation/` | Evaluation run | Comparison report | BLOCKED |
+| REQ-P09-S04-004 | `docs/deployment/MODEL_CARD.md` | Model card keeps 0.26 beside the study | Model card | COMPLETED |
+| REQ-P09-S04-005 | `configs/inference/` | Hash test | Release record | BLOCKED |
+| REQ-P10-S01-001 | `src/observability/context.py`, `src/observability/http.py`, `src/worker/tasks.py` | `test_the_id_follows_the_job_into_the_worker_and_the_result` | Test run 2026-11-04 | COMPLETED |
+| REQ-P10-S01-002 | `src/observability/metrics.py` | `test_metrics_endpoint_reports_the_required_series` | `grafana-dashboard.json` | COMPLETED |
+| REQ-P10-S01-003 | `src/observability/logs.py`, `src/observability/errors.py` | `test_scrub_removes_planted_secrets` | Test run 2026-11-04 | COMPLETED |
+| REQ-P10-S01-004 | `docker/production/observability/alerts.yml` | `alerts_test.yml` (promtool in CI) | CI job pending | IN_PROGRESS |
+| REQ-P10-S02-001 | `tests/load/scenarios.py`, `tests/load/locustfile.py` | `tests/load/test_scenarios.py`; staging Locust run `BLOCKED` | `reports/final/p10_s02_load.json` | IN_PROGRESS |
+| REQ-P10-S02-002 | `scripts/evaluation/run_load_baseline.py` | Baseline run 2026-11-05 | `reports/final/p10_s02_load.json` | COMPLETED |
+| REQ-P10-S02-003 | `docs/deployment/SLO.md` | Written after the baseline | SLO document (provisional) | COMPLETED |
+| REQ-P10-S02-004 | `src/api/analyses_v2.py` | Overload run 2026-11-05 | `overload` in the report | COMPLETED |
+| REQ-P10-S02-005 | `deploy/` | Scaling run | Report | BLOCKED |
+| REQ-P10-S03-001 | `src/worker/tasks.py` (`retain`), `Repository.apply_retention`, `web/components/KeepToggle.tsx` | `tests/security/test_p10_s03_retention.py` | Test run 2026-11-05 | COMPLETED |
+| REQ-P10-S03-002 | `src/preprocessing/sanitise.py` | `tests/security/test_p10_s03_metadata.py` | Test run 2026-11-05 | COMPLETED |
+| REQ-P10-S03-003 | `src/api/consent.py`, `web/components/UploadForm.tsx` | `test_upload_needs_consent_first` | Test run 2026-11-05 | COMPLETED |
+| REQ-P10-S03-004 | `src/api/limits.py` | `tests/security/test_p10_s03_access.py` | Test run 2026-11-05 | COMPLETED |
+| REQ-P10-S03-005 | `docs/deployment/THREAT_MODEL.md` | Document review | Threat model | COMPLETED |
+| REQ-P10-S03-006 | `.github/workflows/ci.yml` | CI job | `reports/final/p10_s03_npm_audit.json` | BLOCKED |
+| REQ-P10-S04-001 | `src/mlops/registry.py`, `configs/models/registry.json` | `test_registry_requires_fields` | Test run 2026-11-05 | COMPLETED |
+| REQ-P10-S04-002 | `src/mlops/gates.py`, `scripts/deployment/promote_model.py` | `test_gate_blocks_regression` | ONNX gate run 2026-11-05 (refused) | COMPLETED |
+| REQ-P10-S04-003 | `scripts/deployment/promote_model.py` | `test_rollback_drill` | Drill in test run; staging drill `BLOCKED` | COMPLETED |
+| REQ-P10-S04-004 | `src/mlops/drift.py`, `scripts/monitoring/check_drift.py` | `test_drift_detects_shift` | Reference built 2026-11-05 | COMPLETED |
+| REQ-P10-S04-005 | `src/mlops/drift.py` (`ALERT_TEXT`) | `test_drift_detects_shift` | Alert text in test | COMPLETED |
 
 No future requirement is considered implemented or complete merely because the
 architecture document contains a conceptual module boundary.

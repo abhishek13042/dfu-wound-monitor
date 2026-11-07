@@ -4,7 +4,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const PUBLIC = ["/", "/model", "/sign-in", "/unavailable"];
+const PUBLIC = ["/", "/model", "/privacy", "/sign-in", "/unavailable"];
 
 function isPublic(path: string) {
   return PUBLIC.includes(path) || path.startsWith("/api/auth/");

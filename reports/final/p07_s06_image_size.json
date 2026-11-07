@@ -1,0 +1,22 @@
+{
+  "report": "P07-S06 serving image size",
+  "measured_on": "2026-11-01",
+  "method": "docker image inspect -f '{{.Size}}' on images built in WSL Ubuntu-24.04 Docker",
+  "images": {
+    "current": {
+      "description": "docker/production/Dockerfile --target api, PyTorch CPU, as shipped",
+      "bytes": 2044455281
+    },
+    "current_with_onnxruntime": {
+      "description": "the current image plus onnxruntime==1.29.0, as needed to serve DFU_INFERENCE_ENGINE=onnx",
+      "bytes": 2141935169
+    },
+    "without_torch": {
+      "description": "python:3.12-slim with requirements.txt minus torch, torchvision, pytest and setuptools, plus onnxruntime==1.29.0",
+      "bytes": 912202620,
+      "can_serve": false,
+      "why_not": "src/inference/engine.py, preprocessing and src/api/service.py import torch, and the entrypoint fetches only the .pth checkpoint"
+    }
+  },
+  "finding": "Adding ONNX serving to the current image makes it about 97 MB larger. Dropping torch would cut the image to about 45 % of its size, but needs torch-free preprocessing and an entrypoint that fetches the ONNX file."
+}

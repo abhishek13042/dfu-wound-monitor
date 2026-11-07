@@ -15,6 +15,9 @@ from typing import Any
 from arq.connections import RedisSettings
 
 from src.api.service import ApiSettings, ServiceState
+from src.observability import configure_logging
+from src.observability.errors import init_error_reporting
+from src.observability.metrics import set_model_ready, start_worker_endpoint
 from src.worker.queue import ArqQueue
 from src.worker.tasks import JOB_TIMEOUT_SECONDS, maintain, run_job
 
@@ -34,7 +37,11 @@ async def on_startup(ctx: dict[str, Any]) -> None:
     ctx["state"] = state
     queue = ctx["queue"] = ArqQueue(state.settings.redis_url or REDIS_URL)
     assert state.pipeline is not None
-    model_version = state.pipeline.engine.config.model_version
+    model_version = state.pipeline.engine.model_version
+    configure_logging("worker")
+    init_error_reporting("worker")
+    start_worker_endpoint()
+    set_model_ready(True)
     ctx["maintenance"] = asyncio.create_task(maintain(state, queue, lambda: queue.heartbeat(model_version)))
 
 

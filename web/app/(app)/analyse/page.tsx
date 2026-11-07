@@ -4,14 +4,14 @@ import Link from "next/link";
 import { ErrorPanel } from "@/components/ErrorPanel";
 import { PageHeader } from "@/components/PageHeader";
 import { UploadForm } from "@/components/UploadForm";
-import { isMock, listCases, type ErrorCategory } from "@/lib/api";
+import { getConsent, isMock, listCases, type ErrorCategory } from "@/lib/api";
 import { errorCopy } from "@/lib/copy";
 
 export const metadata: Metadata = { title: "New analysis" };
 
 export default async function AnalysePage({ searchParams }: { searchParams: Promise<{ case?: string; error?: string }> }) {
   const params = await searchParams;
-  const cases = await listCases();
+  const [cases, consent] = await Promise.all([listCases(), getConsent()]);
   // ?error= previews each service response against constructed data only.
   const category = isMock && params.error && params.error in errorCopy ? (params.error as ErrorCategory) : undefined;
 
@@ -23,7 +23,7 @@ export default async function AnalysePage({ searchParams }: { searchParams: Prom
           <ErrorPanel category={category} requestId="req_constructed" retryAfter={category === "BUSY" ? 20 : undefined} />
         </div>
       )}
-      <UploadForm cases={cases} initialCase={params.case} />
+      <UploadForm cases={cases} consent={consent} initialCase={params.case} />
       {isMock && (
         <details className="mt-6 max-w-[920px] border-t border-rule pt-2 text-sm">
           <summary className="flex min-h-11 cursor-pointer items-center font-medium">Constructed service responses</summary>

@@ -1,0 +1,914 @@
+{
+  "spec": "P09-S02",
+  "requirement": "REQ-P09-S02-003",
+  "created_at": "2026-11-04T19:01:08.429202+00:00",
+  "split": "FUSeg2021 internal_val",
+  "held_out_test_used": false,
+  "engine": {
+    "model_version": "spec-02-03-resnet34-unet-512-v1",
+    "architecture": "ResNetUNet/resnet34"
+  },
+  "uncertainty_config": "p09-s02-v1",
+  "environment": {
+    "python": "3.14.0",
+    "device": "cpu",
+    "seconds": 330.5
+  },
+  "images": 118,
+  "empty_predictions": 1,
+  "dice": {
+    "mean": 0.8885,
+    "median": 0.9357
+  },
+  "disagreement": {
+    "median": 0.025734,
+    "min": 2e-06,
+    "max": 0.224263
+  },
+  "spearman_rho_disagreement_vs_dice": -0.6591,
+  "spearman_rho_95ci": [
+    -0.7707,
+    -0.5172
+  ],
+  "auroc_flags_dice_below_0_5": 0.6754,
+  "images_dice_below_0_5": 3,
+  "by_disagreement_quartile": [
+    {
+      "quartile": 1,
+      "images": 30,
+      "disagreement_range": [
+        2e-06,
+        0.017396
+      ],
+      "mean_dice": 0.9305,
+      "median_dice": 0.9642
+    },
+    {
+      "quartile": 2,
+      "images": 30,
+      "disagreement_range": [
+        0.017403,
+        0.026205
+      ],
+      "mean_dice": 0.9336,
+      "median_dice": 0.9481
+    },
+    {
+      "quartile": 3,
+      "images": 29,
+      "disagreement_range": [
+        0.026626,
+        0.043379
+      ],
+      "mean_dice": 0.9047,
+      "median_dice": 0.934
+    },
+    {
+      "quartile": 4,
+      "images": 29,
+      "disagreement_range": [
+        0.044383,
+        0.224263
+      ],
+      "mean_dice": 0.7824,
+      "median_dice": 0.8429
+    }
+  ],
+  "decision": {
+    "rule": "show the summary only if rho <= -0.3 and the 95% CI upper bound < 0",
+    "show_summary": true,
+    "reason": "disagreement tracks lower Dice on internal validation"
+  },
+  "limitations": [
+    "Internal validation comes from the same source as training; on other cameras or clinics the signal may not track error.",
+    "Flip views share one model, so this is weak evidence of uncertainty, not a probability that a result is correct."
+  ],
+  "rows": [
+    {
+      "sample_id": "0019",
+      "dice": 0.141286,
+      "tta_disagreement": 0.199565,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0020",
+      "dice": 0.958645,
+      "tta_disagreement": 0.012974,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0021",
+      "dice": 0.91917,
+      "tta_disagreement": 0.031508,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0026",
+      "dice": 0.93436,
+      "tta_disagreement": 0.058301,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0031",
+      "dice": 0.901818,
+      "tta_disagreement": 0.019321,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0039",
+      "dice": 0.820634,
+      "tta_disagreement": 0.039089,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0043",
+      "dice": 0.942998,
+      "tta_disagreement": 0.019741,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0045",
+      "dice": 0.947025,
+      "tta_disagreement": 0.016054,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0050",
+      "dice": 0.947102,
+      "tta_disagreement": 0.019061,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0053",
+      "dice": 0.924242,
+      "tta_disagreement": 0.022164,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0061",
+      "dice": 0.958921,
+      "tta_disagreement": 0.019814,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0081",
+      "dice": 0.949888,
+      "tta_disagreement": 0.019739,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0090",
+      "dice": 0.874541,
+      "tta_disagreement": 0.050834,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0102",
+      "dice": 0.963072,
+      "tta_disagreement": 0.026205,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0106",
+      "dice": 0.064862,
+      "tta_disagreement": 0.00833,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0116",
+      "dice": 0.919102,
+      "tta_disagreement": 0.199188,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0118",
+      "dice": 0.93404,
+      "tta_disagreement": 0.027075,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0123",
+      "dice": 0.970641,
+      "tta_disagreement": 0.01322,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0139",
+      "dice": 0.706599,
+      "tta_disagreement": 0.055781,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0144",
+      "dice": 0.9709,
+      "tta_disagreement": 0.016683,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0150",
+      "dice": 0.953642,
+      "tta_disagreement": 0.017703,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0182",
+      "dice": 0.918725,
+      "tta_disagreement": 0.032063,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0196",
+      "dice": 0.934392,
+      "tta_disagreement": 0.053468,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0197",
+      "dice": 0.937066,
+      "tta_disagreement": 0.061065,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0218",
+      "dice": 0.938378,
+      "tta_disagreement": 0.038834,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0226",
+      "dice": 0.943948,
+      "tta_disagreement": 0.027213,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0232",
+      "dice": 0.946915,
+      "tta_disagreement": 0.016668,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0241",
+      "dice": 0.978163,
+      "tta_disagreement": 0.019784,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0242",
+      "dice": 0.946282,
+      "tta_disagreement": 0.009138,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0252",
+      "dice": 0.844291,
+      "tta_disagreement": 0.024321,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0254",
+      "dice": 0.962152,
+      "tta_disagreement": 0.016015,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0264",
+      "dice": 0.731995,
+      "tta_disagreement": 0.020684,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0279",
+      "dice": 0.984331,
+      "tta_disagreement": 0.009278,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0290",
+      "dice": 0.760656,
+      "tta_disagreement": 0.104625,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0298",
+      "dice": 0.981739,
+      "tta_disagreement": 0.011544,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0299",
+      "dice": 0.892039,
+      "tta_disagreement": 0.024261,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0304",
+      "dice": 0.888492,
+      "tta_disagreement": 0.012601,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0309",
+      "dice": 0.903226,
+      "tta_disagreement": 0.084091,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0310",
+      "dice": 0.939588,
+      "tta_disagreement": 0.043379,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0313",
+      "dice": 0.937079,
+      "tta_disagreement": 0.027822,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0343",
+      "dice": 0.801242,
+      "tta_disagreement": 0.028593,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0344",
+      "dice": 0.888508,
+      "tta_disagreement": 0.039066,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0354",
+      "dice": 0.940683,
+      "tta_disagreement": 0.012056,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0361",
+      "dice": 1.0,
+      "tta_disagreement": 2e-06,
+      "region": "WHOLE_IMAGE",
+      "empty_mask": true
+    },
+    {
+      "sample_id": "0367",
+      "dice": 0.942524,
+      "tta_disagreement": 0.04047,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0380",
+      "dice": 0.856234,
+      "tta_disagreement": 0.026907,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0387",
+      "dice": 0.948207,
+      "tta_disagreement": 0.013396,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0395",
+      "dice": 0.93572,
+      "tta_disagreement": 0.029562,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0400",
+      "dice": 0.920973,
+      "tta_disagreement": 0.013371,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0427",
+      "dice": 0.938437,
+      "tta_disagreement": 0.027744,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0428",
+      "dice": 0.921033,
+      "tta_disagreement": 0.060637,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0430",
+      "dice": 0.962007,
+      "tta_disagreement": 0.012546,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0436",
+      "dice": 0.932809,
+      "tta_disagreement": 0.017396,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0459",
+      "dice": 0.968345,
+      "tta_disagreement": 0.008963,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0464",
+      "dice": 0.973306,
+      "tta_disagreement": 0.03641,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0469",
+      "dice": 0.949599,
+      "tta_disagreement": 0.024632,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0478",
+      "dice": 0.954411,
+      "tta_disagreement": 0.02392,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0493",
+      "dice": 0.954913,
+      "tta_disagreement": 0.028317,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0498",
+      "dice": 0.947772,
+      "tta_disagreement": 0.021866,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0513",
+      "dice": 0.975544,
+      "tta_disagreement": 0.01981,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0514",
+      "dice": 0.954638,
+      "tta_disagreement": 0.018416,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0519",
+      "dice": 0.856191,
+      "tta_disagreement": 0.019102,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0527",
+      "dice": 0.891892,
+      "tta_disagreement": 0.015878,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0538",
+      "dice": 0.964749,
+      "tta_disagreement": 0.022164,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0540",
+      "dice": 0.891939,
+      "tta_disagreement": 0.034339,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0542",
+      "dice": 0.935629,
+      "tta_disagreement": 0.035833,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0544",
+      "dice": 0.93438,
+      "tta_disagreement": 0.02683,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0560",
+      "dice": 0.840247,
+      "tta_disagreement": 0.062662,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0575",
+      "dice": 0.948407,
+      "tta_disagreement": 0.025123,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0578",
+      "dice": 0.721731,
+      "tta_disagreement": 0.036824,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0595",
+      "dice": 0.952998,
+      "tta_disagreement": 0.030216,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0610",
+      "dice": 0.948075,
+      "tta_disagreement": 0.017344,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0632",
+      "dice": 0.966179,
+      "tta_disagreement": 0.011059,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0633",
+      "dice": 0.98037,
+      "tta_disagreement": 0.014406,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0641",
+      "dice": 0.960048,
+      "tta_disagreement": 0.021327,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0662",
+      "dice": 0.927749,
+      "tta_disagreement": 0.021783,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0671",
+      "dice": 0.932974,
+      "tta_disagreement": 0.018365,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0672",
+      "dice": 0.916898,
+      "tta_disagreement": 0.044383,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0683",
+      "dice": 0.965446,
+      "tta_disagreement": 0.028296,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0695",
+      "dice": 0.665465,
+      "tta_disagreement": 0.065859,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0703",
+      "dice": 0.920128,
+      "tta_disagreement": 0.025263,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0711",
+      "dice": 0.9266,
+      "tta_disagreement": 0.035249,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0720",
+      "dice": 0.94677,
+      "tta_disagreement": 0.023373,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0724",
+      "dice": 0.783741,
+      "tta_disagreement": 0.135845,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0759",
+      "dice": 0.953325,
+      "tta_disagreement": 0.017403,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0760",
+      "dice": 0.769375,
+      "tta_disagreement": 0.128405,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0762",
+      "dice": 0.939593,
+      "tta_disagreement": 0.017876,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0764",
+      "dice": 0.981333,
+      "tta_disagreement": 0.007351,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0770",
+      "dice": 0.915545,
+      "tta_disagreement": 0.102051,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0778",
+      "dice": 1.0,
+      "tta_disagreement": 0.013921,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0779",
+      "dice": 0.956522,
+      "tta_disagreement": 0.017283,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0787",
+      "dice": 0.562295,
+      "tta_disagreement": 0.077513,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0814",
+      "dice": 0.978638,
+      "tta_disagreement": 0.012117,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0819",
+      "dice": 0.925093,
+      "tta_disagreement": 0.068669,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0822",
+      "dice": 0.868707,
+      "tta_disagreement": 0.036379,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0832",
+      "dice": 0.0,
+      "tta_disagreement": 0.224263,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0839",
+      "dice": 0.783455,
+      "tta_disagreement": 0.026626,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0845",
+      "dice": 0.97435,
+      "tta_disagreement": 0.024255,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0846",
+      "dice": 0.951579,
+      "tta_disagreement": 0.027557,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0858",
+      "dice": 0.843462,
+      "tta_disagreement": 0.029002,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0859",
+      "dice": 0.982925,
+      "tta_disagreement": 0.010636,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0868",
+      "dice": 0.983522,
+      "tta_disagreement": 0.006729,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0886",
+      "dice": 0.928105,
+      "tta_disagreement": 0.062931,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0911",
+      "dice": 0.860428,
+      "tta_disagreement": 0.061869,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0923",
+      "dice": 0.836519,
+      "tta_disagreement": 0.052716,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0930",
+      "dice": 0.842929,
+      "tta_disagreement": 0.093529,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0932",
+      "dice": 0.615745,
+      "tta_disagreement": 0.057082,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0933",
+      "dice": 0.826871,
+      "tta_disagreement": 0.135267,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0942",
+      "dice": 0.933567,
+      "tta_disagreement": 0.15014,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0943",
+      "dice": 0.972941,
+      "tta_disagreement": 0.012475,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0951",
+      "dice": 0.773707,
+      "tta_disagreement": 0.046715,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0956",
+      "dice": 0.874876,
+      "tta_disagreement": 0.050301,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0962",
+      "dice": 0.947284,
+      "tta_disagreement": 0.022039,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0966",
+      "dice": 0.909501,
+      "tta_disagreement": 0.031653,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0975",
+      "dice": 0.785127,
+      "tta_disagreement": 0.053,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "0989",
+      "dice": 0.977385,
+      "tta_disagreement": 0.016113,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "1002",
+      "dice": 0.909191,
+      "tta_disagreement": 0.036222,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    },
+    {
+      "sample_id": "1004",
+      "dice": 0.965235,
+      "tta_disagreement": 0.023419,
+      "region": "MASK_AND_BAND",
+      "empty_mask": false
+    }
+  ]
+}

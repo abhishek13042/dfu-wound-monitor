@@ -4,7 +4,7 @@
 import { cache } from "react";
 
 import { api, call } from "./http";
-import type { Analysis, Artifact, Case, Comparison, Examination, Readiness, ReasonCode, Trend } from "./types";
+import type { Analysis, Artifact, Case, Comparison, Consent, Correction, Examination, Keep, Readiness, ReasonCode, Trend } from "./types";
 import type { WireAnalysis, WireCase, WireChange, WireComparison, WireExamination, WireJob, WireTrend } from "./wire";
 
 // The schema types inner objects as plain dictionaries, so responses are read through wire.ts.
@@ -37,8 +37,9 @@ function toAnalysis(wire: WireAnalysis, exam?: WireExamination): Analysis {
     },
     model_version: wire.model_version,
     threshold: provenance.postprocessing?.threshold ?? null,
-    measurement: wire.measurement ? { measurement_basis: wire.measurement.measurement_basis, pixel: wire.measurement.pixel, physical: wire.measurement.physical } : null,
+    measurement: wire.measurement ? { measurement_basis: wire.measurement.measurement_basis, pixel: wire.measurement.pixel, physical: wire.measurement.physical, calibration: wire.measurement.calibration } : null,
     inference: provenance.execution ? { duration_ms: provenance.execution.duration_ms, device: provenance.execution.device } : null,
+    uncertainty: wire.inference?.uncertainty ?? null,
     warnings: wire.warnings ?? [],
     limitation: wire.limitation,
   };
@@ -153,6 +154,8 @@ export async function getTrend(id: string): Promise<Trend | undefined> {
       values: { area: row.values.area, perimeter: row.values.perimeter, max_feret: row.values.max_feret },
       from_baseline: change(row.from_baseline),
       from_previous: change(row.from_previous),
+      mask_source: row.mask_source ?? "MODEL",
+      correction_id: row.correction_id ?? null,
     })),
     excluded: wire.excluded.map((entry) => ({ ...entry, captured_at: capturedAt.get(entry.examination_id) ?? null })),
     warnings: wire.warnings ?? [],
@@ -211,4 +214,22 @@ export async function getArtifact(id: string, kind: "image" | "mask" | "probabil
   const body = await call(client.GET("/api/v2/analyses/{analysis_id}/artifacts/{kind}", { params: { path: { analysis_id: id, kind } } }));
   // A relative URL points at the service, so the browser reaches it through the /api/v2 proxy route.
   return body ? as<Artifact>(body) : undefined;
+}
+
+export async function getConsent(): Promise<Consent> {
+  const client = await api();
+  const body = await call(client.GET("/api/v2/consent"));
+  if (!body) throw new Error("The consent record was not returned.");
+  return body;
+}
+
+export async function getKeep(caseId: string): Promise<Keep | undefined> {
+  const client = await api();
+  return call(client.GET("/api/v2/cases/{case_id}/keep", { params: { path: { case_id: caseId } } }));
+}
+
+export async function listCorrections(analysisId: string): Promise<Correction[]> {
+  const client = await api();
+  const body = await call(client.GET("/api/v2/analyses/{analysis_id}/corrections", { params: { path: { analysis_id: analysisId } } }));
+  return body ? as<Correction[]>(body.corrections) : [];
 }

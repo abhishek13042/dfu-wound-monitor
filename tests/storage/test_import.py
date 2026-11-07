@@ -52,8 +52,10 @@ def target(database_url, tmp_path):
 def test_import_verifies_counts(source, target):
     report = import_database(source, target)
     assert {name: entry["rows"] for name, entry in report.items()} == {
-        "users": 0, "model_versions": 1, "cases": 1, "examinations": 1, "images": 1, "analyses": 1, "artifacts": 1}
-    assert _target_counts(target) == {**{name: 1 for name in report}, "uploads": 0, "analysis_jobs": 0}  # users: the demo row
+        "users": 0, "model_versions": 1, "cases": 1, "examinations": 1, "images": 1, "analyses": 1, "artifacts": 1,
+        "consents": 0, "mask_corrections": 0}
+    assert _target_counts(target) == {**{name: 1 for name in report}, "consents": 0, "mask_corrections": 0, "uploads": 0,
+                                      "analysis_jobs": 0}  # users: the demo row
 
 
 def test_corrupt_source_row_aborts_with_nothing_written(source, target):

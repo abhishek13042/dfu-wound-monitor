@@ -22,7 +22,9 @@ from src.longitudinal.records import (
     new_id,
 )
 from src.measurement.engine import LIMITATION, Calibration, MeasurementError
+from src.observability import current_request_id
 from src.preprocessing.decode import DecodedImage
+from src.preprocessing.sanitise import sanitise_image
 from src.storage.database import StorageError
 from src.storage.repository import Repository
 
@@ -62,8 +64,11 @@ def analyse_and_store(state: ServiceState, data: bytes, *, filename: str | None,
                       analysis_id: str | None = None, db: Repository | None = None) -> StoredAnalysis:
     db = db or state.db
     pipeline = state.require_pipeline()
+    decode_input(pipeline, data)  # typed errors for bad input, before the sanitiser sees it
+    # REQ-P10-S03-002: analyse and store the metadata-free bytes, so the recorded hash is of what is kept.
+    data, _ = sanitise_image(data)
     decoded = decode_input(pipeline, data)
-    request_id = new_id("req")
+    request_id = current_request_id() or new_id("req")
     failure: InferenceError | None = None
     try:
         with state.lock:
@@ -85,7 +90,7 @@ def analyse_and_store(state: ServiceState, data: bytes, *, filename: str | None,
         record = AnalysisRecord.create(image_id=image.image_id, examination_id=examination_id, status="FAILED",
                                        quality=state.gate.evaluate(decoded).to_dict(), error=failure.to_dict(),
                                        provenance={"request_id": request_id,
-                                                   "model": {"model_version": pipeline.engine.config.model_version}},
+                                                   "model": {"model_version": pipeline.engine.model_version}},
                                        **identifiers)
         artifacts: list[dict[str, str]] = []
     else:

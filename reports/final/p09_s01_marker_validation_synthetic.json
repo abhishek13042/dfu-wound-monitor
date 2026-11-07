@@ -1,0 +1,577 @@
+{
+  "spec": "P09-S01",
+  "requirement": "REQ-P09-S01-003",
+  "created_at": "2026-11-04T18:41:44.223166+00:00",
+  "marker_config": {
+    "path": "D:\\Project_12D\\configs\\measurement\\marker_v1.json",
+    "version": "p09-s01-v1",
+    "sha256": "caa47d71314d3c0bea9a30f446143cf404ca174dcadb8eb4a52e67d2102061ff"
+  },
+  "mode": "SYNTHETIC",
+  "label": "Synthetic renders of a flat sheet through an ideal pinhole camera. They check the geometry code; they say nothing about real printers, lenses, lighting or skin. REQ-P09-S01-003 needs real photos.",
+  "rows": [
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 0,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 2.4972,
+      "uncertainty_pct": 1.014,
+      "estimated_mm": 60.068,
+      "true_mm": 60.0,
+      "error_pct": 0.114
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 0,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 2.4972,
+      "uncertainty_pct": 1.032,
+      "estimated_mm": 60.068,
+      "true_mm": 60.0,
+      "error_pct": 0.113
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 0,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 2.4972,
+      "uncertainty_pct": 1.007,
+      "estimated_mm": 60.068,
+      "true_mm": 60.0,
+      "error_pct": 0.114
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 10,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 2.4718,
+      "uncertainty_pct": 2.522,
+      "estimated_mm": 60.685,
+      "true_mm": 60.0,
+      "error_pct": 1.142
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 10,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 2.4717,
+      "uncertainty_pct": 2.521,
+      "estimated_mm": 60.687,
+      "true_mm": 60.0,
+      "error_pct": 1.145
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 10,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 2.4717,
+      "uncertainty_pct": 2.523,
+      "estimated_mm": 60.686,
+      "true_mm": 60.0,
+      "error_pct": 1.144
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 20,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 2.4198,
+      "uncertainty_pct": 4.967,
+      "estimated_mm": 61.988,
+      "true_mm": 60.0,
+      "error_pct": 3.313
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 20,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 2.4201,
+      "uncertainty_pct": 4.94,
+      "estimated_mm": 61.981,
+      "true_mm": 60.0,
+      "error_pct": 3.302
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 20,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 2.4201,
+      "uncertainty_pct": 4.943,
+      "estimated_mm": 61.981,
+      "true_mm": 60.0,
+      "error_pct": 3.302
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 30,
+      "seed": 0,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 30,
+      "seed": 1,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 2.5,
+      "tilt_deg": 30,
+      "seed": 2,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 0,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 3.4969,
+      "uncertainty_pct": 0.725,
+      "estimated_mm": 60.052,
+      "true_mm": 60.0,
+      "error_pct": 0.087
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 0,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 3.4972,
+      "uncertainty_pct": 0.722,
+      "estimated_mm": 60.048,
+      "true_mm": 60.0,
+      "error_pct": 0.08
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 0,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 3.4969,
+      "uncertainty_pct": 0.72,
+      "estimated_mm": 60.052,
+      "true_mm": 60.0,
+      "error_pct": 0.087
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 10,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 3.4758,
+      "uncertainty_pct": 1.999,
+      "estimated_mm": 60.417,
+      "true_mm": 60.0,
+      "error_pct": 0.695
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 10,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 3.4759,
+      "uncertainty_pct": 2.009,
+      "estimated_mm": 60.416,
+      "true_mm": 60.0,
+      "error_pct": 0.693
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 10,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 3.4755,
+      "uncertainty_pct": 1.981,
+      "estimated_mm": 60.423,
+      "true_mm": 60.0,
+      "error_pct": 0.705
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 20,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 3.3924,
+      "uncertainty_pct": 4.468,
+      "estimated_mm": 61.903,
+      "true_mm": 60.0,
+      "error_pct": 3.172
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 20,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 3.3923,
+      "uncertainty_pct": 4.471,
+      "estimated_mm": 61.904,
+      "true_mm": 60.0,
+      "error_pct": 3.174
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 20,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 3.3922,
+      "uncertainty_pct": 4.468,
+      "estimated_mm": 61.906,
+      "true_mm": 60.0,
+      "error_pct": 3.177
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 30,
+      "seed": 0,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 30,
+      "seed": 1,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 3.5,
+      "tilt_deg": 30,
+      "seed": 2,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 0,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 4.997,
+      "uncertainty_pct": 0.506,
+      "estimated_mm": 60.036,
+      "true_mm": 60.0,
+      "error_pct": 0.06
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 0,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 4.9972,
+      "uncertainty_pct": 0.505,
+      "estimated_mm": 60.034,
+      "true_mm": 60.0,
+      "error_pct": 0.057
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 0,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 4.9973,
+      "uncertainty_pct": 0.506,
+      "estimated_mm": 60.033,
+      "true_mm": 60.0,
+      "error_pct": 0.055
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 10,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 4.9557,
+      "uncertainty_pct": 1.587,
+      "estimated_mm": 60.537,
+      "true_mm": 60.0,
+      "error_pct": 0.894
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 10,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 4.9557,
+      "uncertainty_pct": 1.587,
+      "estimated_mm": 60.537,
+      "true_mm": 60.0,
+      "error_pct": 0.894
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 10,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 4.9559,
+      "uncertainty_pct": 1.593,
+      "estimated_mm": 60.534,
+      "true_mm": 60.0,
+      "error_pct": 0.89
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 20,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 4.8525,
+      "uncertainty_pct": 4.516,
+      "estimated_mm": 61.824,
+      "true_mm": 60.0,
+      "error_pct": 3.04
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 20,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 4.8525,
+      "uncertainty_pct": 4.516,
+      "estimated_mm": 61.823,
+      "true_mm": 60.0,
+      "error_pct": 3.039
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 20,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 4.8521,
+      "uncertainty_pct": 4.503,
+      "estimated_mm": 61.828,
+      "true_mm": 60.0,
+      "error_pct": 3.047
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 30,
+      "seed": 0,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 30,
+      "seed": 1,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 5.0,
+      "tilt_deg": 30,
+      "seed": 2,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 0,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 6.9972,
+      "uncertainty_pct": 0.364,
+      "estimated_mm": 60.024,
+      "true_mm": 60.0,
+      "error_pct": 0.041
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 0,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 6.997,
+      "uncertainty_pct": 0.362,
+      "estimated_mm": 60.026,
+      "true_mm": 60.0,
+      "error_pct": 0.043
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 0,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 6.9972,
+      "uncertainty_pct": 0.365,
+      "estimated_mm": 60.024,
+      "true_mm": 60.0,
+      "error_pct": 0.041
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 10,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 6.9469,
+      "uncertainty_pct": 1.533,
+      "estimated_mm": 60.459,
+      "true_mm": 60.0,
+      "error_pct": 0.765
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 10,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 6.9467,
+      "uncertainty_pct": 1.536,
+      "estimated_mm": 60.461,
+      "true_mm": 60.0,
+      "error_pct": 0.768
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 10,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 6.9468,
+      "uncertainty_pct": 1.54,
+      "estimated_mm": 60.459,
+      "true_mm": 60.0,
+      "error_pct": 0.765
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 20,
+      "seed": 0,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 6.7937,
+      "uncertainty_pct": 4.305,
+      "estimated_mm": 61.822,
+      "true_mm": 60.0,
+      "error_pct": 3.036
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 20,
+      "seed": 1,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 6.794,
+      "uncertainty_pct": 4.308,
+      "estimated_mm": 61.819,
+      "true_mm": 60.0,
+      "error_pct": 3.032
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 20,
+      "seed": 2,
+      "status": "MARKER_FOUND",
+      "pixels_per_mm": 6.7938,
+      "uncertainty_pct": 4.308,
+      "estimated_mm": 61.821,
+      "true_mm": 60.0,
+      "error_pct": 3.035
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 30,
+      "seed": 0,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 30,
+      "seed": 1,
+      "status": "MARKER_TILTED"
+    },
+    {
+      "px_per_mm": 7.0,
+      "tilt_deg": 30,
+      "seed": 2,
+      "status": "MARKER_TILTED"
+    }
+  ],
+  "by_tilt_deg": [
+    {
+      "tilt_deg": 0,
+      "images": 12,
+      "accepted": 12,
+      "statuses": {
+        "MARKER_FOUND": 12
+      },
+      "median_abs_error_pct": 0.07,
+      "max_abs_error_pct": 0.114
+    },
+    {
+      "tilt_deg": 10,
+      "images": 12,
+      "accepted": 12,
+      "statuses": {
+        "MARKER_FOUND": 12
+      },
+      "median_abs_error_pct": 0.829,
+      "max_abs_error_pct": 1.145
+    },
+    {
+      "tilt_deg": 20,
+      "images": 12,
+      "accepted": 12,
+      "statuses": {
+        "MARKER_FOUND": 12
+      },
+      "median_abs_error_pct": 3.11,
+      "max_abs_error_pct": 3.313
+    },
+    {
+      "tilt_deg": 30,
+      "images": 12,
+      "accepted": 0,
+      "statuses": {
+        "MARKER_TILTED": 12
+      },
+      "median_abs_error_pct": null,
+      "max_abs_error_pct": null
+    }
+  ],
+  "by_px_per_mm": [
+    {
+      "px_per_mm": 2.5,
+      "images": 12,
+      "accepted": 9,
+      "statuses": {
+        "MARKER_FOUND": 9,
+        "MARKER_TILTED": 3
+      },
+      "median_abs_error_pct": 1.144,
+      "max_abs_error_pct": 3.313
+    },
+    {
+      "px_per_mm": 3.5,
+      "images": 12,
+      "accepted": 9,
+      "statuses": {
+        "MARKER_FOUND": 9,
+        "MARKER_TILTED": 3
+      },
+      "median_abs_error_pct": 0.695,
+      "max_abs_error_pct": 3.177
+    },
+    {
+      "px_per_mm": 5.0,
+      "images": 12,
+      "accepted": 9,
+      "statuses": {
+        "MARKER_FOUND": 9,
+        "MARKER_TILTED": 3
+      },
+      "median_abs_error_pct": 0.894,
+      "max_abs_error_pct": 3.047
+    },
+    {
+      "px_per_mm": 7.0,
+      "images": 12,
+      "accepted": 9,
+      "statuses": {
+        "MARKER_FOUND": 9,
+        "MARKER_TILTED": 3
+      },
+      "median_abs_error_pct": 0.765,
+      "max_abs_error_pct": 3.036
+    }
+  ],
+  "overall": {
+    "images": 48,
+    "accepted": 36,
+    "median_abs_error_pct": 0.829,
+    "target_median_abs_error_pct": 3.0,
+    "target_met": true
+  }
+}

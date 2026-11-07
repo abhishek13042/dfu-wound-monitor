@@ -21,6 +21,7 @@ from src.api.schemas import API_V2, AnalysisResponse
 from src.api.service import ServiceState
 from src.api.uploads import live_upload
 from src.longitudinal.records import new_id
+from src.observability import current_request_id
 from src.storage.database import StorageError
 from src.storage.repository import Repository
 from src.worker.queue import QueueUnavailable
@@ -71,6 +72,7 @@ def _prepare(state: ServiceState, db: Repository, body: AnalysisCreate) -> dict[
         db.get_examination(body.examination_id)
     parse_calibration(body.pixels_per_mm, body.calibration_method, body.calibration_source)
     request = body.model_dump(exclude={"upload_id", "examination_id"}, exclude_none=True)
+    request["request_id"] = current_request_id()  # REQ-P10-S01-001: the worker logs under the same ID
     try:
         job = db.add_job(new_id("ana"), body.upload_id, body.examination_id, request)
     except StorageError as error:

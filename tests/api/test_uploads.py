@@ -18,6 +18,7 @@ from src.api.app import ApiSettings, create_app
 from src.api.uploads import UPLOAD_URL_SECONDS
 from src.storage.blobs import staging_key
 from src.storage.database import NotFoundError
+from tests.conftest import accept_consent
 
 LIMIT = 25 * 1024 * 1024
 
@@ -30,6 +31,7 @@ def declared(data: bytes, filename: str = "wound.png") -> dict:
 def local(tiny_engine, tmp_path, auth):
     settings = ApiSettings(data_dir=tmp_path / "data", load_model=False, storage_backend="local")
     with TestClient(create_app(settings, engine=tiny_engine, verifier=auth.verifier), headers=auth.headers()) as client:
+        accept_consent(client)
         yield client
 
 
@@ -38,6 +40,7 @@ def s3(tiny_engine, tmp_path, s3_store, s3_endpoint, auth):
     settings = ApiSettings(data_dir=tmp_path / "data", load_model=False, storage_backend="s3",
                            s3_bucket=s3_store.bucket, s3_endpoint=s3_endpoint)
     with TestClient(create_app(settings, engine=tiny_engine, verifier=auth.verifier), headers=auth.headers()) as client:
+        accept_consent(client)
         yield client
 
 
@@ -296,6 +299,7 @@ def test_storage_outage_is_an_infrastructure_failure(tiny_engine, tmp_path, auth
         ready = client.get("/health/ready")
         assert ready.status_code == 503
         assert ready.json()["storage"] == "NOT_READY"
+        accept_consent(client)
         created = client.post("/api/v2/uploads", json={"filename": "a.png", "size_bytes": 3, "sha256": "a" * 64})
         verify = client.post(f"/api/v2/uploads/{created.json()['upload_id']}/verify")
     assert verify.status_code == 503

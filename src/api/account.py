@@ -27,6 +27,7 @@ def router(state: ServiceState, current_repository: Callable[..., Repository]) -
         data = db.export()
         data["images"] = [_with_url(row) for row in data["images"]]
         data["artifacts"] = [_with_url(row) for row in data["artifacts"]]
+        data["corrections"] = [_with_url(row) for row in data["corrections"]]
         return ExportResponse(api_version=API_V2, url_expires_in_seconds=EXPORT_URL_SECONDS, **data)
 
     @routes.delete("", response_model=DeleteResponse)

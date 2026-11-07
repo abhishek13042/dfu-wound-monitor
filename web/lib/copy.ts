@@ -77,6 +77,13 @@ export const basisCopy: Record<MeasurementBasis, { short: string; long: string }
   PHYSICALLY_CALIBRATED: { short: "Calibrated", long: "Physically calibrated" },
 };
 
+// How the scale for a calibrated result was found.
+export const scaleSourceCopy: Record<string, string> = {
+  ARUCO_MARKER: "Scale from the printed marker in the photo",
+  REFERENCE_MARKER: "Scale entered from a printed marker",
+  USER_ENTERED: "Scale entered by hand",
+};
+
 export const identityCopy: Record<IdentityStatus, string> = {
   VERIFIED: "Verified",
   UNVERIFIED: "Unverified",

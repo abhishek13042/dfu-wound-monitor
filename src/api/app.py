@@ -41,16 +41,18 @@ import logging
 from collections.abc import Callable
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, FastAPI, File, Form, Query, Request, UploadFile
+from fastapi import APIRouter, Depends, FastAPI, File, Form, Query, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from src.api import account, analyses_v2, resources, uploads
+from src.api import account, analyses_v2, consent, corrections, resources, uploads
 from src.api.analysis_flow import MEDIA_TYPE, analyse_and_store, analysis_response, parse_calibration
 from src.api.auth import TokenVerifier, build_verifier, user_repository
 from src.api.errors import ApiError, error_response
+from src.api.limits import AddressLimitMiddleware, RateLimiter, SecurityHeadersMiddleware
 from src.api.rendering import decode_mask_png, overlay_png
 from src.api.schemas import (
     API_V2,
@@ -66,9 +68,14 @@ from src.inference.engine import InferenceEngine
 from src.inference.pipeline import QUALITY_REJECTED
 from src.longitudinal.records import ImageRecord, RecordValidationError
 from src.measurement.engine import LIMITATION
+from src.observability import configure_logging
+from src.observability.errors import init_error_reporting
+from src.observability.http import RequestContextMiddleware, client_is_private
+from src.observability.metrics import exposition, set_model_ready, set_queue_depth
 from src.preprocessing.decode import decode_image
 from src.storage.blobs import LocalBlobStore
 from src.storage.database import SCHEMA_VERSION, NotFoundError, StorageError
+from src.storage.repository import Repository
 from src.worker.queue import ArqQueue, JobQueue, LocalQueue
 from src.worker.tasks import maintain
 
@@ -94,6 +101,8 @@ def create_app(settings: ApiSettings | None = None, engine: InferenceEngine | No
                state_factory: Callable[[ApiSettings, InferenceEngine | None], ServiceState] = ServiceState,
                verifier: TokenVerifier | None = None, queue: JobQueue | None = None) -> FastAPI:
     settings = settings or ApiSettings()
+    configure_logging("api")
+    init_error_reporting("api")
     state = state_factory(settings, engine)
     verifier = verifier or build_verifier(settings)
     state.queue = queue or (ArqQueue(settings.redis_url) if settings.redis_url else LocalQueue(state))
@@ -112,6 +121,15 @@ def create_app(settings: ApiSettings | None = None, engine: InferenceEngine | No
     app = FastAPI(title="DFU-WoundMonitor API", version=SERVICE_VERSION, lifespan=lifespan,
                   description="Research prototype. Not a medical device.")
     app.state.service = state
+    # Starlette runs the last one added first: request IDs, then headers, then the address limit.
+    app.add_middleware(AddressLimitMiddleware, limiter=RateLimiter(settings.rate_limit_ip))
+    if settings.cors_origins:  # REQ-P10-S03: named origins only, never "*"
+        app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), allow_credentials=False,
+                           allow_methods=["GET", "POST", "PUT", "DELETE"],
+                           allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
+                           expose_headers=["X-Request-ID", "Retry-After"])
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RequestContextMiddleware)
 
     # ----------------------------------------------------------------- errors
     @app.exception_handler(ApiError)
@@ -177,6 +195,26 @@ def create_app(settings: ApiSettings | None = None, engine: InferenceEngine | No
             storage_ok = False
         return schema, database_ok, storage_ok
 
+    # ----------------------------------------------------------------- metrics
+    @app.get("/metrics", include_in_schema=False)
+    async def metrics(request: Request):
+        """Private to the deployment network: a private or loopback client, or the DFU_METRICS_TOKEN bearer."""
+
+        token = settings.metrics_token
+        if token:
+            allowed = request.headers.get("authorization") == f"Bearer {token}"
+        else:
+            allowed = client_is_private(dict(request.scope))
+        if not allowed:
+            raise ApiError("NOT_FOUND", "NOT_FOUND", "Not found")
+        try:
+            set_queue_depth(await state.queue.depth())
+        except Exception:  # noqa: BLE001 - a scrape must not fail because the queue is down
+            set_queue_depth(-1)
+        set_model_ready(await state.queue.worker_model() is not None)
+        body, media_type = exposition()
+        return Response(body, media_type=media_type)
+
     # ----------------------------------------------------------------- model
     async def describe_model(version: str) -> ModelInfoResponse:
         if settings.redis_url and state.pipeline is None:
@@ -195,11 +233,19 @@ def create_app(settings: ApiSettings | None = None, engine: InferenceEngine | No
         return await describe_model(API_V2)
 
     # ----------------------------------------------------------------- v2
-    current_user = user_repository(state, verifier)
+    signed_in = user_repository(state, verifier)
+    user_limiter = RateLimiter(settings.rate_limit_user)
+
+    def current_user(db: Repository = Depends(signed_in)) -> Repository:
+        user_limiter.enforce(f"user:{db.owner_id}")  # REQ-P10-S03-004: applies after sign-in
+        return db
+
     app.include_router(resources.router(state, API_V2, current_user))
+    app.include_router(consent.router(state, current_user))
     app.include_router(uploads.router(state, current_user))
     app.include_router(analyses_v2.router(state, current_user))
     app.include_router(account.router(state, current_user))
+    app.include_router(corrections.router(state, current_user))
     if isinstance(state.blobs, LocalBlobStore):
         app.include_router(uploads.local_blob_router(state.blobs, settings.max_upload_bytes))
 

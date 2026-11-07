@@ -48,6 +48,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.inference.engine import DEFAULT_INFERENCE_CONFIG, InferenceEngine, InferenceRequest  # noqa: E402
+from src.inference.onnx_engine import create_engine  # noqa: E402
 from src.measurement.engine import measure  # noqa: E402
 from src.quality.gate import QualityGate  # noqa: E402
 
@@ -97,8 +98,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--warmup", type=int, default=2)
     parser.add_argument("--repeats", type=int, default=5)
     parser.add_argument("--api-images", type=int, default=5)
-    parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "reports/final/p06_benchmark.json")
+    parser.add_argument("--engine", choices=("pytorch", "onnx"), default="pytorch",
+                        help="P07-S06: the runtime to benchmark (same method for both)")
+    parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args(argv)
+    if args.output is None:
+        args.output = PROJECT_ROOT / "reports/final" / ("p06_benchmark.json" if args.engine == "pytorch"
+                                                       else "p07_s06_onnx_benchmark.json")
 
     samples = [s for s in json.loads(args.manifest.read_text())["samples"] if s["split"] == "test"]
     idx = np.linspace(0, len(samples) - 1, args.images).round().astype(int)
@@ -106,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
 
     memory = {"rss_before_load_mb": round(rss_mb(), 1)}
     t0 = time.perf_counter()
-    engine = InferenceEngine.from_config(args.config)
+    engine: InferenceEngine = create_engine(args.config, engine=args.engine)
     cold_start = time.perf_counter() - t0
     memory["rss_after_load_mb"] = round(rss_mb(), 1)
     gate = QualityGate()
@@ -199,7 +205,7 @@ def main(argv: list[str] | None = None) -> int:
         "generated_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "command": "python scripts/evaluation/run_phase_06_benchmark.py " + " ".join(argv if argv is not None else sys.argv[1:]),
         "hardware": hardware(),
-        "configuration": {"model_version": engine.config.model_version, "inference_config": engine.config.version,
+        "configuration": {"engine": args.engine, "model_version": engine.describe()["model_version"], "inference_config": engine.config.version,
                           "input_size": engine.describe()["preprocessing"], "tta": engine.config.tta,
                           "threshold": engine.config.threshold, "device": str(engine.device),
                           "images": int(len(payloads)), "warmup": args.warmup,

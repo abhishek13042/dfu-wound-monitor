@@ -11,7 +11,7 @@
 * An instance acts for one owner, and every read and write of user data is
   filtered by it, so a route cannot forget the check (REQ-P07-S04-002).  Only
   ``register_model``, ``get_model``, ``blob_referenced``, ``expire_uploads``,
-  ``ensure_user`` and the worker's job methods are global.  v1 stays on the
+  ``apply_retention``, ``research_corrections``, ``ensure_user`` and the worker's job methods are global.  v1 stays on the
   default ``demo`` owner.
 """
 
@@ -64,6 +64,13 @@ def _job(row: models.AnalysisJob) -> dict[str, Any]:
             "examination_id": row.examination_id, "status": row.status, "attempts": row.attempts,
             "requeued": row.requeued, "request": json.loads(row.request_json),
             "error": json.loads(row.error_json) if row.error_json else None}
+
+
+def _correction(row: models.MaskCorrection) -> dict[str, Any]:
+    return {"correction_id": row.correction_id, "analysis_id": row.analysis_id, "version": row.version,
+            "author": row.author, "created_at": row.created_at, "storage_key": row.storage_key,
+            "sha256": row.sha256, "measurement": json.loads(row.measurement_json),
+            "research_opt_in": bool(row.research_opt_in)}
 
 
 class Repository:
@@ -169,6 +176,7 @@ class Repository:
                     models.Analysis, models.Analysis.analysis_id == models.Artifact.analysis_id,
                 ).where(models.Analysis.owner_id == self.owner_id),
                 select(models.Upload.storage_key).where(models.Upload.owner_id == self.owner_id),
+                select(models.MaskCorrection.storage_key).where(models.MaskCorrection.owner_id == self.owner_id),
             )).all())
             upload_ids = session.scalars(select(models.Upload.upload_id)
                                          .where(models.Upload.owner_id == self.owner_id)).all()
@@ -197,7 +205,15 @@ class Repository:
                        models.Artifact.sha256, models.Artifact.media_type)
                 .join(models.Analysis, models.Analysis.analysis_id == models.Artifact.analysis_id)
                 .where(models.Analysis.owner_id == self.owner_id)).all()
+            consents = session.execute(select(models.Consent.text_version, models.Consent.accepted_at)
+                                       .where(models.Consent.owner_id == self.owner_id)
+                                       .order_by(models.Consent.accepted_at)).all()
+            corrections = session.scalars(select(models.MaskCorrection)
+                                          .where(models.MaskCorrection.owner_id == self.owner_id)
+                                          .order_by(models.MaskCorrection.created_at)).all()
+            data["corrections"] = [_correction(row) for row in corrections]
         data["artifacts"] = [dict(row._mapping) for row in rows]
+        data["consents"] = [dict(row._mapping) for row in consents]
         return data
 
     # ------------------------------------------------------------- writes
@@ -281,6 +297,9 @@ class Repository:
                 select(models.Artifact.storage_key).join(
                     models.Analysis, models.Analysis.analysis_id == models.Artifact.analysis_id,
                 ).where(models.Analysis.examination_id.in_(examination_ids)),
+                select(models.MaskCorrection.storage_key).join(
+                    models.Analysis, models.Analysis.analysis_id == models.MaskCorrection.analysis_id,
+                ).where(models.Analysis.examination_id.in_(examination_ids)),
             )).all()
             counts = {
                 "examinations": session.scalar(select(func.count()).select_from(models.Examination)
@@ -304,12 +323,120 @@ class Repository:
             models.Analysis, models.Analysis.analysis_id == models.Artifact.analysis_id,
         ).where(models.Artifact.storage_key == key)
         uploads = select(models.Upload.storage_key).where(models.Upload.storage_key == key)
+        corrections = select(models.MaskCorrection.storage_key).where(models.MaskCorrection.storage_key == key)
         if except_owner is not None:
             images = images.where(models.Image.owner_id != except_owner)
             artifacts = artifacts.where(models.Analysis.owner_id != except_owner)
             uploads = uploads.where(models.Upload.owner_id != except_owner)
+            corrections = corrections.where(models.MaskCorrection.owner_id != except_owner)
         with self._session() as session:
-            return session.scalars(union(images, artifacts, uploads).limit(1)).first() is not None
+            return session.scalars(union(images, artifacts, uploads, corrections).limit(1)).first() is not None
+
+    # ------------------------------------------------------------- P10-S03 privacy
+    def set_case_keep(self, case_id: str, keep: bool) -> bool:
+        with self._session() as session:
+            if not self._require_owned(session, models.Case, models.Case.case_id, case_id):
+                raise NotFoundError("NOT_FOUND", f"Case not found: {case_id}")
+            session.execute(update(models.Case).where(models.Case.case_id == case_id).values(keep=int(keep)))
+        return keep
+
+    def case_kept(self, case_id: str) -> bool:
+        with self._session() as session:
+            row = session.execute(select(models.Case.keep, models.Case.owner_id)
+                                  .where(models.Case.case_id == case_id)).first()
+        if row is None or row.owner_id != self.owner_id:
+            raise NotFoundError("NOT_FOUND", f"Case not found: {case_id}")
+        return bool(row.keep)
+
+    def record_consent(self, text_version: str) -> str:
+        """Record acceptance once; accepting the same text again keeps the first time."""
+
+        with self._session() as session:
+            row = session.get(models.Consent, (self.owner_id, text_version))
+            if row is not None:
+                return row.accepted_at
+            accepted_at = _now()
+            session.add(models.Consent(owner_id=self.owner_id, text_version=text_version, accepted_at=accepted_at))
+            return accepted_at
+
+    def consent_time(self, text_version: str) -> str | None:
+        with self._session() as session:
+            row = session.get(models.Consent, (self.owner_id, text_version))
+            return row.accepted_at if row is not None else None
+
+    def apply_retention(self, blobs: BlobStore, cutoff: str, limit: int = 200) -> dict[str, int]:
+        """Delete images, results and uploads created before ``cutoff`` in cases nobody chose to keep.
+
+        Storage objects go first and rows second, so a failure part way leaves
+        the rows that let the next run find the same objects again.  An object
+        is kept while any row outside this batch still points at it.
+        """
+
+        kept = (select(models.Examination.examination_id)
+                .join(models.Case, models.Case.case_id == models.Examination.case_id)
+                .where(models.Case.keep == 1))
+        unkept = models.Image.examination_id.is_(None) | models.Image.examination_id.not_in(kept)
+        with self._session() as session:
+            image_ids = list(session.scalars(select(models.Image.image_id)
+                                             .where(models.Image.created_at < cutoff, unkept)
+                                             .order_by(models.Image.created_at).limit(limit)))
+            analysis_ids = list(session.scalars(select(models.Analysis.analysis_id)
+                                                .where(models.Analysis.image_id.in_(image_ids))))
+            upload_ids = list(session.scalars(select(models.Upload.upload_id)
+                                              .where(models.Upload.created_at < cutoff)
+                                              .order_by(models.Upload.created_at).limit(limit)))
+            job_ids = list(session.scalars(select(models.AnalysisJob.analysis_id).where(
+                models.AnalysisJob.analysis_id.in_(analysis_ids)
+                | (models.AnalysisJob.upload_id.in_(upload_ids))
+                | ((models.AnalysisJob.created_at < cutoff)
+                   & (models.AnalysisJob.examination_id.is_(None)
+                      | models.AnalysisJob.examination_id.not_in(kept))))))
+            keys: set[str | None] = set(session.scalars(union(
+                select(models.Image.storage_key).where(models.Image.image_id.in_(image_ids)),
+                select(models.Artifact.storage_key).where(models.Artifact.analysis_id.in_(analysis_ids)),
+                select(models.Upload.storage_key).where(models.Upload.upload_id.in_(upload_ids)),
+                select(models.MaskCorrection.storage_key).where(models.MaskCorrection.analysis_id.in_(analysis_ids)),
+            )).all())
+            keys.discard(None)
+            survivors: set[str | None] = set(session.scalars(union(
+                select(models.Image.storage_key).where(models.Image.storage_key.in_(keys),
+                                                       models.Image.image_id.not_in(image_ids)),
+                select(models.Artifact.storage_key).where(models.Artifact.storage_key.in_(keys),
+                                                          models.Artifact.analysis_id.not_in(analysis_ids)),
+                select(models.Upload.storage_key).where(models.Upload.storage_key.in_(keys),
+                                                        models.Upload.upload_id.not_in(upload_ids)),
+                select(models.MaskCorrection.storage_key).where(
+                    models.MaskCorrection.storage_key.in_(keys), models.MaskCorrection.analysis_id.not_in(analysis_ids)),
+            )).all())
+        doomed = sorted(key for key in keys - survivors if key is not None)
+        failed = 0
+        for key in [staging_key(upload_id) for upload_id in upload_ids] + doomed:
+            try:
+                blobs.delete(key)
+            except Exception:  # noqa: BLE001 - counted; the rows stay so the next run retries
+                failed += 1
+        if failed:
+            log.warning("Retention could not delete %d objects; their rows stay for the next run", failed)
+            return {"images": 0, "analyses": 0, "uploads": 0, "jobs": 0, "blobs_deleted": len(doomed) - failed,
+                    "blobs_failed": failed}
+        with self._session() as session:
+            session.execute(delete(models.AnalysisJob).where(models.AnalysisJob.analysis_id.in_(job_ids)))
+            session.execute(delete(models.Analysis).where(models.Analysis.analysis_id.in_(analysis_ids)))
+            session.execute(delete(models.Image).where(models.Image.image_id.in_(image_ids)))
+            session.execute(delete(models.Upload).where(models.Upload.upload_id.in_(upload_ids)))
+        return {"images": len(image_ids), "analyses": len(analysis_ids), "uploads": len(upload_ids),
+                "jobs": len(job_ids), "blobs_deleted": len(doomed), "blobs_failed": 0}
+
+    def retention_overdue(self, cutoff: str) -> int:
+        """Images in unkept cases older than ``cutoff``: zero after retention has caught up."""
+
+        kept = (select(models.Examination.examination_id)
+                .join(models.Case, models.Case.case_id == models.Examination.case_id)
+                .where(models.Case.keep == 1))
+        with self._session() as session:
+            return session.scalar(select(func.count()).select_from(models.Image).where(
+                models.Image.created_at < cutoff,
+                models.Image.examination_id.is_(None) | models.Image.examination_id.not_in(kept))) or 0
 
     # ------------------------------------------------------------- uploads
     def add_upload(self, upload_id: str, *, filename: str, declared_size: int, declared_sha256: str,
@@ -506,6 +633,62 @@ class Repository:
                                models.Analysis.owner_id == self.owner_id),
                         analysis_id, f"{kind} artifact")
         return {"storage_key": row[0], "sha256": row[1], "media_type": row[2]}
+
+    # ------------------------------------------------------------- P09-S03 corrections
+    def add_correction(self, analysis_id: str, storage_key: str, sha256: str, measurement: dict[str, Any],
+                       research_opt_in: bool = False) -> dict[str, Any]:
+        """A new numbered version for the analysis; the analysis row itself is not touched."""
+
+        with self._session() as session:
+            if not self._require_owned(session, models.Analysis, models.Analysis.analysis_id, analysis_id):
+                raise NotFoundError("NOT_FOUND", f"Analysis not found: {analysis_id}")
+            latest = session.scalar(select(func.max(models.MaskCorrection.version))
+                                    .where(models.MaskCorrection.analysis_id == analysis_id)) or 0
+            row = models.MaskCorrection(
+                correction_id=new_id("cor"), analysis_id=analysis_id, owner_id=self.owner_id, version=latest + 1,
+                author=self.owner_id, created_at=_now(), storage_key=storage_key, sha256=sha256,
+                measurement_json=json.dumps(measurement, sort_keys=True), research_opt_in=int(research_opt_in))
+            session.add(row)
+            session.flush()
+            return _correction(row)
+
+    def list_corrections(self, analysis_id: str) -> list[dict[str, Any]]:
+        with self._session() as session:
+            if not self._require_owned(session, models.Analysis, models.Analysis.analysis_id, analysis_id):
+                raise NotFoundError("NOT_FOUND", f"Analysis not found: {analysis_id}")
+            rows = session.scalars(select(models.MaskCorrection)
+                                   .where(models.MaskCorrection.analysis_id == analysis_id,
+                                          models.MaskCorrection.owner_id == self.owner_id)
+                                   .order_by(models.MaskCorrection.version)).all()
+            return [_correction(row) for row in rows]
+
+    def latest_correction(self, analysis_id: str) -> dict[str, Any] | None:
+        corrections = self.list_corrections(analysis_id)
+        return corrections[-1] if corrections else None
+
+    def get_correction(self, correction_id: str) -> dict[str, Any]:
+        with self._session() as session:
+            row = session.get(models.MaskCorrection, correction_id)
+            if row is None or row.owner_id != self.owner_id:
+                raise NotFoundError("NOT_FOUND", f"Correction not found: {correction_id}")
+            return _correction(row)
+
+    def set_correction_research(self, correction_id: str, opt_in: bool) -> dict[str, Any]:
+        with self._session() as session:
+            row = session.get(models.MaskCorrection, correction_id)
+            if row is None or row.owner_id != self.owner_id:
+                raise NotFoundError("NOT_FOUND", f"Correction not found: {correction_id}")
+            row.research_opt_in = int(opt_in)
+            session.flush()
+            return _correction(row)
+
+    def research_corrections(self) -> list[dict[str, Any]]:
+        """Global: every correction its owner chose to share for research, and no other (REQ-P09-S03-005)."""
+
+        with self._session() as session:
+            rows = session.scalars(select(models.MaskCorrection).where(models.MaskCorrection.research_opt_in == 1)
+                                   .order_by(models.MaskCorrection.created_at)).all()
+            return [_correction(row) for row in rows]
 
     def latest_analysis_per_examination(self, case_id: str) -> list[tuple[ExaminationRecord, AnalysisRecord]]:
         """Per examination: the latest COMPLETED analysis, else the latest analysis of any status."""

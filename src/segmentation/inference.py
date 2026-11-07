@@ -35,18 +35,29 @@ DEFAULT_THRESHOLD_GRID = tuple(round(value, 2) for value in np.arange(0.30, 0.71
 DEFAULT_MIN_AREA_GRID = (0, 64, 128, 256, 512)
 
 
+def predict_tta_views(model: nn.Module, images: torch.Tensor, tta: bool = True) -> list[torch.Tensor]:
+    """Return each view's probabilities ``(B,1,H,W)``, flipped back; one view when ``tta`` is off."""
+
+    views = [torch.sigmoid(model(images).float())]
+    if tta:
+        for dims in ((-1,), (-2,), (-2, -1)):
+            views.append(torch.flip(torch.sigmoid(model(torch.flip(images, dims=dims)).float()), dims=dims))
+    return views
+
+
+def mean_of_views(views: Sequence[torch.Tensor]) -> torch.Tensor:
+    """Average views in order, summing one at a time so the result matches the original TTA bit for bit."""
+
+    total = views[0]
+    for view in views[1:]:
+        total = total + view
+    return total if len(views) == 1 else total / len(views)
+
+
 def predict_logits_tta(model: nn.Module, images: torch.Tensor, tta: bool = True) -> torch.Tensor:
     """Return mean probabilities ``(B,1,H,W)``; flips are inverted before averaging."""
 
-    probabilities = torch.sigmoid(model(images).float())
-    if not tta:
-        return probabilities
-    views = 1
-    for dims in ((-1,), (-2,), (-2, -1)):
-        flipped = torch.flip(images, dims=dims)
-        probabilities = probabilities + torch.flip(torch.sigmoid(model(flipped).float()), dims=dims)
-        views += 1
-    return probabilities / views
+    return mean_of_views(predict_tta_views(model, images, tta))
 
 
 def load_binary_mask(path: Path, target_size: tuple[int, int] | None = None, threshold: int = 128) -> np.ndarray:

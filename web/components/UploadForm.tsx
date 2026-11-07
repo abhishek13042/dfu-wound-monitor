@@ -1,20 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ImageUp } from "lucide-react";
 
 import { ErrorPanel } from "@/components/ErrorPanel";
 import { Button } from "@/components/ui/button";
-import type { Case } from "@/lib/api";
+import type { Case, Consent } from "@/lib/api";
 import { send, sha256 } from "@/lib/api/browser";
 import { isMock } from "@/lib/api/mode";
 import { ApiError } from "@/lib/errors";
+import { formatDate } from "@/lib/format";
 import { problemWith } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 
 const STAGES = ["Checking the file", "Uploading the photo", "Verifying the file", "Adding to the queue"];
-const CONSENT_KEY = "dfu-upload-consent";
 
 const SCALE_SOURCES = {
   ruler: { label: "Ruler in frame", method: "USER_ENTERED" },
@@ -22,17 +23,17 @@ const SCALE_SOURCES = {
   other: { label: "Other", method: "USER_ENTERED" },
 } as const;
 
-function rememberedConsent(): boolean {
-  try {
-    return sessionStorage.getItem(CONSENT_KEY) === "1";
-  } catch {
-    return false;
-  }
+function retentionCopy(hours: number): string {
+  return hours > 0
+    ? `Photos and results are deleted after ${hours} hours unless you keep the case.`
+    : "Nothing is deleted automatically on this service.";
 }
 
-export function UploadForm({ cases, initialCase }: { cases: Case[]; initialCase?: string }) {
+export function UploadForm({ cases, consent: record, initialCase }: { cases: Case[]; consent: Consent; initialCase?: string }) {
   const router = useRouter();
-  const [consent, setConsent] = useState(rememberedConsent);
+  // Consent lives on the service per user and text version; the box only asks when there is no current record.
+  const recorded = record.accepted_at !== null;
+  const [consent, setConsent] = useState(recorded);
   const [file, setFile] = useState<File | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [failure, setFailure] = useState<ApiError | null>(null);
@@ -47,16 +48,6 @@ export function UploadForm({ cases, initialCase }: { cases: Case[]; initialCase?
     setFile(issue ? null : next);
   };
 
-  const agree = (value: boolean) => {
-    setConsent(value);
-    try {
-      if (value) sessionStorage.setItem(CONSENT_KEY, "1");
-      else sessionStorage.removeItem(CONSENT_KEY);
-    } catch {
-      // Consent is asked again next time; nothing else depends on storage.
-    }
-  };
-
   const demonstrate = () => {
     STAGES.forEach((_, index) => setTimeout(() => setStage(index), index * 500));
     setTimeout(() => router.push("/analyses/c3f0b7"), STAGES.length * 500);
@@ -67,6 +58,7 @@ export function UploadForm({ cases, initialCase }: { cases: Case[]; initialCase?
     setFailure(null);
     try {
       setStage(0);
+      if (!recorded) await send("/consent", { method: "POST", json: { text_version: record.text_version } });
       const digest = await sha256(photo);
       const caseId = field("case");
       const date = field("captured");
@@ -119,24 +111,35 @@ export function UploadForm({ cases, initialCase }: { cases: Case[]; initialCase?
 
   return (
     <form onSubmit={submit} className="grid max-w-[920px] gap-4 lg:grid-cols-2">
-      <fieldset className="panel p-5 lg:col-span-2">
-        <legend className="sr-only">Consent</legend>
-        <label className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            checked={consent}
-            disabled={busy}
-            onChange={(event) => agree(event.target.checked)}
-            className="mt-1 size-5 flex-none accent-[var(--aubergine)]"
-          />
-          <span>
-            <span className="block font-medium">I may upload this photo for research use.</span>
-            <span className="block text-sm text-ink-2">
-              It is stored for the retention period, which is a placeholder until one is set. Remove names and other identifiers from the frame first.
+      {recorded ? (
+        <p className="text-sm text-ink-2 lg:col-span-2">
+          Consent given on {formatDate(record.accepted_at)} (text <span className="value">{record.text_version}</span>). {retentionCopy(record.retention_hours)}{" "}
+          <Link href="/privacy" className="text-link">How photos are handled</Link>
+        </p>
+      ) : (
+        <fieldset className="panel p-5 lg:col-span-2">
+          <legend className="sr-only">Consent</legend>
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={consent}
+              disabled={busy}
+              onChange={(event) => setConsent(event.target.checked)}
+              className="mt-1 size-5 flex-none accent-[var(--aubergine)]"
+            />
+            <span>
+              <span className="block font-medium">I may upload these photos for research use.</span>
+              <span className="block max-w-[75ch] text-sm text-ink-2">
+                Use constructed or research images, not real patient photos. Location and camera details are removed before a photo is stored. {retentionCopy(record.retention_hours)} Remove names and other identifiers from the frame first.
+              </span>
             </span>
-          </span>
-        </label>
-      </fieldset>
+          </label>
+          <p className="mt-2 pl-8 text-13 text-ink-2">
+            Asked once per account, text version <span className="value">{record.text_version}</span>.{" "}
+            <Link href="/privacy" className="text-link">How photos are handled</Link>
+          </p>
+        </fieldset>
+      )}
 
       <div className="lg:row-span-2">
         <label
@@ -199,6 +202,10 @@ export function UploadForm({ cases, initialCase }: { cases: Case[]; initialCase?
           <input id="scale" name="scale" type="number" min="0" step="0.01" inputMode="decimal" className="field value mt-1" />
           <p className="mt-1 text-13 text-ink-2">Without a scale, values stay in pixels and also reflect camera distance and zoom.</p>
         </div>
+        <p className="text-13 text-ink-2">
+          If the printed marker is in the photo, its scale is used instead of this value, and the result says so if the two differ.{" "}
+          <a href="/marker-sheet-v1.pdf" className="text-link">Print the marker sheet</a> at 100% and check its 50 mm square with a ruler.
+        </p>
         <div>
           <label htmlFor="method" className="text-sm font-medium">Scale taken from</label>
           <select id="method" name="method" className="field mt-1">

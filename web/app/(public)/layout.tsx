@@ -25,7 +25,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <footer className="border-t border-rule">
         <div className="mx-auto flex max-w-[1320px] flex-col gap-1 px-4 py-6 text-13 text-ink-2 sm:px-6">
           <p className="font-medium text-ink">{NOTICE}</p>
-          <p className="max-w-[75ch]">{LIMITATION}</p>
+          <p className="max-w-[65ch]">{LIMITATION}</p>
+          <p>
+            <Link href="/privacy" className="text-link text-ink-2">Photos and privacy</Link>
+          </p>
         </div>
       </footer>
     </div>

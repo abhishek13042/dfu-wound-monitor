@@ -19,6 +19,7 @@ function Tip({ active, payload, unit }: TipProps) {
       <p className="font-medium">{formatDate(row.captured_at)}</p>
       <p className="text-ink-2">Day {row.days_since_baseline}{row.is_baseline ? ", baseline" : ""}</p>
       <p className="value mt-1">{formatNumber(row.values.area, 1)} {unit}</p>
+      {row.mask_source === "CORRECTED" && <p className="text-ink-2">From a corrected outline</p>}
     </div>
   );
 }
