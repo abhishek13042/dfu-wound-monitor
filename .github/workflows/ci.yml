@@ -101,6 +101,9 @@ jobs:
           python -m pip install -r requirements-dev.txt
       - name: Tests on SeaweedFS
         run: python -m pytest tests/storage/test_blob_contract.py tests/storage/test_blob_migration.py tests/api/test_uploads.py -q
+      - name: SeaweedFS log on failure
+        if: failure()
+        run: docker logs seaweedfs 2>&1 | tail -n 200
 
   # REQ-P07-S05: real arq workers against a real Redis.
   redis:
