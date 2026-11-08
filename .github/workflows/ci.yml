@@ -88,7 +88,7 @@ jobs:
           docker run -d --name seaweedfs -p 9000:8333 -e AWS_ACCESS_KEY_ID=ci-only \
             -e AWS_SECRET_ACCESS_KEY=ci-only-secret \
             chrislusf/seaweedfs:4.51@sha256:f7a49e3f3972ebed5be2ed4befa4a0c68eb7bdddba6e692d42729ceb545134b8 \
-            server -s3 -dir=/data
+            server -s3 -dir=/data -master.volumeSizeLimitMB=64 -volume.max=0
           for attempt in $(seq 1 30); do
             curl -fsS http://127.0.0.1:9000/healthz && exit 0
             sleep 2

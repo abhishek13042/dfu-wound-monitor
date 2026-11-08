@@ -119,7 +119,15 @@ def s3_store(s3_endpoint, monkeypatch):
 
     store = S3BlobStore(f"test-{uuid.uuid4().hex}", s3_endpoint)
     store.client.create_bucket(Bucket=store.bucket)
-    return store
+    yield store
+    # Drop the bucket so a long run does not use up the emulator's volumes.
+    try:
+        listed = store.client.list_objects_v2(Bucket=store.bucket).get("Contents", [])
+        for item in listed:
+            store.client.delete_object(Bucket=store.bucket, Key=item["Key"])
+        store.client.delete_bucket(Bucket=store.bucket)
+    except Exception:  # noqa: BLE001 - cleanup must not hide the test's own result
+        pass
 
 
 class SignIn:
