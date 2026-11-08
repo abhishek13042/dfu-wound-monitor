@@ -37,6 +37,7 @@ PyJWT[crypto]==2.15.1
 # Phase 07 ONNX runtime (P07-S06)
 onnx==1.22.0
 onnxruntime==1.29.0
+opencv-python-headless==5.0.0.93  # P09 marker detection and heatmap; headless, no GUI libraries
 
 # Phase 10 observability (P10-S01)
 prometheus_client==0.25.0
