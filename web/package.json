@@ -6,6 +6,7 @@
     "dev": "next dev",
     "dev:mock": "node scripts/mock.mjs dev",
     "build": "next build",
+    "build:mock": "node scripts/mock.mjs build",
     "start": "next start",
     "api:schema": "cd .. && python web/scripts/export_openapi.py web/openapi.json",
     "api:types": "openapi-typescript openapi.json -o lib/api/schema.d.ts",
