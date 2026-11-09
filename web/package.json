@@ -19,7 +19,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.66.0",
-    "next": "^15.5.9",
+    "next": "^15.5.29",
     "next-auth": "^4.24.15",
     "openapi-fetch": "^0.17.0",
     "react": "^19.2.3",

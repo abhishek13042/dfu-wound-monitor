@@ -8,7 +8,7 @@
 #   Kaggle:    pip install scipy  (everything else is preinstalled)
 
 numpy==2.4.4
-Pillow==12.0.0
+Pillow==13.0.0
 matplotlib==3.10.8
 scipy==1.17.1            # connected components, HD95 distance transforms, pHash DCT
 torch>=2.4               # verified with 2.14.1; torch.amp.GradScaler("cuda") needs >= 2.3
@@ -30,8 +30,8 @@ arq==0.28.0
 redis==5.3.1
 
 # Test runner
-pytest==8.3.5
-setuptools==81.0.0
+pytest==9.0.3
+setuptools==84.1.0
 PyJWT[crypto]==2.15.1
 
 # Phase 07 ONNX runtime (P07-S06)
