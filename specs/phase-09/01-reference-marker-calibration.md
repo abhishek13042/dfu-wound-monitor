@@ -1,6 +1,6 @@
 # P09-S01 — Reference-Marker Calibration
 
-**Status:** `IN_PROGRESS`. Marker detection, the fallbacks with reason codes, the conflict warning, the printable sheet, the validation script and the web display are built, with 18 tests. REQ-P09-S01-003 is `BLOCKED`: it needs real photos of the printed marker beside objects of known size. A synthetic run of the same script exists and is labelled as such.
+**Status:** `IN_PROGRESS`. Marker detection, the fallbacks with reason codes, the conflict warning, the printable sheet, the validation script and the web display are built, with 18 tests, and `mark_object_ends.py` (with its own test) prepares the manifest for the real run. REQ-P09-S01-003 is `BLOCKED`: it needs real photos of the printed marker beside objects of known size. A synthetic run of the same script exists and is labelled as such.
 
 ## 1. Objective
 
@@ -123,8 +123,11 @@ Recorded on 2026-11-05.
 python -m pytest tests/measurement/test_marker.py -q
 python scripts/measurement/make_marker_sheet.py
 python scripts/evaluation/run_marker_validation.py --synthetic
-python scripts/evaluation/run_marker_validation.py --data <photos>/manifest.json   # needs real photos
+python scripts/measurement/mark_object_ends.py data/raw/marker_photos   # writes the manifest
+python scripts/evaluation/run_marker_validation.py --data data/raw/marker_photos/manifest.json   # needs real photos
 ```
+
+`docs/measurement/PHOTO_PROTOCOL.md` is the shot list for the real run: print check, two objects, 3 distances by 3 angles, file naming, and marking the end points with `mark_object_ends.py`.
 
 The manifest format is documented at the top of `scripts/evaluation/run_marker_validation.py`. Photograph a printed
 sheet beside an object of known length (a ruler or a coin) at several distances and angles, and mark the object's end
@@ -144,6 +147,6 @@ points by hand.
 |---|---|---|---|---|
 | `REQ-P09-S01-001` | `src/measurement/marker.py`, `configs/measurement/marker_v1.json` | `test_a_facing_marker_gives_the_true_scale` | Test run 2026-11-05 | COMPLETED |
 | `REQ-P09-S01-002` | `src/measurement/marker.py`, `src/measurement/calibration.py` | `test_an_unusable_marker_gives_a_reason_and_no_scale`, `test_the_pipeline_falls_back_to_pixels_with_the_reason` | Test run 2026-11-05 | COMPLETED |
-| `REQ-P09-S01-003` | `scripts/evaluation/run_marker_validation.py` | `test_the_validation_script_reads_a_manifest_of_photos` | `reports/final/p09_s01_marker_validation.json` (not yet produced) | BLOCKED: needs real marker photos; synthetic run only |
+| `REQ-P09-S01-003` | `scripts/evaluation/run_marker_validation.py` | `test_the_validation_script_reads_a_manifest_of_photos`, `test_the_marking_tool_reads_names_and_writes_a_manifest_the_validation_script_accepts` | `reports/final/p09_s01_marker_validation.json` (not yet produced; protocol in `docs/measurement/PHOTO_PROTOCOL.md`) | BLOCKED: needs real marker photos; synthetic run only |
 | `REQ-P09-S01-004` | `src/measurement/calibration.py`, `web/components/Measurements.tsx` | `test_the_marker_wins_and_a_disagreeing_user_scale_is_flagged` | Test run 2026-11-05 | COMPLETED |
 | `REQ-P09-S01-005` | `LIMITATION` in `src/measurement/engine.py`, `web/components/Measurements.tsx` | `test_results_say_a_single_photo_gives_an_estimate` | Test run 2026-11-05 | COMPLETED |

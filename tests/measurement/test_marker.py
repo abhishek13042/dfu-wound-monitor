@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+from pathlib import Path
 
 import pytest
 from PIL import Image
@@ -176,3 +177,34 @@ def test_the_validation_script_reads_a_manifest_of_photos(tmp_path):
     assert report["mode"] == "REAL_PHOTOS" and report["overall"]["accepted"] == 1
     assert [row["status"] for row in report["rows"]] == [FOUND, TILTED]
     assert abs(report["rows"][0]["error_pct"]) < 1.0
+
+
+def test_the_marking_tool_reads_names_and_writes_a_manifest_the_validation_script_accepts(tmp_path):
+    from scripts.evaluation.run_marker_validation import main as validate
+    from scripts.measurement.mark_object_ends import (
+        entry_for,
+        load_manifest,
+        parse_name,
+        pending_photos,
+        save_manifest,
+    )
+
+    assert parse_name(Path("d30_a15_ruler-100mm_01.jpg")) == {
+        "distance_cm": 30.0, "angle_deg": 15.0, "object_name": "ruler", "true_mm": 100.0}
+    with pytest.raises(ValueError):
+        parse_name(Path("IMG_0001.jpg"))
+
+    scene = render_scene(px_per_mm=4.0, tilt_deg=0, textured_background=True, seed=0)
+    photo = tmp_path / "d40_a0_bar-60mm_01.png"
+    Image.fromarray(scene.image).save(photo)
+    manifest_path = tmp_path / "manifest.json"
+    manifest = load_manifest(manifest_path)
+    assert pending_photos(tmp_path, manifest) == [photo]
+    manifest["images"].append(entry_for(photo, tmp_path, list(scene.bar_px[0]), list(scene.bar_px[1])))
+    save_manifest(manifest_path, manifest)
+    assert pending_photos(tmp_path, load_manifest(manifest_path)) == []
+
+    out = tmp_path / "report.json"
+    assert validate(["--data", str(manifest_path), "--out", str(out)]) == 0
+    row = json.loads(out.read_text(encoding="utf-8"))["rows"][0]
+    assert row["distance_cm"] == 40 and row["angle_deg"] == 0 and abs(row["error_pct"]) < 1.0
