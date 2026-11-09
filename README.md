@@ -31,7 +31,7 @@ Phases 08–10 are specified but not built.
 - Real longitudinal patient series are not available. Trends were exercised with constructed examination sequences only.
 - Physical units need a scale. Without a supplied `pixels_per_mm`, only pixel values are reported.
 - A clean install passes on Windows with Python 3.12. Linux waits for the first CI run (REQ-P06-S03-001 is PARTIAL).
-- The Hugging Face Space is packaged but not yet published, so there is no public URL yet.
+- The full Docker Space is packaged but not published (it needs Hugging Face PRO). A free browser-only demo is live at [spaces/abhishek1402/dfu-woundmonitor](https://huggingface.co/spaces/abhishek1402/dfu-woundmonitor): the quality gate and the model run in the visitor's browser.
 - DFUC2020, DFUC2021 and DFUC2022 are **blocked** pending the official license application.
 
 ## Quick start

@@ -62,6 +62,17 @@ With the checkpoint mounted, the fetch step finds and verifies it, so no downloa
 To skip the model repo, run `build_hf_space.py --with-checkpoint` instead. This puts the `.pth` inside the Space
 as a git-lfs file. The bundled `.gitattributes` already marks `*.pth` for LFS.
 
+## Free static demo (no PRO needed)
+
+`deploy/hf_static_space/` is a plain HTML and JavaScript page that needs no server. It runs quality gate `p03-s02-v1` (ported to `pipeline.js`) and the ONNX export through ONNX Runtime Web, WebGPU first and WebAssembly as the fallback. The model is fetched from the public model repo at a pinned revision, checked against its SHA-256 and cached by the browser. Photos never leave the device. Static Spaces are free.
+
+```bash
+hf repo create <user>/dfu-woundmonitor --repo-type space --space-sdk static
+hf upload <user>/dfu-woundmonitor deploy/hf_static_space . --repo-type space
+```
+
+Live: [spaces/abhishek1402/dfu-woundmonitor](https://huggingface.co/spaces/abhishek1402/dfu-woundmonitor). It has no dashboard, records or API; those need the Docker Space above. Add `?ep=wasm` to the page URL to force the WebAssembly path.
+
 ## Demo behaviour to know
 
 - **Storage is temporary.** `DFU_DATA_DIR=/tmp/dfu` is wiped whenever the Space restarts or sleeps.

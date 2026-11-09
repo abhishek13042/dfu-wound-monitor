@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DFU-WoundMonitor browser demo</title>
+  <meta name="description" content="Research prototype. A foot-ulcer segmentation model that runs in your browser: the photo is checked for quality, segmented on this device and never uploaded.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&family=Spline+Sans+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.webgpu.min.js" defer></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <p class="notice" role="note"><strong>Research prototype. Not a medical device.</strong> Results are image-derived technical measurements, not a diagnosis.</p>
+
+  <header class="bar on-aubergine">
+    <div class="bar-inner">
+      <span class="wordmark"><span aria-hidden="true" class="marks"><i class="m-pass"></i><i class="m-warn"></i><i class="m-reject"></i></span>DFU-WoundMonitor</span>
+      <span class="bar-tag">Browser demo</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="intro" aria-labelledby="title">
+      <h1 id="title">Check and measure a foot-ulcer photo, on this device</h1>
+      <p>The photo is checked against nine quality limits first. Only a photo that passes is segmented by the ResNet34 U-Net, which runs in this browser. <strong>Your photo is never uploaded.</strong> The first run downloads the 97.7 MB model once.</p>
+    </section>
+
+    <div class="bench">
+      <div class="col">
+        <section class="panel" aria-labelledby="photo-h" id="drop">
+          <div class="panel-head">
+            <h2 id="photo-h">Photo</h2>
+          </div>
+          <div class="panel-body">
+            <div class="actions">
+              <label class="btn btn-primary" for="file">Choose a photo</label>
+              <input id="file" type="file" accept="image/png,image/jpeg,image/bmp,image/webp,image/tiff" class="sr-only">
+              <button type="button" class="btn" id="sample">Use a synthetic sample</button>
+            </div>
+            <p class="hint">Or drop an image here. PNG, JPEG, BMP or WebP, up to 50 megapixels.</p>
+            <p class="file-name value" id="file-name" hidden></p>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="gate-h">
+          <div class="panel-head">
+            <h2 id="gate-h">Quality reading</h2>
+            <span class="value meta">gate p03-s02-v1</span>
+          </div>
+          <div class="panel-body">
+            <ol class="strip" id="strip" aria-label="Quality reading: not read yet."></ol>
+            <p class="outcome" id="outcome" aria-live="polite">No photo yet.</p>
+            <details class="readings" id="readings" hidden>
+              <summary>Measured values</summary>
+              <table>
+                <thead><tr><th scope="col">Check</th><th scope="col">Value</th><th scope="col">Limit</th></tr></thead>
+                <tbody id="readings-body"></tbody>
+              </table>
+            </details>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="model-h">
+          <div class="panel-head">
+            <h2 id="model-h">Model</h2>
+            <span class="value meta">spec-02-03 · ONNX</span>
+          </div>
+          <div class="panel-body">
+            <p class="status" id="model-status">Not loaded. It loads when a photo passes the quality reading.</p>
+            <div class="progress" id="model-progress" hidden><div class="progress-fill" id="model-fill"></div></div>
+            <p class="hint">Weights: <a class="text-link" href="https://huggingface.co/abhishek1402/dfu-resnet34-unet" target="_blank" rel="noopener">abhishek1402/dfu-resnet34-unet</a>. The file is checked against its SHA-256 before it runs.</p>
+          </div>
+        </section>
+      </div>
+
+      <div class="col col-wide">
+        <section class="panel" aria-labelledby="view-h">
+          <div class="panel-head">
+            <h2 id="view-h">Segmentation</h2>
+            <div class="view-controls" id="view-controls" hidden>
+              <label class="check"><input type="checkbox" id="show-photo" checked> Show photo</label>
+              <label class="range"><span>Overlay</span><input type="range" id="opacity" min="0" max="100" value="55" aria-describedby="opacity-out"><output id="opacity-out" class="value">55%</output></label>
+            </div>
+          </div>
+          <div class="viewer" id="viewer">
+            <div class="empty" id="empty">
+              <p><strong>Nothing to show yet.</strong></p>
+              <p>Choose a photo or use the synthetic sample. The segmented region is drawn here in blue.</p>
+            </div>
+            <div class="stage" id="stage" hidden>
+              <canvas id="photo" aria-hidden="true"></canvas>
+              <canvas id="overlay" aria-hidden="true"></canvas>
+              <p class="stage-hidden" id="stage-hidden" hidden>Photo hidden. Only the segmented region is drawn.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="measure-h">
+          <div class="panel-head">
+            <h2 id="measure-h">Measurements</h2>
+            <button type="button" class="btn btn-small" id="save-mask" hidden>Save mask (PNG)</button>
+          </div>
+          <div class="panel-body">
+            <dl class="measures" id="measures">
+              <div><dt>Segmented area</dt><dd class="value big" id="m-area">–</dd></div>
+              <div><dt>Share of the frame</dt><dd class="value" id="m-share">–</dd></div>
+              <div><dt>Regions kept</dt><dd class="value" id="m-regions">–</dd></div>
+              <div><dt>Bounding box</dt><dd class="value" id="m-bbox">–</dd></div>
+              <div><dt>Mean probability in region</dt><dd class="value" id="m-prob">–</dd></div>
+              <div><dt>Image size</dt><dd class="value" id="m-size">–</dd></div>
+            </dl>
+            <p class="hint" id="m-note">Pixels only. Without a calibration marker in the photo this demo cannot give millimetres. Threshold 0.40, regions under 128 px dropped, four flipped views averaged.</p>
+            <p class="hint value" id="m-run" hidden></p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="panel limits" aria-labelledby="limits-h">
+      <div class="panel-head"><h2 id="limits-h">How far to trust a result</h2></div>
+      <div class="panel-body">
+        <div class="scores">
+          <figure class="score">
+            <span class="value score-num">0.922</span>
+            <figcaption><strong>Dice, FUSeg2021 held-out test.</strong> Photos from the same source as the training set.</figcaption>
+          </figure>
+          <figure class="score score-low">
+            <span class="value score-num">0.256</span>
+            <figcaption><strong>Dice, LowerLimb external set.</strong> Photos from other cameras and clinics, never seen in training.</figcaption>
+          </figure>
+        </div>
+        <p>Dice is the overlap between the model's region and a clinician's outline, from 0 to 1. The gap between the two numbers is the honest summary: on photos unlike the training set, the region can be badly wrong. Treat every result here as a research measurement.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot wrap">
+    <p>Runs entirely in this browser with <a class="text-link" href="https://onnxruntime.ai/" target="_blank" rel="noopener">ONNX Runtime Web</a>. No account, no stored cases and no server analysis. Model <span class="value">spec-02-03-resnet34-unet-512-onnx-v1</span>.</p>
+  </footer>
+</body>
+</html>
