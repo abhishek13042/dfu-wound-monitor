@@ -71,8 +71,10 @@ def load_binary_mask(path: Path, target_size: tuple[int, int] | None = None, thr
 
     with Image.open(path) as mask_file:
         mask = mask_file.convert("L")
-        if target_size is not None and mask.size != tuple(target_size):
-            mask = mask.resize(tuple(target_size), resample=Image.Resampling.NEAREST)
+        if target_size is not None:
+            width, height = target_size
+            if mask.size != (width, height):
+                mask = mask.resize((width, height), resample=Image.Resampling.NEAREST)
         return (np.asarray(mask, dtype=np.uint8) >= threshold).astype(np.uint8)
 
 
