@@ -1,7 +1,7 @@
-# Production platform roadmap (Phase 07, planned)
+# Production platform roadmap (Phases 07–10)
 
-> Status: **PLANNED**. Nothing in this document is implemented yet. Each step below needs its own
-> specification (from `specs/SPEC_TEMPLATE.md`) before implementation, as for Phases 00–06.
+> Status: **NOT_STARTED**. Nothing in this document is implemented yet. Every step has a specification, listed
+> below, and each specification needs approval before implementation.
 
 Phases 00–06 deliver a working single-machine research prototype: FastAPI service, SQLite + blob store,
 static dashboard, Docker image. This roadmap turns it into a public, multi-user **research demo**. It is
@@ -54,6 +54,17 @@ Design reasons:
 | D. CV features | Reference-marker (ArUco) mm calibration, confidence heatmap, mask-correction editor | Calibration error on a measured test set; stored corrections |
 | E. Production | Rate limiting, Sentry, load test (Locust), automatic deletion of uploads | Load-test report (concurrent users, p95 latency) |
 | F. Showcase | README GIF, architecture diagram, demo video | — |
+
+## Specifications
+
+| Step | Specifications |
+|---|---|
+| A. Publish | [P07-S01](../../specs/phase-07/01-public-demo-and-ci.md) |
+| B. Backend | [P07-S02](../../specs/phase-07/02-postgresql-and-migrations.md), [P07-S03](../../specs/phase-07/03-object-storage.md), [P07-S04](../../specs/phase-07/04-authentication-and-ownership.md), [P07-S05](../../specs/phase-07/05-async-job-queue.md), [P07-S06](../../specs/phase-07/06-onnx-export-and-serving.md) |
+| C. Frontend | [P08-S01](../../specs/phase-08/01-frontend-foundation.md), [P08-S02](../../specs/phase-08/02-analysis-and-case-workflows.md), [P08-S03](../../specs/phase-08/03-longitudinal-views.md) |
+| D. CV features | [P09-S01](../../specs/phase-09/01-reference-marker-calibration.md), [P09-S02](../../specs/phase-09/02-confidence-visualisation.md), [P09-S03](../../specs/phase-09/03-mask-correction-editor.md), [P09-S04](../../specs/phase-09/04-generalisation-study.md) |
+| E. Production | [P10-S01](../../specs/phase-10/01-observability.md), [P10-S02](../../specs/phase-10/02-load-testing-and-slos.md), [P10-S03](../../specs/phase-10/03-security-and-privacy.md), [P10-S04](../../specs/phase-10/04-mlops-and-drift.md) |
+| F. Showcase | Documentation task after the above; needs no specification |
 
 ## Rules that stay in force
 

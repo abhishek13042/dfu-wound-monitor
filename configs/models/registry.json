@@ -1,0 +1,105 @@
+{
+  "schema": "p10-s04-v1",
+  "models": [
+    {
+      "model_version": "spec-02-03-resnet34-unet-512-v1",
+      "runtime": "pytorch",
+      "artifact_path": "models/checkpoints/spec-02-03/resnet34_unet_512_best.pth",
+      "sha256": "26aca52e401f23b5781d2596d74c1fd7fa86a6af0ab9fb3db9fa17dcffb5cf04",
+      "inference_config": "configs/inference/spec_02_03_inference.json",
+      "dataset_refs": [
+        {
+          "dataset": "FUSeg2021",
+          "version": "FUSeg2021-official-source-commit-42a272d",
+          "manifest": "data/manifests/fuseg2021_heldout_manifest.json",
+          "use": "training and held-out test"
+        },
+        {
+          "dataset": "LowerLimbFeetWoundV3",
+          "version": "lowerlimb-v3-external-v1",
+          "manifest": "data/manifests/lowerlimb_v3_external_manifest.json",
+          "use": "external test only"
+        }
+      ],
+      "metrics": {
+        "fuseg2021_test_pooled_dice": 0.9222,
+        "lowerlimb_external_pooled_dice": 0.2557,
+        "p50_total_latency_s": 3.2165
+      },
+      "limitations": [
+        "Trained and tuned on FUSeg2021 diabetic foot ulcer photographs only.",
+        "External lower-limb wounds: pooled Dice 0.256 (P06), so results outside foot ulcers are unreliable.",
+        "Measures pixels unless a reference marker is calibrated; it does not diagnose or stage a wound."
+      ],
+      "evidence": {
+        "validation": {
+          "fuseg2021_test": "reports/final/p06_validation_fuseg2021_test.json",
+          "lowerlimb_external": "reports/final/p06_validation_lowerlimb_external.json"
+        },
+        "benchmark": "reports/final/p07_s06_pytorch_benchmark.json"
+      },
+      "status": "ACTIVE",
+      "approved_by": "bootstrap: serving before the registry existed (decision 23); not a gate review",
+      "registered_at": "2026-11-04T22:16:51+00:00"
+    },
+    {
+      "model_version": "spec-02-03-resnet34-unet-512-onnx-v1",
+      "runtime": "onnx",
+      "artifact_path": "models/onnx/spec-02-03/resnet34_unet_512.onnx",
+      "sha256": "d3738aed14c52b3b227226b61f56c66fd8550a705c296ad1c5a6ff124fafb698",
+      "inference_config": "configs/inference/spec_02_03_onnx_inference.json",
+      "exported_from": "spec-02-03-resnet34-unet-512-v1",
+      "dataset_refs": [
+        {
+          "dataset": "FUSeg2021",
+          "version": "FUSeg2021-official-source-commit-42a272d",
+          "manifest": "data/manifests/fuseg2021_heldout_manifest.json",
+          "use": "training and held-out test"
+        }
+      ],
+      "metrics": {
+        "fuseg2021_test_pooled_dice": 0.922226,
+        "p50_total_latency_s": 2.067
+      },
+      "limitations": [
+        "Trained and tuned on FUSeg2021 diabetic foot ulcer photographs only.",
+        "External lower-limb wounds: pooled Dice 0.256 (P06), so results outside foot ulcers are unreliable.",
+        "Measures pixels unless a reference marker is calibrated; it does not diagnose or stage a wound.",
+        "Not yet scored on the external lower-limb set."
+      ],
+      "evidence": {
+        "validation": {
+          "fuseg2021_test": "reports/final/p07_s06_onnx_parity.json"
+        },
+        "parity": "reports/final/p07_s06_onnx_parity.json",
+        "benchmark": "reports/final/p07_s06_onnx_benchmark.json"
+      },
+      "status": "CANDIDATE",
+      "approved_by": null,
+      "registered_at": "2026-11-04T22:16:51+00:00"
+    }
+  ],
+  "events": [
+    {
+      "at": "2026-11-04T22:16:51+00:00",
+      "action": "REGISTER",
+      "model_version": "spec-02-03-resnet34-unet-512-v1",
+      "previous": null,
+      "by": null
+    },
+    {
+      "at": "2026-11-04T22:16:51+00:00",
+      "action": "REGISTER",
+      "model_version": "spec-02-03-resnet34-unet-512-onnx-v1",
+      "previous": null,
+      "by": null
+    },
+    {
+      "at": "2026-11-04T22:16:51+00:00",
+      "action": "BOOTSTRAP_ACTIVE",
+      "model_version": "spec-02-03-resnet34-unet-512-v1",
+      "previous": null,
+      "by": "bootstrap: serving before the registry existed (decision 23); not a gate review"
+    }
+  ]
+}

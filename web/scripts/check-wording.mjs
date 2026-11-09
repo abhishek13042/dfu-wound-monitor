@@ -1,0 +1,40 @@
+// REQ-P08-S04-019: no screen may use diagnostic wording. REQ-P09-S02-004: nor call uncertainty a chance of being right.
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
+
+const FORBIDDEN = /\b(heal(s|ed|ing)?|deteriorat\w*|improving|worsening|treatment response|prognosis|clinical recommendation)\b/i;
+// The trend notice is required wording (REQ-P08-S03-004): it names healing only to disclaim it.
+// REQ-P09-S02-004: the uncertainty signal is model uncertainty, never a chance or confidence that a result is correct.
+const CORRECTNESS = /\b(confiden\w*|(chance|probability|likelihood|odds)\s+(that|of)\b.*\b(correct|right|accurate)|\d+\s*% (sure|certain|correct))/i;
+const ALLOWED = [
+  "Not a clinical assessment of healing, prognosis or treatment response.",
+  "Image-derived technical trends, not a healing assessment.",
+  "It is not the chance that the outline is correct.",
+];
+const ROOTS = ["app", "components", "lib"];
+
+function* files(directory) {
+  for (const name of readdirSync(directory)) {
+    const path = join(directory, name);
+    if (statSync(path).isDirectory()) yield* files(path);
+    else if (/\.(tsx?|css)$/.test(name)) yield path;
+  }
+}
+
+let failures = 0;
+for (const root of ROOTS) {
+  for (const path of files(root)) {
+    readFileSync(path, "utf8")
+      .split("\n")
+      .forEach((line, index) => {
+        const text = ALLOWED.reduce((value, phrase) => value.replace(phrase, ""), line);
+        if (FORBIDDEN.test(text) || CORRECTNESS.test(text)) {
+          console.error(`${path}:${index + 1}: ${line.trim()}`);
+          failures += 1;
+        }
+      });
+  }
+}
+
+if (failures) process.exit(1);
+console.log("Wording check passed.");

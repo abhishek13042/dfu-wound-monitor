@@ -1,0 +1,13 @@
+{
+  "marker_config_version": "p09-s01-v1",
+  "description": "Printed ArUco reference marker. Print docs/measurement/marker_sheet_v1.pdf at 100% scale and check the 50 mm square with a ruler. The marker is searched for in every analysed photo; a marker that is not found leaves the scale to the user's value or to pixels.",
+  "enabled": true,
+  "dictionary": "DICT_4X4_50",
+  "marker_id": 7,
+  "side_mm": 40.0,
+  "min_side_px": 60,
+  "max_side_ratio": 1.15,
+  "max_corner_deviation_deg": 12.0,
+  "border_margin_px": 3,
+  "conflict_tolerance_pct": 5.0
+}

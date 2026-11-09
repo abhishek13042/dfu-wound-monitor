@@ -25,21 +25,22 @@ import json
 import sys
 import tempfile
 import time
-import uuid
 import urllib.error
 import urllib.request
+import uuid
 import warnings
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 DEFAULT_IMAGE = PROJECT_ROOT / "data/raw/FUSeg2021/source/data/Foot Ulcer Segmentation Challenge/test/images/1011.png"
-Response = Tuple[int, Dict[str, Any], bytes]
+Response = tuple[int, dict[str, Any], bytes]
 
 
-def _multipart(field: str, filename: str, data: bytes) -> Tuple[bytes, str]:
+def _multipart(field: str, filename: str, data: bytes) -> tuple[bytes, str]:
     boundary = uuid.uuid4().hex
     body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"{field}\"; filename=\"{filename}\"\r\n"
             f"Content-Type: application/octet-stream\r\n\r\n").encode() + data + f"\r\n--{boundary}--\r\n".encode()
@@ -47,7 +48,7 @@ def _multipart(field: str, filename: str, data: bytes) -> Tuple[bytes, str]:
 
 
 def http_client(base: str) -> Callable[..., Response]:
-    def request(method: str, path: str, upload: Optional[bytes] = None) -> Response:
+    def request(method: str, path: str, upload: bytes | None = None) -> Response:
         data, headers = None, {}
         if upload is not None:
             data, content_type = _multipart("file", "smoke.png", upload)
@@ -66,7 +67,7 @@ def http_client(base: str) -> Callable[..., Response]:
     return request
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--url", help="base URL of a running service; default: in-process app")
     parser.add_argument("--image", type=Path, default=DEFAULT_IMAGE)
@@ -75,7 +76,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     from src.inference.engine import DEFAULT_INFERENCE_CONFIG, InferenceConfig
 
     expected = InferenceConfig.load(DEFAULT_INFERENCE_CONFIG)
-    results: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
 
     def check(name: str, ok: bool, detail: Any = "") -> None:
         results.append({"check": name, "passed": bool(ok), "detail": detail})
@@ -122,7 +123,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         with tempfile.TemporaryDirectory() as tmp, \
                 TestClient(create_app(ApiSettings(data_dir=Path(tmp)))) as client:
 
-            def call(method: str, path: str, upload: Optional[bytes] = None) -> Response:
+            def call(method: str, path: str, upload: bytes | None = None) -> Response:
                 files = {"file": ("smoke.png", upload, "application/octet-stream")} if upload is not None else None
                 response = client.request(method, path, files=files)
                 try:

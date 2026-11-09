@@ -9,12 +9,12 @@ from __future__ import annotations
 
 import hashlib
 from collections import defaultdict
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 from PIL import Image
-
 
 OFFICIAL_SPLITS = ("train", "validation", "test")
 SPLIT_NAMES = {"train": "train", "validation": "val", "test": "test"}
@@ -33,7 +33,7 @@ def compute_sha256(path: Path, chunk_size: int = 1024 * 1024) -> str:
     return digest.hexdigest()
 
 
-def _relative_path(path: Optional[Path], project_root: Path) -> Optional[str]:
+def _relative_path(path: Path | None, project_root: Path) -> str | None:
     """Represent a local path relative to the project for portable manifests."""
 
     if path is None:
@@ -46,7 +46,7 @@ def _relative_path(path: Optional[Path], project_root: Path) -> Optional[str]:
         ) from error
 
 
-def _image_files(directory: Path) -> List[Path]:
+def _image_files(directory: Path) -> list[Path]:
     """List supported image files in deterministic order."""
 
     if not directory.is_dir():
@@ -61,10 +61,10 @@ def _image_files(directory: Path) -> List[Path]:
     )
 
 
-def _decode_image(path: Path) -> Tuple[bool, Dict[str, Any], Optional[str]]:
+def _decode_image(path: Path) -> tuple[bool, dict[str, Any], str | None]:
     """Decode an image and return metadata plus an explicit failure reason."""
 
-    metadata: Dict[str, Any] = {"path": str(path)}
+    metadata: dict[str, Any] = {"path": str(path)}
     try:
         with Image.open(path) as image:
             image.verify()
@@ -91,10 +91,10 @@ def _inspect_mask(
     path: Path,
     expected_width: int,
     expected_height: int,
-) -> Tuple[bool, Dict[str, Any], Optional[str]]:
+) -> tuple[bool, dict[str, Any], str | None]:
     """Validate a FUSeg binary mask without silently normalizing source bytes."""
 
-    metadata: Dict[str, Any] = {"path": str(path)}
+    metadata: dict[str, Any] = {"path": str(path)}
     try:
         with Image.open(path) as mask_image:
             mask_image.load()
@@ -132,10 +132,10 @@ def _inspect_mask(
         return False, metadata, "unreadable_mask"
 
 
-def _duplicate_groups(records: Iterable[Dict[str, Any]], key: str) -> Dict[str, List[str]]:
+def _duplicate_groups(records: Iterable[dict[str, Any]], key: str) -> dict[str, list[str]]:
     """Group sample IDs by a checksum field, retaining only duplicate groups."""
 
-    grouped: Dict[str, List[str]] = defaultdict(list)
+    grouped: dict[str, list[str]] = defaultdict(list)
     for record in records:
         checksum = record.get(key)
         if checksum:
@@ -149,7 +149,7 @@ def build_fuseg_manifest(
     dataset_version: str,
     source_commit: str,
     source_content_digest: str,
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """Inspect FUSeg2021 and build a manifest plus a machine-readable quality report.
 
     The first valid occurrence of an exact duplicate image is retained using
@@ -164,8 +164,8 @@ def build_fuseg_manifest(
     if not source_root.is_dir():
         raise FileNotFoundError(f"FUSeg source root not found: {source_root}")
 
-    records: List[Dict[str, Any]] = []
-    split_quality: Dict[str, Any] = {}
+    records: list[dict[str, Any]] = []
+    split_quality: dict[str, Any] = {}
     for official_split in OFFICIAL_SPLITS:
         split_root = source_root / official_split
         image_root = split_root / "images"
@@ -175,7 +175,7 @@ def build_fuseg_manifest(
         label_by_stem = {path.stem: path for path in label_paths}
         image_stems = {path.stem for path in image_paths}
 
-        split_report: Dict[str, Any] = {
+        split_report: dict[str, Any] = {
             "official_split": official_split,
             "image_count": len(image_paths),
             "label_count": len(label_paths),
@@ -196,8 +196,8 @@ def build_fuseg_manifest(
             image_checksum = compute_sha256(image_path) if image_valid else None
             mask_path = label_by_stem.get(sample_id)
             mask_valid = False
-            mask_metadata: Dict[str, Any] = {}
-            mask_issue: Optional[str] = None
+            mask_metadata: dict[str, Any] = {}
+            mask_issue: str | None = None
             if official_split != "test" and mask_path is None:
                 mask_issue = "missing_annotation"
             elif mask_path is not None and image_valid:
@@ -261,7 +261,7 @@ def build_fuseg_manifest(
             )
         split_quality[official_split] = split_report
 
-    records_by_image_checksum: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    records_by_image_checksum: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for record in records:
         if record.get("checksum_sha256"):
             records_by_image_checksum[record["checksum_sha256"]].append(record)
@@ -291,7 +291,7 @@ def build_fuseg_manifest(
     # Prefer a record with a usable supervised mask.  Otherwise an invalid
     # train copy could quarantine a valid validation copy and silently remove
     # an otherwise trainable sample from the manifest.
-    for checksum, group in records_by_image_checksum.items():
+    for group in records_by_image_checksum.values():
         ordered_group = sorted(
             group,
             key=lambda record: (

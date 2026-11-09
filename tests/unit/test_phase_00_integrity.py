@@ -2,11 +2,12 @@
 Unit test suite verifying Phase 00 specification and project setup integrity.
 """
 
-from pathlib import Path
 import unittest
-from scripts.verify_phase_00 import (
-    verify_phase_00_specifications,
+from pathlib import Path
+
+from scripts.verification.verify_phase_00 import (
     verify_master_tracker,
+    verify_phase_00_specifications,
     verify_traceability_matrix,
 )
 

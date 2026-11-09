@@ -1,0 +1,26 @@
+{
+  "report": "P07-S06 ONNX export",
+  "generated_utc": "2026-11-04T17:44:36+00:00",
+  "command": "python scripts/deployment/export_onnx.py ",
+  "model_path": "models/onnx/spec-02-03/resnet34_unet_512.onnx",
+  "model_sha256": "d3738aed14c52b3b227226b61f56c66fd8550a705c296ad1c5a6ff124fafb698",
+  "model_version": "spec-02-03-resnet34-unet-512-onnx-v1",
+  "opset": 17,
+  "source_checkpoint_sha256": "26aca52e401f23b5781d2596d74c1fd7fa86a6af0ab9fb3db9fa17dcffb5cf04",
+  "source_inference_config_sha256": "ce6884dcb6f3cb5e08ebaf132f7ef1e8cace6df24dcf8884a90717ad006b31a4",
+  "note": "Same weights, preprocessing and post-processing as the PyTorch model. Flip TTA is applied by the engine, one session call per view.",
+  "onnx_size_bytes": 97730777,
+  "checkpoint_size_bytes": 293565633,
+  "dynamic_axes": [
+    "batch",
+    "height",
+    "width"
+  ],
+  "onnx_config": "configs/inference/spec_02_03_onnx_inference.json",
+  "versions": {
+    "torch": "2.14.1+cpu",
+    "onnx": "1.22.0",
+    "onnxruntime": "1.29.0",
+    "python": "3.14.0"
+  }
+}

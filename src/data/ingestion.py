@@ -11,7 +11,7 @@ Coding Style: Beginner-Understandable Python
 import hashlib
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 def compute_sha256_checksum(file_path: Path, buffer_size: int = 65536) -> str:
@@ -76,9 +76,9 @@ def is_supported_annotation_format(file_path: Path) -> bool:
 def ingest_dataset_directory(
     dataset_name: str,
     source_images_dir: Path,
-    source_annotations_dir: Optional[Path],
+    source_annotations_dir: Path | None,
     destination_raw_dir: Path,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Ingest images and annotations into the data/raw/ storage layer.
 
@@ -114,11 +114,11 @@ def ingest_dataset_directory(
     if source_annotations_dir is not None:
         target_annotations_dir.mkdir(parents=True, exist_ok=True)
 
-    accepted_samples: List[Dict[str, Any]] = []
-    unsupported_files: List[str] = []
-    errors: List[Dict[str, str]] = []
-    discovered_checksums: Dict[str, str] = {}
-    duplicate_files: List[Dict[str, str]] = []
+    accepted_samples: list[dict[str, Any]] = []
+    unsupported_files: list[str] = []
+    errors: list[dict[str, str]] = []
+    discovered_checksums: dict[str, str] = {}
+    duplicate_files: list[dict[str, str]] = []
 
     sorted_image_files = sorted(source_images_dir.iterdir(), key=lambda path: path.name)
 
@@ -144,7 +144,7 @@ def ingest_dataset_directory(
         else:
             discovered_checksums[checksum] = sample_id
 
-        annotation_path: Optional[Path] = None
+        annotation_path: Path | None = None
         if source_annotations_dir is not None and source_annotations_dir.exists():
             for extension in [".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"]:
                 candidate_path = source_annotations_dir / f"{sample_id}{extension}"

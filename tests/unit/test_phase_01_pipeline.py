@@ -5,16 +5,14 @@ Tests P01-S01 through P01-S06 logic for correctness, determinism, and data safet
 """
 
 import json
-from pathlib import Path
 import unittest
-import numpy as np
-from PIL import Image
+from pathlib import Path
 
-from src.data.ingestion import compute_sha256_checksum, is_supported_image_format
-from src.data.validation import validate_bounding_box, validate_segmentation_mask
-from src.data.schema import map_source_label_to_canonical, create_canonical_sample_metadata
-from src.data.splitting import generate_deterministic_splits, verify_split_leakage
 from src.data.eda import compute_dataset_statistics
+from src.data.ingestion import compute_sha256_checksum
+from src.data.schema import map_source_label_to_canonical
+from src.data.splitting import generate_deterministic_splits, verify_split_leakage
+from src.data.validation import validate_bounding_box
 
 
 class TestPhase01Pipeline(unittest.TestCase):
@@ -31,7 +29,7 @@ class TestPhase01Pipeline(unittest.TestCase):
         """P01-S01: Verify dataset registry exists and contains required dataset entries."""
         self.assertTrue(self.registry_path.exists(), "Dataset registry JSON file is missing.")
 
-        with open(self.registry_path, "r", encoding="utf-8") as f:
+        with open(self.registry_path, encoding="utf-8") as f:
             data = json.load(f)
 
         datasets = data.get("datasets", [])

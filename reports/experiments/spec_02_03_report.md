@@ -147,7 +147,7 @@ a reported figure at three decimals, except mean HD95 (0.004 px).
 - Config: `configs/training/segmentation_resnet34_unet_512.json` (resolved copy
   in `experiment_record.json`).
 - Manifests: `fuseg2021-heldout-v1` and `lowerlimb-v3-external-v1`.
-- Launch: `python scripts/launch_kaggle_spec_02_03.py --username <user> --all`.
+- Launch: `python scripts/training/kaggle/launch_kaggle_spec_02_03.py --username <user> --all`.
 - Seed 42 with `deterministic=false` (cuDNN autotune + AMP). Reruns agree
   closely but not bit-for-bit.
 - Resume: the latest-checkpoint resume path is verified by the CPU

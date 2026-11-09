@@ -9,7 +9,6 @@ data
 models
 runtime
 reports
-notebooks
 tests
 dist
 *.pth

@@ -1,0 +1,663 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-02T08:40:50+00:00",
+  "title": "Design System: DFU-WoundMonitor",
+  "extensions": {
+    "colorMeta": {
+      "aubergine": {
+        "role": "primary",
+        "displayName": "Aubergine Shell",
+        "canonical": "#2a1530",
+        "tonalRamp": [
+          "oklch(15% 0.049 318)",
+          "oklch(26% 0.055 318)",
+          "oklch(38% 0.044 318)",
+          "oklch(49% 0.034 318)",
+          "oklch(61% 0.023 318)",
+          "oklch(72% 0.013 318)",
+          "oklch(84% 0.009 318)",
+          "oklch(95% 0.009 318)"
+        ]
+      },
+      "aubergine-2": {
+        "role": "primary",
+        "displayName": "Lifted Aubergine",
+        "canonical": "#41254a",
+        "tonalRamp": [
+          "oklch(15% 0.053 318)",
+          "oklch(26% 0.066 318)",
+          "oklch(38% 0.066 318)",
+          "oklch(49% 0.052 318)",
+          "oklch(61% 0.039 318)",
+          "oklch(72% 0.026 318)",
+          "oklch(84% 0.012 318)",
+          "oklch(95% 0.011 318)"
+        ]
+      },
+      "rail-ink": {
+        "role": "primary",
+        "displayName": "Label Ink on Aubergine",
+        "canonical": "#f3ecf4",
+        "tonalRamp": [
+          "oklch(15% 0.002 322)",
+          "oklch(26% 0.002 322)",
+          "oklch(38% 0.002 322)",
+          "oklch(49% 0.003 322)",
+          "oklch(61% 0.006 322)",
+          "oklch(72% 0.008 322)",
+          "oklch(84% 0.011 322)",
+          "oklch(95% 0.013 322)"
+        ]
+      },
+      "rail-muted": {
+        "role": "primary",
+        "displayName": "Faded Label Ink",
+        "canonical": "#cdbcd1",
+        "tonalRamp": [
+          "oklch(15% 0.005 320)",
+          "oklch(26% 0.005 320)",
+          "oklch(38% 0.010 320)",
+          "oklch(49% 0.017 320)",
+          "oklch(61% 0.023 320)",
+          "oklch(72% 0.029 320)",
+          "oklch(84% 0.033 320)",
+          "oklch(95% 0.027 320)"
+        ]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Reagent Ground",
+        "canonical": "#e9f0e4",
+        "tonalRamp": [
+          "oklch(15% 0.003 132)",
+          "oklch(26% 0.003 132)",
+          "oklch(38% 0.003 132)",
+          "oklch(49% 0.005 132)",
+          "oklch(61% 0.008 132)",
+          "oklch(72% 0.011 132)",
+          "oklch(84% 0.014 132)",
+          "oklch(95% 0.017 132)"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Label White",
+        "canonical": "#fdfefb",
+        "tonalRamp": [
+          "oklch(15% 0.001 122)",
+          "oklch(26% 0.001 122)",
+          "oklch(38% 0.001 122)",
+          "oklch(49% 0.001 122)",
+          "oklch(61% 0.002 122)",
+          "oklch(72% 0.002 122)",
+          "oklch(84% 0.003 122)",
+          "oklch(95% 0.004 122)"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Pale Reagent",
+        "canonical": "#dfe7d9",
+        "tonalRamp": [
+          "oklch(15% 0.003 131)",
+          "oklch(26% 0.003 131)",
+          "oklch(38% 0.003 131)",
+          "oklch(49% 0.007 131)",
+          "oklch(61% 0.010 131)",
+          "oklch(72% 0.014 131)",
+          "oklch(84% 0.018 131)",
+          "oklch(95% 0.020 131)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#1d1620",
+        "tonalRamp": [
+          "oklch(15% 0.020 316)",
+          "oklch(26% 0.020 316)",
+          "oklch(38% 0.016 316)",
+          "oklch(49% 0.012 316)",
+          "oklch(61% 0.008 316)",
+          "oklch(72% 0.004 316)",
+          "oklch(84% 0.003 316)",
+          "oklch(95% 0.003 316)"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Second Ink",
+        "canonical": "#4b4451",
+        "tonalRamp": [
+          "oklch(15% 0.014 309)",
+          "oklch(26% 0.018 309)",
+          "oklch(38% 0.023 309)",
+          "oklch(49% 0.020 309)",
+          "oklch(61% 0.016 309)",
+          "oklch(72% 0.011 309)",
+          "oklch(84% 0.007 309)",
+          "oklch(95% 0.003 309)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#bcc7b4",
+        "tonalRamp": [
+          "oklch(15% 0.004 132)",
+          "oklch(26% 0.004 132)",
+          "oklch(38% 0.009 132)",
+          "oklch(49% 0.014 132)",
+          "oklch(61% 0.019 132)",
+          "oklch(72% 0.024 132)",
+          "oklch(84% 0.028 132)",
+          "oklch(95% 0.023 132)"
+        ]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Rule",
+        "canonical": "#7f8a79",
+        "tonalRamp": [
+          "oklch(15% 0.007 134)",
+          "oklch(26% 0.012 134)",
+          "oklch(38% 0.017 134)",
+          "oklch(49% 0.022 134)",
+          "oklch(61% 0.028 134)",
+          "oklch(72% 0.024 134)",
+          "oklch(84% 0.018 134)",
+          "oklch(95% 0.013 134)"
+        ]
+      },
+      "pass": {
+        "role": "secondary",
+        "displayName": "Pad Green",
+        "canonical": "#1f7a4a",
+        "tonalRamp": [
+          "oklch(15% 0.047 155)",
+          "oklch(26% 0.068 155)",
+          "oklch(38% 0.088 155)",
+          "oklch(49% 0.109 155)",
+          "oklch(61% 0.096 155)",
+          "oklch(72% 0.076 155)",
+          "oklch(84% 0.055 155)",
+          "oklch(95% 0.034 155)"
+        ]
+      },
+      "pass-wash": {
+        "role": "secondary",
+        "displayName": "Pad Green Wash",
+        "canonical": "#dceee2",
+        "tonalRamp": [
+          "oklch(15% 0.004 157)",
+          "oklch(26% 0.004 157)",
+          "oklch(38% 0.004 157)",
+          "oklch(49% 0.007 157)",
+          "oklch(61% 0.012 157)",
+          "oklch(72% 0.016 157)",
+          "oklch(84% 0.021 157)",
+          "oklch(95% 0.024 157)"
+        ]
+      },
+      "reject": {
+        "role": "secondary",
+        "displayName": "Oxide Rust",
+        "canonical": "#ad3a17",
+        "tonalRamp": [
+          "oklch(15% 0.066 36)",
+          "oklch(26% 0.095 36)",
+          "oklch(38% 0.124 36)",
+          "oklch(49% 0.153 36)",
+          "oklch(61% 0.133 36)",
+          "oklch(72% 0.104 36)",
+          "oklch(84% 0.075 36)",
+          "oklch(95% 0.046 36)"
+        ]
+      },
+      "reject-wash": {
+        "role": "secondary",
+        "displayName": "Oxide Rust Wash",
+        "canonical": "#f8e4dc",
+        "tonalRamp": [
+          "oklch(15% 0.004 43)",
+          "oklch(26% 0.004 43)",
+          "oklch(38% 0.004 43)",
+          "oklch(49% 0.007 43)",
+          "oklch(61% 0.012 43)",
+          "oklch(72% 0.016 43)",
+          "oklch(84% 0.021 43)",
+          "oklch(95% 0.024 43)"
+        ]
+      },
+      "failure": {
+        "role": "secondary",
+        "displayName": "Reagent Magenta",
+        "canonical": "#a3146b",
+        "tonalRamp": [
+          "oklch(15% 0.089 350)",
+          "oklch(26% 0.123 350)",
+          "oklch(38% 0.158 350)",
+          "oklch(49% 0.183 350)",
+          "oklch(61% 0.149 350)",
+          "oklch(72% 0.115 350)",
+          "oklch(84% 0.081 350)",
+          "oklch(95% 0.046 350)"
+        ]
+      },
+      "failure-2": {
+        "role": "secondary",
+        "displayName": "Deep Magenta",
+        "canonical": "#7f0f53",
+        "tonalRamp": [
+          "oklch(15% 0.093 350)",
+          "oklch(26% 0.122 350)",
+          "oklch(38% 0.150 350)",
+          "oklch(49% 0.132 350)",
+          "oklch(61% 0.104 350)",
+          "oklch(72% 0.076 350)",
+          "oklch(84% 0.047 350)",
+          "oklch(95% 0.023 350)"
+        ]
+      },
+      "failure-wash": {
+        "role": "secondary",
+        "displayName": "Reagent Magenta Wash",
+        "canonical": "#f7e0ee",
+        "tonalRamp": [
+          "oklch(15% 0.005 341)",
+          "oklch(26% 0.005 341)",
+          "oklch(38% 0.005 341)",
+          "oklch(49% 0.009 341)",
+          "oklch(61% 0.015 341)",
+          "oklch(72% 0.021 341)",
+          "oklch(84% 0.026 341)",
+          "oklch(95% 0.030 341)"
+        ]
+      },
+      "warn": {
+        "role": "secondary",
+        "displayName": "Mustard",
+        "canonical": "#d9a514",
+        "tonalRamp": [
+          "oklch(15% 0.023 85)",
+          "oklch(26% 0.033 85)",
+          "oklch(38% 0.061 85)",
+          "oklch(49% 0.088 85)",
+          "oklch(61% 0.116 85)",
+          "oklch(72% 0.143 85)",
+          "oklch(84% 0.130 85)",
+          "oklch(95% 0.102 85)"
+        ]
+      },
+      "warn-ink": {
+        "role": "secondary",
+        "displayName": "Mustard Ink",
+        "canonical": "#664800",
+        "tonalRamp": [
+          "oklch(15% 0.049 81)",
+          "oklch(26% 0.065 81)",
+          "oklch(38% 0.081 81)",
+          "oklch(49% 0.078 81)",
+          "oklch(61% 0.062 81)",
+          "oklch(72% 0.046 81)",
+          "oklch(84% 0.030 81)",
+          "oklch(95% 0.014 81)"
+        ]
+      },
+      "warn-wash": {
+        "role": "secondary",
+        "displayName": "Mustard Wash",
+        "canonical": "#fbf1cf",
+        "tonalRamp": [
+          "oklch(15% 0.007 94)",
+          "oklch(26% 0.007 94)",
+          "oklch(38% 0.007 94)",
+          "oklch(49% 0.012 94)",
+          "oklch(61% 0.020 94)",
+          "oklch(72% 0.028 94)",
+          "oklch(84% 0.037 94)",
+          "oklch(95% 0.045 94)"
+        ]
+      },
+      "series": {
+        "role": "tertiary",
+        "displayName": "Series Blue",
+        "canonical": "#33578f",
+        "tonalRamp": [
+          "oklch(15% 0.051 259)",
+          "oklch(26% 0.070 259)",
+          "oklch(38% 0.088 259)",
+          "oklch(49% 0.095 259)",
+          "oklch(61% 0.077 259)",
+          "oklch(72% 0.058 259)",
+          "oklch(84% 0.040 259)",
+          "oklch(95% 0.021 259)"
+        ]
+      },
+      "series-wash": {
+        "role": "tertiary",
+        "displayName": "Series Wash",
+        "canonical": "#dfe6f1",
+        "tonalRamp": [
+          "oklch(15% 0.003 259)",
+          "oklch(26% 0.003 259)",
+          "oklch(38% 0.003 259)",
+          "oklch(49% 0.005 259)",
+          "oklch(61% 0.008 259)",
+          "oklch(72% 0.011 259)",
+          "oklch(84% 0.014 259)",
+          "oklch(95% 0.016 259)"
+        ]
+      },
+      "pad-none": {
+        "role": "neutral",
+        "displayName": "Unread Pad",
+        "canonical": "#dfe7d9",
+        "tonalRamp": [
+          "oklch(15% 0.003 131)",
+          "oklch(26% 0.003 131)",
+          "oklch(38% 0.003 131)",
+          "oklch(49% 0.007 131)",
+          "oklch(61% 0.010 131)",
+          "oklch(72% 0.014 131)",
+          "oklch(84% 0.018 131)",
+          "oklch(95% 0.020 131)"
+        ]
+      },
+      "photo-1": {
+        "role": "neutral",
+        "displayName": "Placeholder Stone Light",
+        "canonical": "#a79c93",
+        "tonalRamp": [
+          "oklch(15% 0.003 62)",
+          "oklch(26% 0.006 62)",
+          "oklch(38% 0.009 62)",
+          "oklch(49% 0.012 62)",
+          "oklch(61% 0.016 62)",
+          "oklch(72% 0.018 62)",
+          "oklch(84% 0.014 62)",
+          "oklch(95% 0.011 62)"
+        ]
+      },
+      "photo-2": {
+        "role": "neutral",
+        "displayName": "Placeholder Stone",
+        "canonical": "#8d8279",
+        "tonalRamp": [
+          "oklch(15% 0.005 62)",
+          "oklch(26% 0.008 62)",
+          "oklch(38% 0.012 62)",
+          "oklch(49% 0.015 62)",
+          "oklch(61% 0.019 62)",
+          "oklch(72% 0.016 62)",
+          "oklch(84% 0.012 62)",
+          "oklch(95% 0.009 62)"
+        ]
+      },
+      "photo-3": {
+        "role": "neutral",
+        "displayName": "Placeholder Stone Dark",
+        "canonical": "#6f655e",
+        "tonalRamp": [
+          "oklch(15% 0.007 57)",
+          "oklch(26% 0.010 57)",
+          "oklch(38% 0.013 57)",
+          "oklch(49% 0.016 57)",
+          "oklch(61% 0.014 57)",
+          "oklch(72% 0.011 57)",
+          "oklch(84% 0.008 57)",
+          "oklch(95% 0.005 57)"
+        ]
+      },
+      "photo-ink": {
+        "role": "neutral",
+        "displayName": "Placeholder Ink",
+        "canonical": "#f6f2ee",
+        "tonalRamp": [
+          "oklch(15% 0.001 68)",
+          "oklch(26% 0.001 68)",
+          "oklch(38% 0.001 68)",
+          "oklch(49% 0.002 68)",
+          "oklch(61% 0.003 68)",
+          "oklch(72% 0.004 68)",
+          "oklch(84% 0.005 68)",
+          "oklch(95% 0.007 68)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing headline from 640px up; Archivo 700 at 75% width."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles from 640px up; Archivo 700 at 78% width."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Phone page titles and landing section headings."
+      },
+      "title-sm": {
+        "displayName": "Title Small",
+        "purpose": "Panel and dialog headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text and field input, 60-75ch."
+      },
+      "body-sm": {
+        "displayName": "Body Small",
+        "purpose": "Table cells, buttons, navigation, panel copy."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Column headers, units, metadata, provenance rows."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Pad names, stacked-row labels, Changed marker."
+      },
+      "value": {
+        "displayName": "Value",
+        "purpose": "Spline Sans Mono with tabular figures, only for values, IDs and dates; inherits context size."
+      }
+    },
+    "shadows": [
+      {
+        "name": "menu",
+        "value": "0 6px 20px rgb(42 21 48 / 0.2)",
+        "purpose": "Chart tooltip and confirmation dialog only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "pad-step",
+        "value": "steps(1, end) over (index + 1) * 90ms",
+        "purpose": "Pads hold unread then snap to their result in sequence, no easing; off under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "cases-stack (container)",
+        "value": "599px"
+      },
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "cases-fold (container)",
+        "value": "820px"
+      },
+      {
+        "name": "rail",
+        "value": "900px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "app-max",
+        "value": "1180px"
+      },
+      {
+        "name": "public-max",
+        "value": "1320px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Aubergine solid button for the one main action on a surface.",
+      "html": "<button class=\"ds-btn-primary\">Retake and upload</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:2px;border:1px solid transparent;font-family:var(--font-archivo,Archivo),system-ui,sans-serif;font-size:14px;font-weight:500;cursor:pointer;background:var(--aubergine,#2a1530);color:var(--rail-ink,#f3ecf4)}.ds-btn-primary:hover{background:var(--aubergine-2,#41254a)}.ds-btn-primary:focus-visible{outline:2px solid var(--ring,#41254a);outline-offset:2px}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Hairline-bordered secondary action and pagination control.",
+      "html": "<button class=\"ds-btn-outline\">Keep it</button>",
+      "css": ".ds-btn-outline{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:2px;border:1px solid transparent;font-family:var(--font-archivo,Archivo),system-ui,sans-serif;font-size:14px;font-weight:500;cursor:pointer;background:var(--ground,#e9f0e4);color:var(--foreground,#1d1620);border-color:var(--border,#bcc7b4)}.ds-btn-outline:hover{background:var(--secondary,#dfe7d9)}.ds-btn-outline:focus-visible{outline:2px solid var(--ring,#41254a);outline-offset:2px}"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Magenta solid button, only for irreversible actions after typed confirmation.",
+      "html": "<button class=\"ds-btn-destructive\">Delete case</button>",
+      "css": ".ds-btn-destructive{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:2px;border:1px solid transparent;font-family:var(--font-archivo,Archivo),system-ui,sans-serif;font-size:14px;font-weight:500;cursor:pointer;background:var(--destructive,#a3146b);color:#fff}.ds-btn-destructive:hover{background:var(--failure-2,#7f0f53)}.ds-btn-destructive:focus-visible{outline:2px solid var(--ring,#41254a);outline-offset:2px}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Square text field on label white; ink border on hover, rust border when invalid.",
+      "html": "<label class=\"ds-field-label\">Case label<input class=\"ds-field\" placeholder=\"Constructed series A\"></label>",
+      "css": ".ds-field-label{display:block;font-family:var(--font-archivo,Archivo),system-ui,sans-serif;font-size:14px;font-weight:500;color:var(--foreground,#1d1620)}.ds-field{display:block;width:100%;margin-top:4px;min-height:44px;padding:9px 12px;background:var(--panel,#fdfefb);border:1px solid var(--rule-strong,#7f8a79);border-radius:2px;font-family:var(--font-archivo,Archivo),system-ui,sans-serif;font-size:16px;color:inherit}.ds-field:hover{border-color:var(--foreground,#1d1620)}.ds-field:focus-visible{outline:2px solid var(--ring,#41254a);outline-offset:2px}.ds-field[aria-invalid=true]{border-color:var(--reject,#ad3a17)}"
+    },
+    {
+      "name": "Rail Navigation",
+      "kind": "nav",
+      "refersTo": "rail",
+      "description": "Aubergine shell rail; the active item inverts to label ink.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-item\" aria-current=\"page\" href=\"#\">Cases</a><a class=\"ds-rail-item\" href=\"#\">New analysis</a><a class=\"ds-rail-item\" href=\"#\">Account</a></nav>",
+      "css": ".ds-rail{display:flex;flex-direction:column;width:220px;padding:8px;background:var(--aubergine,#2a1530)}.ds-rail-item{display:flex;align-items:center;height:44px;padding:0 12px;border-radius:2px;font-family:var(--font-archivo,Archivo),system-ui,sans-serif;font-size:14px;font-weight:500;color:var(--rail-ink,#f3ecf4);text-decoration:none}.ds-rail-item:hover{background:var(--aubergine-2,#41254a)}.ds-rail-item[aria-current=page]{background:var(--rail-ink,#f3ecf4);color:var(--aubergine,#2a1530)}.ds-rail-item:focus-visible{outline:2px solid var(--rail-ink,#f3ecf4);outline-offset:2px}"
+    },
+    {
+      "name": "Reading Strip",
+      "kind": "custom",
+      "refersTo": "pad-pass",
+      "description": "Signature: nine square pads in fixed order, each with a drawn mark; failed names follow in rust.",
+      "html": "<div class=\"ds-strip\"><div class=\"ds-pads\" role=\"img\" aria-label=\"Quality reading: 7 of 9 checks passed; failed: Sharpness, Glare.\"><span class=\"ds-pad\" data-state=\"pass\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M3.5 8.5 6.5 11.5 12.5 4.5\"/></svg></span><span class=\"ds-pad\" data-state=\"pass\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M3.5 8.5 6.5 11.5 12.5 4.5\"/></svg></span><span class=\"ds-pad\" data-state=\"pass\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M3.5 8.5 6.5 11.5 12.5 4.5\"/></svg></span><span class=\"ds-pad\" data-state=\"pass\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M3.5 8.5 6.5 11.5 12.5 4.5\"/></svg></span><span class=\"ds-pad\" data-state=\"fail\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M4 4 12 12M12 4 4 12\"/></svg></span><span class=\"ds-pad\" data-state=\"pass\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M3.5 8.5 6.5 11.5 12.5 4.5\"/></svg></span><span class=\"ds-pad\" data-state=\"pass\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M3.5 8.5 6.5 11.5 12.5 4.5\"/></svg></span><span class=\"ds-pad\" data-state=\"pass\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M3.5 8.5 6.5 11.5 12.5 4.5\"/></svg></span><span class=\"ds-pad\" data-state=\"fail\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M4 4 12 12M12 4 4 12\"/></svg></span></div><span class=\"ds-strip-failed\">Sharpness, Glare</span></div>",
+      "css": ".ds-pad{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:2px;color:var(--panel,#fdfefb)}.ds-pad[data-state=pass]{background:var(--pass,#1f7a4a)}.ds-pad[data-state=fail]{background:var(--reject,#ad3a17)}.ds-pad[data-state=none]{background:var(--pad-none,#dfe7d9);color:var(--muted-foreground,#4b4451);box-shadow:inset 0 0 0 1px var(--rule-strong,#7f8a79)}.ds-strip{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.ds-pads{display:flex;gap:2px}.ds-strip-failed{font-family:var(--font-archivo,Archivo),system-ui,sans-serif;font-size:13px;line-height:18px;color:var(--reject,#ad3a17)}"
+    },
+    {
+      "name": "State Tag",
+      "kind": "chip",
+      "refersTo": "pad-pass",
+      "description": "Text state with a pad (Measured, Refused) or a line icon (Running in series blue). Never a pill.",
+      "html": "<span class=\"ds-state ds-state-pass\"><span class=\"ds-pad\" data-state=\"pass\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M3.5 8.5 6.5 11.5 12.5 4.5\"/></svg></span>Measured</span> <span class=\"ds-state ds-state-fail\"><span class=\"ds-pad\" data-state=\"fail\"><svg viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"square\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M4 4 12 12M12 4 4 12\"/></svg></span>Refused</span> <span class=\"ds-state ds-state-running\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M12 2v4M12 18v4M4.9 4.9l2.9 2.9M16.2 16.2l2.9 2.9M2 12h4M18 12h4M4.9 19.1l2.9-2.9M16.2 7.8l2.9-2.9\"/></svg>Running</span>",
+      "css": ".ds-pad{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:2px;color:var(--panel,#fdfefb)}.ds-pad[data-state=pass]{background:var(--pass,#1f7a4a)}.ds-pad[data-state=fail]{background:var(--reject,#ad3a17)}.ds-pad[data-state=none]{background:var(--pad-none,#dfe7d9);color:var(--muted-foreground,#4b4451);box-shadow:inset 0 0 0 1px var(--rule-strong,#7f8a79)}.ds-state{display:inline-flex;align-items:center;gap:6px;margin-right:16px;font-family:var(--font-archivo,Archivo),system-ui,sans-serif;font-size:14px;font-weight:500}.ds-state-pass{color:var(--pass,#1f7a4a)}.ds-state-fail{color:var(--reject,#ad3a17)}.ds-state-running{color:var(--series,#33578f)}"
+    },
+    {
+      "name": "Refusal Panel",
+      "kind": "card",
+      "refersTo": "refusal-panel",
+      "description": "Rust-bordered wash panel naming each failed check and how to retake.",
+      "html": "<section class=\"ds-refusal\" role=\"alert\"><h2>Why it was refused</h2><p>The photo failed the checks below, so it was not segmented and no value exists for it.</p><p class=\"ds-refusal-check\"><strong>Sharpness. The photo is out of focus or moved.</strong><br>Hold the camera still, tap to focus and retake.</p></section>",
+      "css": ".ds-refusal{padding:20px;background:var(--reject-wash,#f8e4dc);border:1px solid var(--reject,#ad3a17);border-radius:2px;font-family:var(--font-archivo,Archivo),system-ui,sans-serif;color:var(--foreground,#1d1620)}.ds-refusal h2{margin:0;font-size:20px;line-height:26px;font-weight:700;font-stretch:78%}.ds-refusal p{margin:4px 0 0;font-size:14px;line-height:20px}.ds-refusal .ds-refusal-check{margin-top:16px}"
+    },
+    {
+      "name": "Warning Row",
+      "kind": "custom",
+      "refersTo": "warning",
+      "description": "Mustard-bordered caution row; icon in mustard ink.",
+      "html": "<p class=\"ds-warn\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01\"/></svg>No scale was given, so values are in pixels.</p>",
+      "css": ".ds-warn{display:flex;gap:8px;align-items:flex-start;margin:0;padding:8px 12px;background:var(--warn-wash,#fbf1cf);border:1px solid var(--warn,#d9a514);font-family:var(--font-archivo,Archivo),system-ui,sans-serif;font-size:14px;line-height:20px;color:var(--foreground,#1d1620)}.ds-warn svg{flex:none;margin-top:2px;color:var(--warn-ink,#664800)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Reagent Key",
+    "overview": "The system is built like the colour key printed on a reagent bottle label. A dark aubergine shell holds pale reagent-green ground, white label panels sit on that ground, and every result is read against a row of square pads in fixed reading colours. Each colour means one thing. Green is pass, rust is a quality refusal, magenta is a system failure, amber is a caution, and blue is the one hue that carries no verdict at all.\n\nDensity is high and calm. A table row carries the strip, the value with its unit and basis, the date and the state without extra whitespace, and the columns stay where they are while only the values change. Hairline rules separate things, 2px corners keep everything square, and there is almost no shadow. Archivo, narrowed to 78% width, sets every heading. A tabular mono is used only for values. Motion is a hard step with no easing.\n\nThe build is light-only on purpose. It is neither a white-and-teal clinical dashboard nor a dark imaging viewer.",
+    "keyCharacteristics": [
+      "Aubergine shell (rail or header), reagent-green ground, white panels with hairline borders.",
+      "Five verdict-bearing hues and one neutral series hue, never swapped.",
+      "Square pads with a drawn mark (tick, cross, dash), so colour never stands alone.",
+      "2px radius on every surface and control.",
+      "Condensed Archivo headings, Spline Sans Mono only for values, IDs and dates.",
+      "Pads step to their result in hard 90 ms frames. Nothing else moves."
+    ],
+    "rules": [
+      {
+        "name": "The One Meaning Rule",
+        "body": "Pass is green, a quality refusal is rust, and a system failure is magenta. The three are never interchangeable, and none of them ever decorates. If a colour does not state a verdict, it is a neutral or Series Blue.",
+        "section": "colors"
+      },
+      {
+        "name": "The No-Verdict Hue Rule",
+        "body": "Series Blue is the only colour for states and data that have no verdict yet or need none: the mask, Running, and the calibrated series. Do not use a verdict colour for an in-progress state, and do not use Series Blue for a result.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink-for-Text Rule",
+        "body": "Mustard is a border and fill colour. Caution text and icons always use Mustard Ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mono Is Data Rule",
+        "body": "Spline Sans Mono appears only on values, IDs and dates. It is never used for a heading, a label, a button or decoration. A metadata line is sans, with only the ID inside it in mono. When a value cell has no value (\"None\"), the word goes back to sans.",
+        "section": "typography"
+      },
+      {
+        "name": "The Condensed Heading Rule",
+        "body": "Headings 1 to 3 are Archivo Bold at 78% width with balanced wrapping. Width carries the hierarchy, so headings never go uppercase or get letter-spacing.",
+        "section": "typography"
+      },
+      {
+        "name": "The Fixed Precision Rule",
+        "body": "Values in a column show the same number of decimals (17.0 mm, never 17 mm). Physical values use one decimal, pixel values none. Negative values use a true minus sign. Dates read \"31 Oct 2026\".",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Label Rule",
+        "body": "Panels, tables, pads and buttons have no shadow. If a surface does not float above the page, it has no shadow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Translucency Rule",
+        "body": "The segmentation mask, in Series Blue at an opacity the user sets (55% by default), is the only translucent layer drawn over content. The modal scrim (aubergine at 70%) is the only other translucent layer, and it covers the page, not content.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do state every result with a pad mark or a word as well as its colour. Colour never stands alone.",
+      "Do use Oxide Rust for a quality refusal, Reagent Magenta for a system failure and Pad Green for a pass, each with its own wash. Use Series Blue for the mask, Running and the calibrated series.",
+      "Do keep every corner at 2px and every pad square.",
+      "Do set values, units, IDs, hashes, versions and dates in Spline Sans Mono with tabular figures, at fixed precision per column.",
+      "Do keep table columns at fixed widths. On narrow widths, stack rows into labelled blocks instead of letting the columns move.",
+      "Do use Mustard Ink for caution text and keep Mustard for borders and fills.",
+      "Do make hit targets at least 44px tall and use the global 2px Lifted Aubergine focus outline.",
+      "Do mark any stand-in image as constructed, in both its accessible name and its visible label."
+    ],
+    "donts": [
+      "Don't use Pad Green, Oxide Rust or Reagent Magenta as interchangeable \"error\" or \"accent\" colours, or as decoration.",
+      "Don't show a Running or pending state in a verdict colour.",
+      "Don't set Mustard text on a light ground.",
+      "Don't use mono for headings, labels, buttons or ornament.",
+      "Don't add shadows to panels, pads or buttons. The menu shadow is for floating layers only.",
+      "Don't ease or tween result motion. Pads snap in hard steps.",
+      "Don't round pads or turn state tags into pills.",
+      "Don't add a translucent layer over content other than the segmentation mask."
+    ]
+  }
+}

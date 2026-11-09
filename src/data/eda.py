@@ -9,12 +9,13 @@ Coding Style: Beginner-Understandable Python
 
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-from PIL import Image, ImageDraw, ImageFont
+from typing import Any
+
 import numpy as np
+from PIL import Image, ImageDraw
 
 
-def compute_dataset_statistics(manifest_records: List[Dict[str, Any]]) -> Dict[str, Any]:
+def compute_dataset_statistics(manifest_records: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Compute aggregate statistical summaries across dataset samples.
 
@@ -32,14 +33,14 @@ def compute_dataset_statistics(manifest_records: List[Dict[str, Any]]) -> Dict[s
     if total_samples == 0:
         return {"error": "No manifest records provided"}
 
-    widths: List[int] = []
-    heights: List[int] = []
-    aspect_ratios: List[float] = []
-    wound_area_ratios: List[float] = []
+    widths: list[int] = []
+    heights: list[int] = []
+    aspect_ratios: list[float] = []
+    wound_area_ratios: list[float] = []
 
-    split_counts: Dict[str, int] = {"train": 0, "val": 0, "test": 0}
-    canonical_label_counts: Dict[str, int] = {}
-    issue_counts: Dict[str, int] = {}
+    split_counts: dict[str, int] = {"train": 0, "val": 0, "test": 0}
+    canonical_label_counts: dict[str, int] = {}
+    issue_counts: dict[str, int] = {}
 
     for sample in manifest_records:
         w = sample.get("width", 0)
@@ -69,7 +70,7 @@ def compute_dataset_statistics(manifest_records: List[Dict[str, Any]]) -> Dict[s
             wound_area_ratios.append(mask_stats["wound_area_ratio"])
 
     # Compute descriptive statistics
-    def get_stats(data_list: List[float]) -> Dict[str, float]:
+    def get_stats(data_list: list[int] | list[float]) -> dict[str, float]:
         if not data_list:
             return {"mean": 0.0, "min": 0.0, "max": 0.0, "median": 0.0}
         arr = np.array(data_list)
@@ -95,7 +96,7 @@ def compute_dataset_statistics(manifest_records: List[Dict[str, Any]]) -> Dict[s
 def draw_segmentation_overlay(
     image: Image.Image,
     mask_array: np.ndarray,
-    color: Tuple[int, int, int] = (255, 0, 0),
+    color: tuple[int, int, int] = (255, 0, 0),
     alpha: float = 0.4
 ) -> Image.Image:
     """
@@ -132,9 +133,9 @@ def draw_segmentation_overlay(
 
 
 def create_visualization_grid(
-    image_paths: List[Path],
-    mask_paths: List[Optional[Path]],
-    labels: List[str],
+    image_paths: list[Path],
+    mask_paths: list[Path | None],
+    labels: list[str],
     output_grid_path: Path,
     cols: int = 4
 ) -> Path:
@@ -197,7 +198,7 @@ def create_visualization_grid(
                 draw.rectangle([x_offset, y_offset, x_offset + cell_w, y_offset + 30], fill=(40, 40, 40))
                 draw.text((x_offset + 10, y_offset + 5), caption[:35], fill=(255, 255, 255))
 
-        except Exception as err:
+        except Exception:
             draw.rectangle([x_offset, y_offset, x_offset + cell_w, y_offset + cell_h], fill=(200, 100, 100))
             draw.text((x_offset + 10, y_offset + 10), f"Error loading\n{img_path.name}", fill=(255, 255, 255))
 

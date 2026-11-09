@@ -1,0 +1,35 @@
+{
+  "report": "P07-S06 ONNX parity on the FUSeg2021 held-out test split",
+  "generated_utc": "2026-11-04T18:02:30+00:00",
+  "command": "python scripts/evaluation/run_onnx_parity.py ",
+  "images": 191,
+  "manifest": "data/manifests/fuseg2021_heldout_manifest.json",
+  "pytorch": {
+    "model_version": "spec-02-03-resnet34-unet-512-v1",
+    "checkpoint_sha256": "26aca52e401f23b5781d2596d74c1fd7fa86a6af0ab9fb3db9fa17dcffb5cf04"
+  },
+  "onnx": {
+    "model_version": "spec-02-03-resnet34-unet-512-onnx-v1",
+    "model_sha256": "d3738aed14c52b3b227226b61f56c66fd8550a705c296ad1c5a6ff124fafb698",
+    "opset": 17,
+    "onnxruntime": "1.29.0"
+  },
+  "postprocessing": {
+    "threshold": 0.4,
+    "min_component_area": 128,
+    "tta": true
+  },
+  "pooled_dice": {
+    "pytorch": 0.922226,
+    "onnx": 0.922226,
+    "difference": 0.0,
+    "tolerance": 0.001
+  },
+  "probability_agreement": {
+    "max_abs_difference": 7.62939453125e-06,
+    "mean_abs_difference": 7.094597695826324e-10,
+    "pixels_changing_side_of_threshold": 0,
+    "images_with_any_mask_difference": 0
+  },
+  "parity_passed": true
+}

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import io
-from typing import Optional
 
 import numpy as np
 from PIL import Image
@@ -19,7 +18,7 @@ def _png(image: Image.Image) -> bytes:
 def mask_png(mask: np.ndarray) -> bytes:
     """Binary mask as an 8-bit PNG with values {0, 255}."""
 
-    return _png(Image.fromarray((mask.astype(np.uint8) * 255)))
+    return _png(Image.fromarray(mask.astype(np.uint8) * 255))
 
 
 def probability_png(probability: np.ndarray) -> bytes:
@@ -32,7 +31,7 @@ def decode_mask_png(data: bytes) -> np.ndarray:
     return (np.asarray(Image.open(io.BytesIO(data))) > 127).astype(np.uint8)
 
 
-def overlay_png(image: Image.Image, mask: np.ndarray, max_side: Optional[int] = 1024) -> bytes:
+def overlay_png(image: Image.Image, mask: np.ndarray, max_side: int | None = 1024) -> bytes:
     """Red translucent fill plus a yellow outline of the mask over the image."""
 
     rgb = np.asarray(image.convert("RGB"), dtype=np.float32)

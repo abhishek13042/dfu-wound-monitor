@@ -1,0 +1,8 @@
+{
+  "version": "p09-s02-v1",
+  "method": "flip_tta_v1",
+  "band_px": 8,
+  "summary_shown": true,
+  "decided_by": "reports/final/p09_s02_uncertainty.json",
+  "note": "summary_shown follows the study's decision. Set it only to what the report's decision.show_summary says; a test checks they agree."
+}

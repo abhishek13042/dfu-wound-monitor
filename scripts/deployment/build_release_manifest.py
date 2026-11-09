@@ -15,7 +15,7 @@ import json
 import platform
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -64,7 +64,7 @@ def main(argv=None) -> int:
     checkpoint_present = config.checkpoint_path.is_file()
     manifest = {
         "release": "DFU-WoundMonitor research prototype",
-        "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "git": {"commit": git("rev-parse", "HEAD"), "dirty": bool(git("status", "--porcelain", "--", ".", f":!{DEFAULT_OUTPUT.relative_to(PROJECT_ROOT).as_posix()}"))},
         "versions": {
             "service": SERVICE_VERSION, "api": API_VERSION, "inference_engine": ENGINE_VERSION,

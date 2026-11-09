@@ -9,7 +9,7 @@ import pytest
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-from scripts.verify_phase_02_metrics import (
+from scripts.verification.verify_phase_02_metrics import (
     independently_compute_metrics,
     verify_saved_predictions,
 )

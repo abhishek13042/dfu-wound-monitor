@@ -13,19 +13,19 @@ from a model-artifact problem from an unexpected runtime failure:
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class InferenceError(Exception):
     category = "MODEL"
     code = "INFERENCE_ERROR"
 
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
         super().__init__(message)
         self.message = message
         self.details = details or {}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"category": self.category, "code": self.code, "message": self.message, "details": self.details}
 
 

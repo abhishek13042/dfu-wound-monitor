@@ -20,11 +20,12 @@ This document defines the high-level architecture, module boundaries, data flow,
 | Image quality gate | `src/quality/` | P03-S02 | Implemented (thresholds calibrated on FUSeg2021 train) |
 | Measurement engine | `src/measurement/` | P03-S03 | Implemented |
 | Records, comparison, trends | `src/longitudinal/` | P04-S01..S03 | Implemented (validated with constructed series only) |
-| Persistence | `src/storage/` | P05-S02 | Implemented (SQLite + content-addressed blobs) |
-| API | `src/api/` | P05-S01 | Implemented (FastAPI `/api/v1`) |
+| Persistence | `src/storage/` | P05-S02 | Implemented (PostgreSQL or SQLite + content-addressed blobs on disk or S3) |
+| API | `src/api/` | P05-S01, P07-S03, P07-S04 | Implemented (FastAPI `/api/v1`, and signed-in `/api/v2`) |
+| Background jobs | `src/worker/` | P07-S05 | Implemented (arq on Redis; not yet run in a hosted deployment) |
 | Dashboard | `src/dashboard/` | P05-S03 | Implemented (static HTML, API-only) |
 | Validation, benchmark, release | `scripts/evaluation/`, `scripts/deployment/` | P06-S01..S03 | Implemented; see `reports/final/` and `docs/release/RELEASE.md` |
-| Detection/localization | `src/detection/` | Optional backlog | Placeholder package only; not on the default path |
+| Detection/localization | none | Optional backlog | Not implemented; not on the default path |
 
 ### As-built request flow
 
@@ -38,6 +39,19 @@ POST /api/v1/analyses (multipart image, optional examination_id, pixels_per_mm)
   -> AnalysisResponse           (measurement, quality, provenance, warnings, limitations, artifact links)
 GET /api/v1/cases/{id}/trend and /api/v1/compare apply the explicit CompatibilityPolicy.
 ```
+
+`/api/v2` runs the same pipeline in a worker:
+
+```text
+POST /api/v2/uploads            signed URL; the file goes straight to the blob store
+POST /api/v2/uploads/{id}/verify  size, hash and format; the blob moves to a permanent key
+POST /api/v2/analyses           writes a QUEUED row, sends the ID to Redis, returns 202
+worker                          claims the row with a conditional update (one winner), then runs the pipeline above
+GET  /api/v2/analyses/{id}      QUEUED or RUNNING, then COMPLETED, QUALITY_REJECTED or FAILED
+```
+
+The database row is the source of truth. Redis carries only IDs, so a redelivered or lost message costs nothing: a
+second delivery finds the row already claimed, and a sweeper re-sends jobs whose message was lost.
 
 Every error uses one envelope (`category`, `code`, `message`, `failure_class`), where
 `failure_class` is INPUT, QUALITY, MODEL, PERSISTENCE or SERVICE.
@@ -119,7 +133,7 @@ Every error uses one envelope (`category`, `code`, `message`, `failure_class`), 
 - **Function**: Assesses image blur, illumination variance, glare/reflections, and field-of-view adequacy.
 - **Output**: Quality assessment score, binary acceptance status (`ACCEPTED` / `REJECTED`), and failure reason if rejected.
 
-### Stage 2 (optional): Wound Localization (`src/detection/`)
+### Stage 2 (optional): Wound Localization (not implemented)
 - **Status**: Not on the default path. It is enabled only if an approved spec shows that full-image segmentation is inadequate, for example for very small wounds in high-resolution photos.
 - **Input**: Accepted image (`H x W x C`).
 - **Function**: Detects bounding boxes around wound candidate regions.

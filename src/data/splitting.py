@@ -11,21 +11,21 @@ Coding Style: Beginner-Understandable Python
 import json
 import random
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 
-def get_sample_identifier(sample: Dict[str, Any]) -> str:
+def get_sample_identifier(sample: dict[str, Any]) -> str:
     """Extract sample identifier supporting both 'sample_id' and 'source_sample_id' keys."""
     return sample.get("sample_id") or sample.get("source_sample_id") or "unknown_sample"
 
 
 def generate_deterministic_splits(
-    sample_records: List[Dict[str, Any]],
+    sample_records: list[dict[str, Any]],
     train_ratio: float = 0.70,
     val_ratio: float = 0.15,
     test_ratio: float = 0.15,
     random_seed: int = 42
-) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """
     Partition dataset samples into deterministic Train, Validation, and Test splits.
 
@@ -74,7 +74,7 @@ def generate_deterministic_splits(
     else:
         split_mode = "IMAGE_LEVEL_FALLBACK"
 
-    manifest_records: List[Dict[str, Any]] = []
+    manifest_records: list[dict[str, Any]] = []
 
     if grouping_field is not None:
         print(
@@ -82,7 +82,7 @@ def generate_deterministic_splits(
         )
 
         # Group samples by the strongest verified grouping identifier.
-        grouped_samples: Dict[str, List[Dict[str, Any]]] = {}
+        grouped_samples: dict[str, list[dict[str, Any]]] = {}
         for sample in sample_records:
             grouping_id = sample.get(grouping_field, "UNKNOWN")
             if grouping_id not in grouped_samples:
@@ -170,7 +170,7 @@ def generate_deterministic_splits(
     return manifest_records, split_summary
 
 
-def verify_split_leakage(manifest_records: List[Dict[str, Any]]) -> Dict[str, Any]:
+def verify_split_leakage(manifest_records: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Run automated checks to verify zero leakage across train, val, and test splits.
 
@@ -187,18 +187,18 @@ def verify_split_leakage(manifest_records: List[Dict[str, Any]]) -> Dict[str, An
     Outputs:
         Dictionary report containing leakage test status and overlap details.
     """
-    split_checksums: Dict[str, Set[str]] = {"train": set(), "val": set(), "test": set()}
-    split_sample_ids: Dict[str, Set[str]] = {"train": set(), "val": set(), "test": set()}
-    split_annotation_checksums: Dict[str, Set[str]] = {
+    split_checksums: dict[str, set[str]] = {"train": set(), "val": set(), "test": set()}
+    split_sample_ids: dict[str, set[str]] = {"train": set(), "val": set(), "test": set()}
+    split_annotation_checksums: dict[str, set[str]] = {
         "train": set(),
         "val": set(),
         "test": set(),
     }
-    annotation_checksum_records: Dict[str, List[Dict[str, Any]]] = {}
-    split_patients: Dict[str, Set[str]] = {"train": set(), "val": set(), "test": set()}
-    split_exams: Dict[str, Set[str]] = {"train": set(), "val": set(), "test": set()}
-    split_image_paths: Dict[str, Set[str]] = {"train": set(), "val": set(), "test": set()}
-    split_annotation_paths: Dict[str, Set[str]] = {
+    annotation_checksum_records: dict[str, list[dict[str, Any]]] = {}
+    split_patients: dict[str, set[str]] = {"train": set(), "val": set(), "test": set()}
+    split_exams: dict[str, set[str]] = {"train": set(), "val": set(), "test": set()}
+    split_image_paths: dict[str, set[str]] = {"train": set(), "val": set(), "test": set()}
+    split_annotation_paths: dict[str, set[str]] = {
         "train": set(),
         "val": set(),
         "test": set(),
@@ -284,7 +284,7 @@ def verify_split_leakage(manifest_records: List[Dict[str, Any]]) -> Dict[str, An
     # block a split. Non-empty annotation checksum overlap remains a hard
     # warning. Fixtures without the explicit foreground count retain the
     # conservative historical behavior and are treated as overlap.
-    repeated_empty_mask_checksums: Set[str] = set()
+    repeated_empty_mask_checksums: set[str] = set()
     for annotation_checksum, records in annotation_checksum_records.items():
         splits = {record.get("split") for record in records}
         foreground_counts = [record.get("quality", {}).get("mask_foreground_pixels") for record in records]
@@ -368,7 +368,7 @@ def verify_split_leakage(manifest_records: List[Dict[str, Any]]) -> Dict[str, An
 def validate_manifest_for_training(
     manifest_path: str,
     require_real_data: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Validate hard training gates before any model data loader is created.
 
     SPEC-02-01 training is allowed only from an explicitly declared real
@@ -466,7 +466,7 @@ def validate_manifest_for_training(
                 "test images as labeled samples."
             )
 
-    split_ids: Dict[str, Set[str]] = {"train": set(), "val": set(), "test": set()}
+    split_ids: dict[str, set[str]] = {"train": set(), "val": set(), "test": set()}
     for sample in samples:
         split = sample.get("split")
         sample_id = get_sample_identifier(sample)

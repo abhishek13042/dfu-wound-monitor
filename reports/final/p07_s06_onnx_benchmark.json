@@ -1,0 +1,184 @@
+{
+  "report": "P06-S02 reliability and performance benchmark",
+  "generated_utc": "2026-11-04T18:05:20+00:00",
+  "command": "python scripts/evaluation/run_phase_06_benchmark.py --engine onnx --output reports/final/p07_s06_onnx_benchmark.json",
+  "hardware": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+    "machine": "AMD64",
+    "physical_cores": 2,
+    "logical_cores": 4,
+    "cpu_max_mhz": 2901,
+    "total_ram_gb": 7.7,
+    "python": "3.14.0",
+    "torch": "2.14.1+cpu",
+    "torch_threads": 2,
+    "cuda_available": false
+  },
+  "configuration": {
+    "engine": "onnx",
+    "model_version": "spec-02-03-resnet34-unet-512-onnx-v1",
+    "inference_config": "p03-s01-v1-onnx",
+    "input_size": {
+      "source": "configs\\training\\segmentation_resnet34_unet_512.json",
+      "input_height": 512,
+      "input_width": 512,
+      "resize": "bilinear",
+      "normalize_mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "normalize_std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    },
+    "tta": true,
+    "threshold": 0.4,
+    "device": "cpu",
+    "images": 20,
+    "warmup": 2,
+    "image_size": "512x512 FUSeg2021 held-out test images (evenly spaced selection)",
+    "env_omp_threads": null
+  },
+  "cold_start_s": 2.574,
+  "latency_s": {
+    "decode": {
+      "n": 20,
+      "mean": 0.0056,
+      "p50": 0.0054,
+      "p90": 0.0064,
+      "min": 0.0045,
+      "max": 0.0106
+    },
+    "quality_gate": {
+      "n": 20,
+      "mean": 0.0593,
+      "p50": 0.0566,
+      "p90": 0.0713,
+      "min": 0.0401,
+      "max": 0.095
+    },
+    "segmentation": {
+      "n": 20,
+      "mean": 1.984,
+      "p50": 1.9322,
+      "p90": 2.4512,
+      "min": 1.6759,
+      "max": 2.5524
+    },
+    "measurement": {
+      "n": 20,
+      "mean": 0.0608,
+      "p50": 0.0475,
+      "p90": 0.1081,
+      "min": 0.0391,
+      "max": 0.1287
+    },
+    "total": {
+      "n": 20,
+      "mean": 2.1098,
+      "p50": 2.067,
+      "p90": 2.6082,
+      "min": 1.7606,
+      "max": 2.6947
+    }
+  },
+  "stage_share_of_total": {
+    "decode": 0.0027,
+    "quality_gate": 0.0281,
+    "segmentation": 0.9404,
+    "measurement": 0.0288
+  },
+  "measured_bottleneck": "segmentation",
+  "segmentation_without_tta_s": {
+    "n": 5,
+    "mean": 0.4842,
+    "p50": 0.4835,
+    "p90": 0.5124,
+    "min": 0.4512,
+    "max": 0.5304
+  },
+  "api_end_to_end_s": {
+    "n": 5,
+    "mean": 1.9907,
+    "p50": 1.9565,
+    "p90": 2.1285,
+    "min": 1.849,
+    "max": 2.2103
+  },
+  "memory": {
+    "rss_before_load_mb": 288.9,
+    "rss_after_load_mb": 412.4,
+    "rss_after_inference_mb": 426.4,
+    "rss_end_mb": 585.1,
+    "peak_working_set_mb": 609.3
+  },
+  "repeatability": {
+    "runs": 5,
+    "distinct_mask_and_probability_hashes": 1,
+    "deterministic": true
+  },
+  "boundary_inputs": [
+    {
+      "case": "empty_payload",
+      "http_status": 400,
+      "category": "INVALID_INPUT",
+      "failure_class": "INPUT",
+      "code": "INPUT_MISSING"
+    },
+    {
+      "case": "truncated_png",
+      "http_status": 400,
+      "category": "INVALID_INPUT",
+      "failure_class": "INPUT",
+      "code": "INPUT_UNREADABLE"
+    },
+    {
+      "case": "text_file",
+      "http_status": 400,
+      "category": "INVALID_INPUT",
+      "failure_class": "INPUT",
+      "code": "INPUT_UNREADABLE"
+    },
+    {
+      "case": "gif_format",
+      "http_status": 400,
+      "category": "INVALID_INPUT",
+      "failure_class": "INPUT",
+      "code": "INPUT_UNREADABLE"
+    },
+    {
+      "case": "oversize_upload",
+      "http_status": 413,
+      "category": "INVALID_INPUT",
+      "failure_class": "INPUT",
+      "code": "INPUT_TOO_LARGE"
+    },
+    {
+      "case": "tiny_image_32px",
+      "http_status": 422,
+      "category": "QUALITY_REJECTED",
+      "failure_class": "QUALITY",
+      "code": "QUALITY_REJECTED"
+    },
+    {
+      "case": "extreme_aspect_2000x100",
+      "http_status": 422,
+      "category": "QUALITY_REJECTED",
+      "failure_class": "QUALITY",
+      "code": "QUALITY_REJECTED"
+    },
+    {
+      "case": "uniform_grey",
+      "http_status": 422,
+      "category": "QUALITY_REJECTED",
+      "failure_class": "QUALITY",
+      "code": "QUALITY_REJECTED"
+    }
+  ],
+  "service_ready_after_boundary_inputs": true,
+  "optimisation_decision": "No optimisation applied. The measured bottleneck is recorded, but no latency requirement exists for this research prototype, so REQ-P06-S02-004's precondition (a measured bottleneck that violates a stated requirement) is not met."
+}

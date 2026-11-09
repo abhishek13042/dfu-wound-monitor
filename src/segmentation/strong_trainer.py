@@ -18,9 +18,9 @@ import json
 import logging
 import math
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, cast
 
 import torch
 import torch.nn as nn
@@ -40,16 +40,17 @@ LOGGER = logging.getLogger(__name__)
 SPECIFICATION = "SPEC-02-03"
 
 
-def build_optimizer(model: nn.Module, training: Dict[str, Any]) -> torch.optim.Optimizer:
+def build_optimizer(model: nn.Module, training: dict[str, Any]) -> torch.optim.Optimizer:
     """AdamW with an optional lower learning rate for the pretrained encoder."""
 
     learning_rate = float(training["learning_rate"])
     weight_decay = float(training.get("weight_decay", 1e-4))
     multiplier = float(training.get("encoder_lr_multiplier", 1.0))
     if hasattr(model, "encoder_parameters") and multiplier != 1.0:
+        split_model = cast(Any, model)
         groups = [
-            {"params": model.encoder_parameters(), "lr": learning_rate * multiplier},
-            {"params": model.decoder_parameters(), "lr": learning_rate},
+            {"params": split_model.encoder_parameters(), "lr": learning_rate * multiplier},
+            {"params": split_model.decoder_parameters(), "lr": learning_rate},
         ]
     else:
         groups = [{"params": list(model.parameters()), "lr": learning_rate}]
@@ -84,7 +85,7 @@ def build_ema(model: nn.Module, decay: float) -> AveragedModel:
     meaningful from the first epochs instead of scoring near-initial weights.
     """
 
-    def average(averaged: torch.Tensor, current: torch.Tensor, num_averaged: torch.Tensor) -> torch.Tensor:
+    def average(averaged: torch.Tensor, current: torch.Tensor, num_averaged: torch.Tensor | int) -> torch.Tensor:
         step = float(num_averaged)
         decay_t = min(decay, (1.0 + step) / (10.0 + step))
         if not averaged.is_floating_point():
@@ -94,7 +95,7 @@ def build_ema(model: nn.Module, decay: float) -> AveragedModel:
     return AveragedModel(model, avg_fn=average, use_buffers=True)
 
 
-def _write_log(path_value: Optional[str], document: Dict[str, Any]) -> None:
+def _write_log(path_value: str | None, document: dict[str, Any]) -> None:
     if not path_value:
         return
     path = Path(path_value)
@@ -112,9 +113,9 @@ def train_strong_model(
     loss_fn: nn.Module,
     train_loader: DataLoader,
     val_loader: DataLoader,
-    config: Dict[str, Any],
+    config: dict[str, Any],
     device: torch.device,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Train with internal-validation model selection; returns a run summary."""
 
     training = config["training"]
@@ -153,10 +154,10 @@ def train_strong_model(
 
     start_epoch = 1
     best_metric = -float("inf")
-    best_epoch: Optional[int] = None
-    best_val_metrics: Optional[Dict[str, float]] = None
-    epoch_logs: List[Dict[str, Any]] = []
-    started_utc = datetime.now(timezone.utc).isoformat()
+    best_epoch: int | None = None
+    best_val_metrics: dict[str, float] | None = None
+    epoch_logs: list[dict[str, Any]] = []
+    started_utc = datetime.now(UTC).isoformat()
     resume_path = training.get("resume_checkpoint")
     if resume_path:
         resumed = load_checkpoint(
@@ -176,7 +177,7 @@ def train_strong_model(
             scaler.load_state_dict(metadata["scaler_state_dict"])
         LOGGER.info("Resuming %s from epoch %d", resume_path, start_epoch)
 
-    def progress(status: str) -> Dict[str, Any]:
+    def progress(status: str) -> dict[str, Any]:
         document = {
             "experiment_id": config["experiment_id"],
             "specification": SPECIFICATION,

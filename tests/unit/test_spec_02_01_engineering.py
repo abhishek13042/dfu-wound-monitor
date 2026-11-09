@@ -13,7 +13,7 @@ import torch
 from PIL import Image
 from torch.utils.data import DataLoader, TensorDataset
 
-from scripts.run_kaggle_spec_02_01 import build_kaggle_config
+from scripts.training.kaggle.run_kaggle_spec_02_01 import build_kaggle_config
 from src.data.fuseg import build_fuseg_manifest
 from src.segmentation.config import validate_training_config
 from src.segmentation.model import BCEDiceLoss, LightweightUNet

@@ -1,0 +1,293 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - name: Install CPU torch and dependencies
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install -r requirements-dev.txt
+      - name: Lint
+        run: python -m ruff check .
+      - name: Types
+        run: python -m mypy src
+      - name: Tests
+        run: python -m pytest -q
+
+  # REQ-P07-S02-003: the whole suite against a real PostgreSQL server.
+  postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ci-only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DFU_TEST_DATABASE_URL: postgresql://postgres:ci-only@127.0.0.1:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - name: Install CPU torch and dependencies
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install -r requirements-dev.txt
+      - name: Tests on PostgreSQL
+        run: python -m pytest -q
+
+  # REQ-P07-S03-001: the storage and upload tests against a real SeaweedFS server.
+  # moto cannot do this job: it accepts forged signatures, expired URLs and oversized uploads.
+  object-storage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DFU_TEST_S3_ENDPOINT: http://127.0.0.1:9000
+      AWS_ACCESS_KEY_ID: ci-only
+      AWS_SECRET_ACCESS_KEY: ci-only-secret
+      AWS_DEFAULT_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - name: Start SeaweedFS
+        run: |
+          docker run -d --name seaweedfs -p 9000:8333 -e AWS_ACCESS_KEY_ID=ci-only \
+            -e AWS_SECRET_ACCESS_KEY=ci-only-secret \
+            chrislusf/seaweedfs:4.51@sha256:f7a49e3f3972ebed5be2ed4befa4a0c68eb7bdddba6e692d42729ceb545134b8 \
+            server -s3 -dir=/data -master.volumeSizeLimitMB=64 -volume.max=0
+          for attempt in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:9000/healthz && exit 0
+            sleep 2
+          done
+          docker logs seaweedfs
+          exit 1
+      - name: Install CPU torch and dependencies
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install -r requirements-dev.txt
+      - name: Tests on SeaweedFS
+        run: python -m pytest tests/storage/test_blob_contract.py tests/storage/test_blob_migration.py tests/api/test_uploads.py -q
+      - name: SeaweedFS log on failure
+        if: failure()
+        run: docker logs seaweedfs 2>&1 | tail -n 200
+
+  # REQ-P07-S05: real arq workers against a real Redis.
+  redis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DFU_TEST_REDIS_URL: redis://127.0.0.1:6379
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install CPU torch and dependencies
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install -r requirements-dev.txt
+      - name: Tests on Redis
+        run: python -m pytest tests/worker -q
+
+  # REQ-P10-S01-004: the alert rules parse, and an injected fault fires each alert (promtool test rules).
+  observability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check and test the alert rules
+        run: |
+          docker run --rm -v "$PWD/docker/production/observability:/rules" -w /rules --entrypoint promtool \
+            prom/prometheus:v2.53.0 check rules alerts.yml
+          docker run --rm -v "$PWD/docker/production/observability:/rules" -w /rules --entrypoint promtool \
+            prom/prometheus:v2.53.0 test rules alerts_test.yml
+
+  # REQ-P08-S01-001 and -005: the web client matches the API schema, and every page passes axe at 375 px.
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install CPU torch and dependencies
+        working-directory: .
+        run: |
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          python -m pip install -r requirements-dev.txt
+      - run: npm ci
+      - name: Generated client is current
+        run: npm run api:check
+      - name: Types
+        run: npx tsc --noEmit
+      - name: Wording
+        run: npm run test:wording
+      - name: Unit tests
+        run: npm test
+      - name: Pages, notice and accessibility
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e -- --project=pages
+
+  # REQ-P10-S03-006: dependencies and the image are scanned, and a critical finding fails the build.
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Python dependencies
+        run: |
+          python -m pip install pip-audit
+          # pip-audit has no severity filter, so any known vulnerability fails here: stricter than critical-only.
+          python -m pip_audit -r requirements.txt --desc --format json --output pip-audit.json
+      - name: npm dependencies
+        working-directory: web
+        run: |
+          npm audit --audit-level=critical --json > ../npm-audit.json || true
+          npm audit --audit-level=critical
+      - name: Build image
+        run: docker build -f docker/production/Dockerfile -t dfu-woundmonitor:scan .
+      - name: Image scan
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: dfu-woundmonitor:scan
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table
+          output: trivy.txt
+      - name: Keep the scan reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scans
+          path: |
+            pip-audit.json
+            npm-audit.json
+            trivy.txt
+          if-no-files-found: ignore
+
+  # REQ-P07-S01-002: a fresh clone in an empty environment, on Linux and Windows.
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Create empty environment
+        run: python -m venv .ci-venv
+      - name: Install (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          .ci-venv/bin/python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+          .ci-venv/bin/python -m pip install -r requirements-dev.txt
+          .ci-venv/bin/python -m pytest -q
+      - name: Install (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          .ci-venv\Scripts\python -m pip install -r requirements-dev.txt
+          .ci-venv\Scripts\python -m pytest -q
+
+  # REQ-P07-S01-003 and -005: the image starts, and a wrong checkpoint cannot serve.
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -f docker/production/Dockerfile -t dfu-woundmonitor .
+      - name: Build worker image
+        run: docker build -f docker/production/Dockerfile --target worker -t dfu-woundmonitor-worker .
+      - name: Start with a checkpoint whose hash does not match
+        run: |
+          mkdir -p ci-model
+          head -c 1024 /dev/urandom > ci-model/resnet34_unet_512_best.pth
+          docker run -d --name dfu -p 7860:7860 \
+            -v "$PWD/ci-model:/home/user/app/models/checkpoints/spec-02-03:ro" dfu-woundmonitor
+      - name: Liveness answers
+        run: |
+          for attempt in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:7860/health/live && exit 0
+            sleep 2
+          done
+          docker logs dfu
+          exit 1
+      - name: Readiness and analysis refuse the wrong checkpoint
+        run: |
+          python3 scripts/deployment/check_refuses_bad_model.py --url http://127.0.0.1:7860
+      - name: A worker refuses the wrong checkpoint
+        run: |
+          docker run -d --name ci-redis -p 6379:6379 redis:7-alpine
+          sleep 3
+          set +e
+          timeout 240 docker run --rm --network host -e DFU_REDIS_URL=redis://127.0.0.1:6379             -v "$PWD/ci-model:/home/user/app/models/checkpoints/spec-02-03:ro" dfu-woundmonitor-worker
+          status=$?
+          set -e
+          test "$status" -ne 0 && test "$status" -ne 124

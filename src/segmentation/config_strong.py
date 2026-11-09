@@ -6,7 +6,7 @@ the historical baseline configuration keeps its exact contract.
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from src.segmentation.augmentation import validate_augmentation_config
 from src.segmentation.config import _integer, _number, _probability
@@ -18,7 +18,7 @@ REQUIRED_OUTPUTS = ("log_file", "postprocessing_tuning", "test_evaluation", "ext
                     "experiment_record", "figure_dir")
 
 
-def validate_strong_config(config: Dict[str, Any]) -> Dict[str, Any]:
+def validate_strong_config(config: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(config, dict):
         raise ValueError("Configuration must be a JSON object")
     if config.get("specification") != "SPEC-02-03":

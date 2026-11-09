@@ -1,0 +1,103 @@
+# promtool test rules alerts_test.yml  (run by the `observability` CI job)
+# Acceptance for P10-S01: an injected fault becomes an alert, and a quiet system raises none.
+rule_files:
+  - alerts.yml
+evaluation_interval: 1m
+
+tests:
+  # A model fault on 10% of requests pages after 10 minutes, not before.
+  - interval: 1m
+    input_series:
+      - series: 'dfu_http_requests_total{method="POST",route="/api/v2/analyses",status="202"}'
+        values: '0+60x30'
+      - series: 'dfu_errors_total{failure_class="MODEL",category="MODEL_FAILURE",source="api"}'
+        values: '0+6x30'
+      - series: 'dfu_errors_total{failure_class="INPUT",category="INVALID_INPUT",source="api"}'
+        values: '0+30x30'
+      - series: 'dfu_model_ready'
+        values: '1x30'
+    alert_rule_test:
+      - eval_time: 8m
+        alertname: DfuHighErrorRate
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: DfuHighErrorRate
+        exp_alerts:
+          - exp_labels:
+              severity: page
+            exp_annotations:
+              summary: More than 5% of API requests failed for 10 minutes
+              runbook: docs/runbooks/observability.md#high-error-rate
+
+  # Caller mistakes alone (INPUT) never page, however many there are.
+  - interval: 1m
+    input_series:
+      - series: 'dfu_http_requests_total{method="POST",route="/api/v2/uploads",status="422"}'
+        values: '0+60x30'
+      - series: 'dfu_errors_total{failure_class="INPUT",category="INVALID_INPUT",source="api"}'
+        values: '0+60x30'
+      - series: 'dfu_model_ready'
+        values: '1x30'
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: DfuHighErrorRate
+        exp_alerts: []
+
+  # Worker failures: one job in two fails.
+  - interval: 1m
+    input_series:
+      - series: 'dfu_analyses_total{outcome="FAILED"}'
+        values: '0+2x40'
+      - series: 'dfu_analyses_total{outcome="COMPLETED"}'
+        values: '0+2x40'
+      - series: 'dfu_analyses_total{outcome="QUALITY_REJECTED"}'
+        values: '0+0x40'
+      - series: 'dfu_model_ready'
+        values: '1x40'
+    alert_rule_test:
+      - eval_time: 35m
+        alertname: DfuJobFailures
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+            exp_annotations:
+              summary: More than 20% of analysis jobs failed for 15 minutes
+              runbook: docs/runbooks/observability.md#job-failures
+
+  # Backlog: a short burst is fine, a sustained one pages.
+  - interval: 1m
+    input_series:
+      - series: 'dfu_queue_depth{job="api"}'
+        values: '30 30 30 5 5 5 25x20'
+      - series: 'dfu_model_ready'
+        values: '1x30'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: DfuQueueBacklog
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: DfuQueueBacklog
+        exp_alerts:
+          - exp_labels:
+              severity: page
+            exp_annotations:
+              summary: More than 20 analyses waited in the queue for 10 minutes
+              runbook: docs/runbooks/observability.md#queue-backlog
+
+  # Model not ready: the API reports 0 and no worker reports 1.
+  - interval: 1m
+    input_series:
+      - series: 'dfu_model_ready{job="api"}'
+        values: '1 1 0x10'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: DfuModelNotReady
+        exp_alerts: []
+      - eval_time: 10m
+        alertname: DfuModelNotReady
+        exp_alerts:
+          - exp_labels:
+              severity: page
+            exp_annotations:
+              summary: No verified model has been able to take jobs for 5 minutes
+              runbook: docs/runbooks/observability.md#model-not-ready

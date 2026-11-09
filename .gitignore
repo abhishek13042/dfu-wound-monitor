@@ -4,9 +4,6 @@ __pycache__/
 *$py.class
 *.so
 
-# C extensions
-*.so
-
 # Distribution / packaging
 .Python
 build/
@@ -28,7 +25,6 @@ share/python-wheels/
 MANIFEST
 
 # Virtual Environments
-.env
 .venv
 env/
 venv/
@@ -83,8 +79,9 @@ data/processed/*
 !data/processed/.gitkeep
 data/external/*
 !data/external/.gitkeep
+!data/external/dataset_registry.json
 
-# Model weights and artifacts
+# Model weights and artifacts (pinned by SHA-256 in configs; not stored in git)
 models/checkpoints/*
 !models/checkpoints/.gitkeep
 models/exported/*
@@ -100,14 +97,7 @@ models/exported/*
 *.engine
 
 # Outputs and Predictions
-outputs/predictions/*
-!outputs/predictions/.gitkeep
-outputs/visualizations/*
-!outputs/visualizations/.gitkeep
-outputs/benchmarks/*
-!outputs/benchmarks/.gitkeep
-outputs/metrics/*
-!outputs/metrics/.gitkeep
+outputs/
 
 # Experiment Tracking and Logs
 logs/
@@ -118,10 +108,6 @@ lightning_logs/
 
 # Phase 05 service runtime data (SQLite database + blob store)
 runtime/
-
-# model weights anywhere in the tree (pinned by SHA-256 in configs; not stored in git)
-*.pth
-*.pt
 
 # P06 example sheets contain dataset images (redistribution terms not recorded)
 reports/figures/p06/local/

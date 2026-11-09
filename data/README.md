@@ -27,7 +27,7 @@ The machine-readable contract is `configs/data/fuseg2021.json`. Build or
 rebuild the manifest with:
 
 ```bash
-python scripts/build_fuseg2021_manifest.py
+python scripts/data/build_fuseg2021_manifest.py
 ```
 
 The builder preserves the official split directories, records image/mask
@@ -42,7 +42,7 @@ The official manifest has no labeled test split, so SPEC-02-03 derives one.
 The official manifest itself is never modified:
 
 ```bash
-python scripts/build_fuseg2021_heldout_manifest.py      # ~1.5 min (pHash)
+python scripts/data/build_fuseg2021_heldout_manifest.py      # ~1.5 min (pHash)
 ```
 
 This writes `data/manifests/fuseg2021_heldout_manifest.json`
@@ -63,7 +63,7 @@ re-shots, so patient-level isolation is not claimed.
 ### LowerLimbFeetWound V3 external manifest
 
 ```bash
-python scripts/build_lowerlimb_external_manifest.py
+python scripts/data/build_lowerlimb_external_manifest.py
 ```
 
 This writes `data/manifests/lowerlimb_v3_external_manifest.json` (2,686 pairs;
@@ -75,7 +75,7 @@ dataset is used only for an external, no-tuning check.
 To check near-duplicates across any image collections:
 
 ```bash
-python scripts/check_near_duplicates.py --collection NAME=DIR [--collection NAME=DIR ...]
+python scripts/data/check_near_duplicates.py --collection NAME=DIR [--collection NAME=DIR ...]
 ```
 
 ## Other acquired and blocked datasets

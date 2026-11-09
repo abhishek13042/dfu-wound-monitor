@@ -64,8 +64,8 @@ The implementation lives in `src/data/fuseg.py` and `src/segmentation/`.
 |---|---|
 | Dataset config | `configs/data/fuseg2021.json` |
 | Training config | `configs/training/baseline_segmentation_real.json` |
-| Manifest builder | `scripts/build_fuseg2021_manifest.py` |
-| Kaggle entrypoint | `scripts/run_kaggle_spec_02_01.py` |
+| Manifest builder | `scripts/data/build_fuseg2021_manifest.py` |
+| Kaggle entrypoint | `scripts/training/kaggle/run_kaggle_spec_02_01.py` |
 
 ## Tests and Evidence
 

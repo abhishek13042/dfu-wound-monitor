@@ -116,7 +116,7 @@ From the repository root, after the FUSeg2021 data is mounted or copied and the
 manifest is available, the clean Kaggle wrapper is:
 
 ```bash
-python scripts/run_kaggle_spec_02_01.py \
+python scripts/training/kaggle/run_kaggle_spec_02_01.py \
   --data-root "/kaggle/input/fuseg2021/Foot Ulcer Segmentation Challenge" \
   --output-root /kaggle/working/spec-02-01 --sanity-only
 ```

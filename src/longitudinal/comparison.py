@@ -24,8 +24,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from typing import Any, cast
 
 from src.longitudinal.records import AnalysisRecord, CaseRecord, ExaminationRecord
 
@@ -56,7 +57,7 @@ class CompatibilityPolicy:
         if self.calibration_change_warn_pct < 0 or self.max_gap_days <= 0:
             raise ValueError("calibration_change_warn_pct must be >= 0 and max_gap_days > 0")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -66,7 +67,7 @@ class MeasurementPoint:
     examination: ExaminationRecord
     analysis: AnalysisRecord
 
-    def reference(self) -> Dict[str, Any]:
+    def reference(self) -> dict[str, Any]:
         return {
             "case_id": self.case.case_id,
             "examination_id": self.examination.examination_id,
@@ -81,21 +82,21 @@ class MeasurementPoint:
 @dataclass
 class ComparisonResult:
     status: str
-    reason_codes: List[str]
-    warnings: List[Dict[str, Any]]
-    earlier: Dict[str, Any]
-    later: Dict[str, Any]
-    basis: Optional[str]
-    interval_days: Optional[float]
-    metrics: Dict[str, Dict[str, Any]]
-    policy: Dict[str, Any]
+    reason_codes: list[str]
+    warnings: list[dict[str, Any]]
+    earlier: dict[str, Any]
+    later: dict[str, Any]
+    basis: str | None
+    interval_days: float | None
+    metrics: dict[str, dict[str, Any]]
+    policy: dict[str, Any]
     label: str = TECHNICAL_LABEL
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
-def point_problems(point: MeasurementPoint, policy: CompatibilityPolicy) -> List[str]:
+def point_problems(point: MeasurementPoint, policy: CompatibilityPolicy) -> list[str]:
     """Reasons a single point cannot take part in any comparison."""
 
     problems = []
@@ -115,7 +116,7 @@ def point_problems(point: MeasurementPoint, policy: CompatibilityPolicy) -> List
     return list(dict.fromkeys(problems))
 
 
-def pair_problems(a: MeasurementPoint, b: MeasurementPoint, policy: CompatibilityPolicy) -> List[str]:
+def pair_problems(a: MeasurementPoint, b: MeasurementPoint, policy: CompatibilityPolicy) -> list[str]:
     problems = []
     if a.case.case_id != b.case.case_id:
         problems.append("DIFFERENT_CASE")
@@ -132,7 +133,7 @@ def pair_problems(a: MeasurementPoint, b: MeasurementPoint, policy: Compatibilit
     return problems
 
 
-def metric_values(point: MeasurementPoint, basis: str) -> Dict[str, Optional[float]]:
+def metric_values(point: MeasurementPoint, basis: str) -> dict[str, float | None]:
     measurement = point.analysis.measurement or {}
     section = measurement.get("physical") if basis == "PHYSICALLY_CALIBRATED" else measurement.get("pixel")
     section = section or {}
@@ -146,7 +147,7 @@ def metric_values(point: MeasurementPoint, basis: str) -> Dict[str, Optional[flo
     return values
 
 
-def change(earlier: Optional[float], later: Optional[float]) -> Dict[str, Any]:
+def change(earlier: float | None, later: float | None) -> dict[str, Any]:
     if earlier is None or later is None:
         return {"earlier": earlier, "later": later, "absolute_change": None, "percent_change": None,
                 "state": "MISSING"}
@@ -158,7 +159,7 @@ def change(earlier: Optional[float], later: Optional[float]) -> Dict[str, Any]:
             "percent_change": round(100.0 * (later - earlier) / earlier, 4), "state": "OK"}
 
 
-def carried_warnings(point: MeasurementPoint, role: str) -> List[Dict[str, Any]]:
+def carried_warnings(point: MeasurementPoint, role: str) -> list[dict[str, Any]]:
     out = []
     for warning in point.analysis.warnings + (point.analysis.measurement or {}).get("warnings", []):
         if warning.get("code") in CARRIED_WARNINGS:
@@ -168,11 +169,11 @@ def carried_warnings(point: MeasurementPoint, role: str) -> List[Dict[str, Any]]
     return out
 
 
-def calibration_warnings(a: MeasurementPoint, b: MeasurementPoint, policy: CompatibilityPolicy) -> List[Dict[str, Any]]:
+def calibration_warnings(a: MeasurementPoint, b: MeasurementPoint, policy: CompatibilityPolicy) -> list[dict[str, Any]]:
     cal_a, cal_b = a.analysis.calibration, b.analysis.calibration
     if not cal_a or not cal_b:
         return []
-    warnings = []
+    warnings: list[dict[str, Any]] = []
     if cal_a.get("method") != cal_b.get("method"):
         warnings.append({"code": "CALIBRATION_METHOD_CHANGED",
                          "message": f"{cal_a.get('method')} -> {cal_b.get('method')}"})
@@ -186,7 +187,13 @@ def calibration_warnings(a: MeasurementPoint, b: MeasurementPoint, policy: Compa
     return warnings
 
 
-def order(a: MeasurementPoint, b: MeasurementPoint) -> Tuple[MeasurementPoint, MeasurementPoint]:
+def elapsed_days(start: MeasurementPoint, end: MeasurementPoint) -> float:
+    """Days between two points whose capture times the compatibility policy has already required."""
+    began, ended = cast(datetime, start.examination.captured_at), cast(datetime, end.examination.captured_at)
+    return (ended - began).total_seconds() / 86400.0
+
+
+def order(a: MeasurementPoint, b: MeasurementPoint) -> tuple[MeasurementPoint, MeasurementPoint]:
     ta, tb = a.examination.captured_at, b.examination.captured_at
     if ta and tb and tb < ta:
         return b, a
@@ -194,7 +201,7 @@ def order(a: MeasurementPoint, b: MeasurementPoint) -> Tuple[MeasurementPoint, M
 
 
 def compare(a: MeasurementPoint, b: MeasurementPoint,
-            policy: Optional[CompatibilityPolicy] = None) -> ComparisonResult:
+            policy: CompatibilityPolicy | None = None) -> ComparisonResult:
     """Compare two examinations; the earlier capture becomes the reference."""
 
     if policy is None:
@@ -206,8 +213,8 @@ def compare(a: MeasurementPoint, b: MeasurementPoint,
     if reasons:
         return ComparisonResult(UNAVAILABLE, reasons, [], *refs, None, None, {}, policy.to_dict())
 
-    basis = earlier.analysis.measurement_basis
-    warnings: List[Dict[str, Any]] = []
+    basis = cast(str, earlier.analysis.measurement_basis)
+    warnings: list[dict[str, Any]] = []
     if basis == "PIXEL_BASED":
         warnings.append({"code": "PIXEL_SCALE_NOT_CONTROLLED",
                          "message": "No calibration: pixel changes also reflect camera distance and zoom"})
@@ -219,7 +226,7 @@ def compare(a: MeasurementPoint, b: MeasurementPoint,
                for name in METRICS}
     if metrics["area"]["state"] == "BASELINE_ZERO":
         warnings.append({"code": "BASELINE_ZERO", "message": "Earlier area is zero; percentage change is undefined"})
-    gap = (later.examination.captured_at - earlier.examination.captured_at).total_seconds() / 86400.0
+    gap = elapsed_days(earlier, later)
     if gap > policy.max_gap_days:
         warnings.append({"code": "LONG_INTERVAL", "message": f"{gap:.1f} days between examinations"})
     return ComparisonResult(AVAILABLE, [], warnings, *refs, basis, round(gap, 4), metrics, policy.to_dict())

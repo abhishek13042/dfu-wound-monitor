@@ -37,7 +37,10 @@ Of the 191 test images, 156 are well segmented. The rest are 8 missed wounds, 10
 6 over-segmented, 6 with low overlap and 3 false positives on empty images. On external LowerLimb V3 images (n = 148),
 pooled Dice is **0.26**: the model marks little that is not labelled (precision 0.90) but misses most of the labelled area (recall 0.15). On the
 LowerLimb masks drawn in the FUSeg style, Dice is 0.82 (n = 16); on the coarser native masks it is 0.20 (n = 132), so annotation protocol
-probably explains much of the gap. That is a hypothesis, and generalisation is not established. The full validation report is in the project repository at
+probably explains much of the gap. A later study (P09-S04, 2026-11-05) tested that under a frozen protocol and found it **partly
+supported**. The native masks cover about ten times more of the image than FUSeg masks, and in 72 % of eligible images the missed
+area looks like the surrounding skin. But the native masks are less regular in shape, not more, which the protocol had predicted.
+The 0.26 above stands, and generalisation is still not established (`reports/experiments/p09_s04_report.md`). The full validation report is in the project repository at
 `reports/final/phase_06_validation_report.md`.
 
 ## Limitations

@@ -1,0 +1,251 @@
+{
+  "registry_version": "2.0.0",
+  "verification_date": "2026-10-21",
+  "supersedes": "1.0.0 (2026-10-06). Version 1.0.0 marked DFUC2020/2021/2022 as VERIFIED, listed DFUC2022 as primary segmentation, and contained incorrect FUSeg2021 and DFUTissueSegNet source URLs, citations, counts and classes. Those claims were not supported by the acquired data and are corrected here using reports/dataset_acquisition_report.md (2026-10-08) and the official source READMEs under data/raw/.",
+  "status_vocabulary": {
+    "VERIFIED": "Checked against the acquired files or the official source by this project.",
+    "PARTIAL": "Acquired and checked, but with documented defects or open questions.",
+    "BLOCKED": "Official access route known; data not acquired (e.g. license approval pending).",
+    "NOT_VERIFIED": "Value comes from secondary or remembered sources and has not been checked against the official source.",
+    "UNKNOWN": "Information is not available from the official source."
+  },
+  "datasets": [
+    {
+      "dataset_name": "FUSeg2021",
+      "official_title": "Foot Ulcer Segmentation Challenge 2021 (FUSeg)",
+      "official_source": "Wang C. et al., 'Fully automatic wound segmentation with deep convolutional neural networks', Scientific Reports 10, 21897 (2020); FUSeg 2021 challenge (MICCAI 2021). Images from the AZH Wound and Vascular Center, Milwaukee.",
+      "access_url": "https://github.com/uwm-bigdata/wound-segmentation",
+      "challenge_url": "https://fusc.grand-challenge.org/FUSeg-2021/",
+      "source_version": "git commit 42a272dfe0679f20675e826385925cb7562934b6",
+      "local_path": "data/raw/FUSeg2021/source/data/Foot Ulcer Segmentation Challenge/",
+      "access_status": "DOWNLOADED",
+      "license_terms": "Academic research use per the official repository; redistribution terms to be confirmed before publishing data or derived masks.",
+      "total_images": 1210,
+      "train_images": 810,
+      "validation_images": 200,
+      "test_images": 200,
+      "test_labels_available": false,
+      "image_format": "PNG",
+      "image_dimensions": "512x512 px (images cropped and zero-padded by the dataset authors)",
+      "image_channels": 3,
+      "annotation_type": "Binary Semantic Segmentation Mask",
+      "classes": ["background", "wound"],
+      "patient_identifiers_available": "UNKNOWN",
+      "patient_metadata_note": "No patient or examination identifiers are released. Splitting is image-level; leakage between official splits cannot be ruled out (see quarantine report).",
+      "proposed_role": "primary_segmentation",
+      "role_justification": "Only acquired, labeled, binary wound-segmentation dataset with an official split. Used for SPEC-02-01/SPEC-02-02. The public test split is unlabeled and cannot be used for reported metrics.",
+      "quality_notes": "After duplicate/integrity quarantine: 793 usable train and 191 usable validation pairs; 19 train and 5 validation masks are empty. See data/manifests/fuseg2021_quality_report.json.",
+      "limitations": [
+        "Single clinical source (AZH); limited acquisition diversity",
+        "Public test masks are not released",
+        "Duplicate images across official train/validation were detected and quarantined",
+        "No patient identifiers; no physical scale/calibration"
+      ],
+      "verification_status": {
+        "source": "VERIFIED",
+        "access": "VERIFIED",
+        "license": "NOT_VERIFIED",
+        "image_count": "VERIFIED",
+        "patient_metadata": "UNKNOWN",
+        "physical_scale": "UNKNOWN"
+      }
+    },
+    {
+      "dataset_name": "DFUTissueSegNet",
+      "official_title": "DFUTissue: Diabetic Foot Ulcer Tissue Segmentation Dataset",
+      "official_source": "Dhar M.K. et al., 'DFUTissueSegNet: ... tissue segmentation of diabetic foot ulcers' (2024), arXiv:2406.16012. Images from the AZH Wound and Vascular Center.",
+      "access_url": "https://github.com/uwm-bigdata/DFUTissueSegNet",
+      "source_version": "git commit d2f6e72d4c8ff632b0950dbac22bbad9d9f845ec",
+      "local_path": "data/raw/DFUTissueSegNet/source/DFUTissue/",
+      "access_status": "DOWNLOADED",
+      "license_terms": "No separate dataset redistribution license stated in the repository; confirm terms before redistribution.",
+      "total_images": 710,
+      "labeled_images": 110,
+      "train_images": 78,
+      "validation_images": 16,
+      "test_images": 16,
+      "unlabeled_images": 600,
+      "image_format": "PNG (original and padded variants)",
+      "image_dimensions": "Varies (original); padded variant provided",
+      "image_channels": 3,
+      "annotation_type": "Multi-class Tissue Segmentation Mask",
+      "classes": ["background", "granulation", "callus", "fibrin"],
+      "classes_note": "The dataset paper describes 8 tissue categories during annotation; the released masks focus on granulation, callus and fibrin. Verify the exact label values in the masks before use.",
+      "patient_identifiers_available": "UNKNOWN",
+      "patient_metadata_note": "Patient metadata not released. Same clinical source as FUSeg2021; cross-dataset image overlap has not been checked.",
+      "proposed_role": "optional_tissue_experiment",
+      "role_justification": "Optional tissue-composition extension (deferred backlog). Must not be used as an independent external test for FUSeg-trained models until AZH overlap is checked.",
+      "limitations": [
+        "Very small labeled set (110 images)",
+        "Same clinical source as FUSeg2021; possible image/patient overlap",
+        "Tissue labeling subject to inter-observer variability"
+      ],
+      "verification_status": {
+        "source": "VERIFIED",
+        "access": "VERIFIED",
+        "license": "NOT_VERIFIED",
+        "image_count": "VERIFIED",
+        "patient_metadata": "UNKNOWN",
+        "physical_scale": "UNKNOWN"
+      }
+    },
+    {
+      "dataset_name": "LowerLimbFeetWoundV3",
+      "official_title": "Lower Limb and Feet Wound Image Dataset for Medical Analysis",
+      "official_source": "Mendeley Data, DOI 10.17632/hsj38fwnvr.3 (Version 3, published 2026-02-11)",
+      "access_url": "https://data.mendeley.com/datasets/hsj38fwnvr/3",
+      "source_version": "Version 3; archive SHA-256 00370cab8eebe941fb25c7d7fc0e8fd34fc513cb96a04e695d0b6b2c8610bd2c",
+      "local_path": "data/raw/LowerLimbFeetWound/V3/",
+      "access_status": "DOWNLOADED",
+      "license_terms": "As stated on the Mendeley Data record; to be recorded verbatim before use.",
+      "total_images": 8129,
+      "paired_wound_images": 2686,
+      "image_format": "JPEG",
+      "image_dimensions": "Mixed; 322 masks are 224x224 while their images are 331x331",
+      "image_channels": 3,
+      "annotation_type": "Binary wound mask (wound_mask folder) plus normal-skin images (Nomal folder)",
+      "classes": ["background", "wound"],
+      "patient_identifiers_available": "UNKNOWN",
+      "patient_metadata_note": "No patient identifiers documented.",
+      "proposed_role": "candidate_external_evaluation",
+      "role_justification": "Candidate out-of-distribution evaluation set for the FUSeg-trained model once the 322 dimension mismatches have an explicit preprocessing decision. Not all wounds are diabetic foot ulcers.",
+      "limitations": [
+        "322 image/mask dimension mismatches",
+        "Wound types broader than DFU",
+        "Dataset description contains stale Version 2 counts"
+      ],
+      "verification_status": {
+        "source": "VERIFIED",
+        "access": "VERIFIED",
+        "license": "NOT_VERIFIED",
+        "image_count": "VERIFIED",
+        "patient_metadata": "UNKNOWN",
+        "physical_scale": "UNKNOWN"
+      }
+    },
+    {
+      "dataset_name": "MedetecWoundDatabase",
+      "official_title": "Medetec Wound Database",
+      "official_source": "Medetec (www.medetec.co.uk), public image galleries",
+      "access_url": "https://www.medetec.co.uk/files/medetec-image-databases.html",
+      "source_version": "Unversioned website snapshot acquired 2026-10-08",
+      "local_path": "data/raw/MedetecWoundDatabase/source/",
+      "access_status": "DOWNLOADED",
+      "license_terms": "Site states images may be downloaded and used without restriction provided the Medetec copyright notice is retained.",
+      "total_images": 610,
+      "image_format": "JPEG",
+      "image_dimensions": "Varies",
+      "image_channels": 3,
+      "annotation_type": "None (images and gallery category only)",
+      "classes": [],
+      "patient_identifiers_available": "UNKNOWN",
+      "patient_metadata_note": "No patient metadata.",
+      "proposed_role": "qualitative_ood_and_quality_gate_fixtures",
+      "role_justification": "No masks, so no quantitative segmentation metrics. Usable for qualitative out-of-distribution review and image-quality-gate fixtures.",
+      "limitations": [
+        "No segmentation masks or machine-readable labels",
+        "Mixed wound types and photo conditions"
+      ],
+      "verification_status": {
+        "source": "VERIFIED",
+        "access": "VERIFIED",
+        "license": "VERIFIED",
+        "image_count": "VERIFIED",
+        "patient_metadata": "UNKNOWN",
+        "physical_scale": "UNKNOWN"
+      }
+    },
+    {
+      "dataset_name": "DFUC2022",
+      "official_title": "Diabetic Foot Ulcer Segmentation Challenge 2022",
+      "official_source": "DFUC2022 challenge (MICCAI 2022), Manchester Metropolitan University (Yap, Cassidy et al.)",
+      "access_url": "https://dfuc2022.grand-challenge.org/dataset/",
+      "access_route": "Official DFU License Agreement via http://www2.docm.mmu.ac.uk/STAFF/M.Yap/dataset.php (institutional application required)",
+      "access_status": "BLOCKED",
+      "license_terms": "DFU License Agreement (terms to be recorded after approval)",
+      "total_images": null,
+      "image_format": "NOT_VERIFIED",
+      "image_dimensions": "NOT_VERIFIED",
+      "image_channels": 3,
+      "annotation_type": "Binary Semantic Segmentation Mask (per challenge description; NOT_VERIFIED locally)",
+      "classes": ["background", "wound"],
+      "patient_identifiers_available": "UNKNOWN",
+      "patient_metadata_note": "Not acquired.",
+      "proposed_role": "blocked_candidate_segmentation",
+      "role_justification": "Would be the largest DFU segmentation source if license approval is obtained. Not part of any current spec. Counts must be taken from the delivered data, not from memory.",
+      "limitations": [
+        "Not acquired; license application pending",
+        "Test labels typically withheld by challenge organizers"
+      ],
+      "verification_status": {
+        "source": "VERIFIED",
+        "access": "BLOCKED",
+        "license": "NOT_VERIFIED",
+        "image_count": "NOT_VERIFIED",
+        "patient_metadata": "UNKNOWN",
+        "physical_scale": "UNKNOWN"
+      }
+    },
+    {
+      "dataset_name": "DFUC2020",
+      "official_title": "Diabetic Foot Ulcer Detection Challenge 2020",
+      "official_source": "DFUC2020 challenge (MICCAI 2020), Manchester Metropolitan University (Cassidy, Yap et al.)",
+      "access_url": "https://dfu2020.grand-challenge.org/Dataset/",
+      "access_route": "Official DFU License Agreement via http://www2.docm.mmu.ac.uk/STAFF/M.Yap/dataset.php",
+      "access_status": "BLOCKED",
+      "license_terms": "DFU License Agreement (terms to be recorded after approval)",
+      "total_images": null,
+      "image_format": "NOT_VERIFIED",
+      "image_dimensions": "NOT_VERIFIED",
+      "image_channels": 3,
+      "annotation_type": "Bounding Box (Detection) (per challenge description; NOT_VERIFIED locally)",
+      "classes": ["wound"],
+      "patient_identifiers_available": "UNKNOWN",
+      "patient_metadata_note": "Not acquired.",
+      "proposed_role": "blocked_candidate_detection",
+      "role_justification": "Detection/localization is optional in the revised roadmap; only needed if evidence shows full-image segmentation is inadequate.",
+      "limitations": [
+        "Not acquired; license application pending"
+      ],
+      "verification_status": {
+        "source": "VERIFIED",
+        "access": "BLOCKED",
+        "license": "NOT_VERIFIED",
+        "image_count": "NOT_VERIFIED",
+        "patient_metadata": "UNKNOWN",
+        "physical_scale": "UNKNOWN"
+      }
+    },
+    {
+      "dataset_name": "DFUC2021",
+      "official_title": "Diabetic Foot Ulcer Multi-Class Classification Challenge 2021",
+      "official_source": "DFUC2021 challenge (MICCAI 2021), Manchester Metropolitan University (Yap, Cassidy et al.)",
+      "access_url": "https://dfu-2021.grand-challenge.org/Dataset/",
+      "access_route": "Official DFU License Agreement via http://www2.docm.mmu.ac.uk/STAFF/M.Yap/dataset.php",
+      "access_status": "BLOCKED",
+      "license_terms": "DFU License Agreement (terms to be recorded after approval)",
+      "total_images": null,
+      "image_format": "NOT_VERIFIED",
+      "image_dimensions": "NOT_VERIFIED",
+      "image_channels": 3,
+      "annotation_type": "Image-level classification (infection / ischaemia / both / none) (NOT_VERIFIED locally)",
+      "classes": ["none", "infection", "ischaemia", "both"],
+      "patient_identifiers_available": "UNKNOWN",
+      "patient_metadata_note": "Not acquired.",
+      "proposed_role": "blocked_out_of_scope",
+      "role_justification": "Infection/ischaemia classification is a clinical-label task outside the current MVP scope.",
+      "limitations": [
+        "Not acquired; license application pending",
+        "No pixel-level annotations"
+      ],
+      "verification_status": {
+        "source": "VERIFIED",
+        "access": "BLOCKED",
+        "license": "NOT_VERIFIED",
+        "image_count": "NOT_VERIFIED",
+        "patient_metadata": "UNKNOWN",
+        "physical_scale": "UNKNOWN"
+      }
+    }
+  ]
+}

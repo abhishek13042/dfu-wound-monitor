@@ -17,8 +17,9 @@ SPEC-02-03 evaluation contract:
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -34,21 +35,32 @@ DEFAULT_THRESHOLD_GRID = tuple(round(value, 2) for value in np.arange(0.30, 0.71
 DEFAULT_MIN_AREA_GRID = (0, 64, 128, 256, 512)
 
 
+def predict_tta_views(model: nn.Module, images: torch.Tensor, tta: bool = True) -> list[torch.Tensor]:
+    """Return each view's probabilities ``(B,1,H,W)``, flipped back; one view when ``tta`` is off."""
+
+    views = [torch.sigmoid(model(images).float())]
+    if tta:
+        for dims in ((-1,), (-2,), (-2, -1)):
+            views.append(torch.flip(torch.sigmoid(model(torch.flip(images, dims=dims)).float()), dims=dims))
+    return views
+
+
+def mean_of_views(views: Sequence[torch.Tensor]) -> torch.Tensor:
+    """Average views in order, summing one at a time so the result matches the original TTA bit for bit."""
+
+    total = views[0]
+    for view in views[1:]:
+        total = total + view
+    return total if len(views) == 1 else total / len(views)
+
+
 def predict_logits_tta(model: nn.Module, images: torch.Tensor, tta: bool = True) -> torch.Tensor:
     """Return mean probabilities ``(B,1,H,W)``; flips are inverted before averaging."""
 
-    probabilities = torch.sigmoid(model(images).float())
-    if not tta:
-        return probabilities
-    views = 1
-    for dims in ((-1,), (-2,), (-2, -1)):
-        flipped = torch.flip(images, dims=dims)
-        probabilities = probabilities + torch.flip(torch.sigmoid(model(flipped).float()), dims=dims)
-        views += 1
-    return probabilities / views
+    return mean_of_views(predict_tta_views(model, images, tta))
 
 
-def load_binary_mask(path: Path, target_size: Optional[Tuple[int, int]] = None, threshold: int = 128) -> np.ndarray:
+def load_binary_mask(path: Path, target_size: tuple[int, int] | None = None, threshold: int = 128) -> np.ndarray:
     """Load a mask as ``uint8`` {0,1}.
 
     ``target_size`` is ``(width, height)``.  A mask whose size differs from its
@@ -59,8 +71,10 @@ def load_binary_mask(path: Path, target_size: Optional[Tuple[int, int]] = None, 
 
     with Image.open(path) as mask_file:
         mask = mask_file.convert("L")
-        if target_size is not None and mask.size != tuple(target_size):
-            mask = mask.resize(tuple(target_size), resample=Image.Resampling.NEAREST)
+        if target_size is not None:
+            width, height = target_size
+            if mask.size != (width, height):
+                mask = mask.resize((width, height), resample=Image.Resampling.NEAREST)
         return (np.asarray(mask, dtype=np.uint8) >= threshold).astype(np.uint8)
 
 
@@ -84,20 +98,20 @@ def predict_native_probabilities(
     image_paths: Sequence[Path],
     input_height: int,
     input_width: int,
-    normalize_mean: List[float],
-    normalize_std: List[float],
+    normalize_mean: list[float],
+    normalize_std: list[float],
     device: torch.device,
     tta: bool = True,
     use_amp: bool = False,
     batch_size: int = 4,
-) -> List[np.ndarray]:
+) -> list[np.ndarray]:
     """Predict probability maps at each image's native resolution (``float16``)."""
 
     model.eval()
-    outputs: List[np.ndarray] = []
+    outputs: list[np.ndarray] = []
     for start in range(0, len(image_paths), batch_size):
         chunk = image_paths[start:start + batch_size]
-        native_sizes: List[Tuple[int, int]] = []
+        native_sizes: list[tuple[int, int]] = []
         tensors = []
         for path in chunk:
             with Image.open(path) as image_file:
@@ -122,12 +136,12 @@ def score_predictions(
     threshold: float,
     min_component_area: int = 0,
     include_hd95: bool = False,
-) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Binarize, post-process and score native-resolution predictions."""
 
     if not (len(sample_ids) == len(probabilities) == len(ground_truths)):
         raise ValueError("sample_ids, probabilities and ground_truths must have equal length")
-    per_sample: List[Dict[str, Any]] = []
+    per_sample: list[dict[str, Any]] = []
     for sample_id, probability, ground_truth in zip(sample_ids, probabilities, ground_truths):
         if probability.shape != ground_truth.shape:
             raise ValueError(f"{sample_id}: prediction {probability.shape} vs mask {ground_truth.shape}")
@@ -158,14 +172,14 @@ def tune_postprocessing(
     thresholds: Iterable[float] = DEFAULT_THRESHOLD_GRID,
     min_areas: Iterable[int] = DEFAULT_MIN_AREA_GRID,
     selection_metric: str = "mean_dice",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Grid-search threshold and minimum component area on validation data.
 
     Ties are broken toward threshold 0.5 and the smaller area, i.e. toward
     the least post-processing.
     """
 
-    grid: List[Dict[str, Any]] = []
+    grid: list[dict[str, Any]] = []
     for threshold in thresholds:
         for min_area in min_areas:
             aggregate, _ = score_predictions(sample_ids, probabilities, ground_truths, float(threshold), int(min_area))

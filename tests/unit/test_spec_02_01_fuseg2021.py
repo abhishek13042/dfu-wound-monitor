@@ -19,9 +19,11 @@ from src.segmentation.dataset import (
 )
 from src.segmentation.model import BCEDiceLoss, LightweightUNet
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "data/manifests/dataset_manifest.json"
+requires_fuseg_data = pytest.mark.skipif(
+    not (ROOT / "data/raw/FUSeg2021/source").is_dir(), reason="FUSeg2021 images are not in git"
+)
 
 
 def test_fuseg_manifest_contract_and_leakage_gate() -> None:
@@ -38,6 +40,7 @@ def test_fuseg_manifest_contract_and_leakage_gate() -> None:
     assert manifest["split_summary"]["patient_level_isolation_achieved"] is False
 
 
+@requires_fuseg_data
 def test_real_fuseg_sample_loads_to_binary_contract() -> None:
     samples = load_manifest_samples(str(MANIFEST), split="train")
     dataset = WoundSegmentationDataset(
@@ -56,6 +59,7 @@ def test_real_fuseg_sample_loads_to_binary_contract() -> None:
     assert set(torch.unique(mask).tolist()).issubset({0.0, 1.0})
 
 
+@requires_fuseg_data
 def test_train_augmentation_is_repeatable_for_seed_and_epoch() -> None:
     samples = load_manifest_samples(str(MANIFEST), split="train")
     first = WoundSegmentationDataset(

@@ -23,8 +23,8 @@ from __future__ import annotations
 
 import re
 import uuid
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Literal, Optional, Type, TypeVar
+from datetime import UTC, datetime, timedelta
+from typing import Any, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
@@ -42,28 +42,28 @@ def new_id(prefix: str) -> str:
 
 
 def utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class RecordValidationError(ValueError):
     category = "VALIDATION"
 
-    def __init__(self, record_type: str, errors: List[Dict[str, Any]]) -> None:
+    def __init__(self, record_type: str, errors: list[dict[str, Any]]) -> None:
         self.record_type, self.errors = record_type, errors
         super().__init__(f"Invalid {record_type}: " + "; ".join(f"{e['field']}: {e['message']}" for e in errors))
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {"category": self.category, "code": "RECORD_INVALID", "record_type": self.record_type,
                 "errors": self.errors}
 
 
-def _check_id(value: Optional[str]) -> Optional[str]:
+def _check_id(value: str | None) -> str | None:
     if value is not None and not ID_PATTERN.match(value):
         raise ValueError("must be 1-128 chars of letters, digits, '.', '_', ':' or '-'")
     return value
 
 
-def _check_time(value: Optional[datetime]) -> Optional[datetime]:
+def _check_time(value: datetime | None) -> datetime | None:
     if value is None:
         return value
     if value.tzinfo is None or value.utcoffset() is None:
@@ -76,7 +76,7 @@ class _Record(BaseModel):
     schema_version: str = SCHEMA_VERSION
 
     @classmethod
-    def create(cls: Type["R"], **data: Any) -> "R":
+    def create(cls: type[R], **data: Any) -> R:
         """Validate and build; raises ``RecordValidationError`` on failure."""
 
         try:
@@ -89,7 +89,7 @@ class _Record(BaseModel):
             ]) from None
 
     @classmethod
-    def from_json(cls: Type["R"], text: str) -> "R":
+    def from_json(cls: type[R], text: str) -> R:
         try:
             return cls.model_validate_json(text)
         except ValidationError as error:
@@ -99,7 +99,7 @@ class _Record(BaseModel):
                 for item in error.errors()
             ]) from None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return self.model_dump(mode="json")
 
 
@@ -109,16 +109,16 @@ R = TypeVar("R", bound=_Record)
 class CaseRecord(_Record):
     case_id: str = Field(default_factory=lambda: new_id("case"))
     identity_status: IdentityStatus = "UNKNOWN"
-    external_reference: Optional[str] = None   # opaque, caller-supplied; never derived
+    external_reference: str | None = None   # opaque, caller-supplied; never derived
     data_source: str = "USER_UPLOAD"           # e.g. USER_UPLOAD, FUSEG2021, SYNTHETIC
-    label: Optional[str] = None
+    label: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
     check_ids = field_validator("case_id")(_check_id)
     check_times = field_validator("created_at")(_check_time)
 
     @model_validator(mode="after")
-    def _public_data_is_not_a_verified_patient(self) -> "CaseRecord":
+    def _public_data_is_not_a_verified_patient(self) -> CaseRecord:
         if self.data_source.upper() not in ("USER_UPLOAD", "SYNTHETIC") and self.identity_status == "VERIFIED":
             raise ValueError(f"{self.data_source} samples have no verified patient linkage")
         return self
@@ -126,17 +126,17 @@ class CaseRecord(_Record):
 
 class ExaminationRecord(_Record):
     examination_id: str = Field(default_factory=lambda: new_id("exam"))
-    case_id: Optional[str] = None              # None = unknown, never inferred
-    captured_at: Optional[datetime] = None     # None = unknown
+    case_id: str | None = None              # None = unknown, never inferred
+    captured_at: datetime | None = None     # None = unknown
     timestamp_source: TimestampSource = "UNKNOWN"
-    notes: Optional[str] = Field(default=None, max_length=2000)
+    notes: str | None = Field(default=None, max_length=2000)
     created_at: datetime = Field(default_factory=utc_now)
 
     check_ids = field_validator("examination_id", "case_id")(_check_id)
     check_times = field_validator("captured_at", "created_at")(_check_time)
 
     @model_validator(mode="after")
-    def _consistent_time(self) -> "ExaminationRecord":
+    def _consistent_time(self) -> ExaminationRecord:
         if self.captured_at is None and self.timestamp_source != "UNKNOWN":
             raise ValueError("timestamp_source must be UNKNOWN when captured_at is missing")
         if self.captured_at is not None:
@@ -149,13 +149,13 @@ class ExaminationRecord(_Record):
 
 class ImageRecord(_Record):
     image_id: str = Field(default_factory=lambda: new_id("img"))
-    examination_id: Optional[str] = None
+    examination_id: str | None = None
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
-    original_filename: Optional[str] = Field(default=None, max_length=512)  # stored verbatim, never parsed
+    original_filename: str | None = Field(default=None, max_length=512)  # stored verbatim, never parsed
     format: str
     width: int = Field(gt=0)
     height: int = Field(gt=0)
-    storage_key: Optional[str] = None
+    storage_key: str | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
     check_ids = field_validator("image_id", "examination_id")(_check_id)
@@ -165,23 +165,23 @@ class ImageRecord(_Record):
 class AnalysisRecord(_Record):
     analysis_id: str = Field(default_factory=lambda: new_id("ana"))
     image_id: str
-    examination_id: Optional[str] = None
+    examination_id: str | None = None
     status: AnalysisStatus
-    quality: Dict[str, Any]
-    model_version: Optional[str] = None
-    inference_summary: Optional[Dict[str, Any]] = None
-    measurement: Optional[Dict[str, Any]] = None
-    calibration: Optional[Dict[str, Any]] = None
-    provenance: Dict[str, Any] = Field(default_factory=dict)
-    warnings: List[Dict[str, Any]] = Field(default_factory=list)
-    error: Optional[Dict[str, Any]] = None
+    quality: dict[str, Any]
+    model_version: str | None = None
+    inference_summary: dict[str, Any] | None = None
+    measurement: dict[str, Any] | None = None
+    calibration: dict[str, Any] | None = None
+    provenance: dict[str, Any] = Field(default_factory=dict)
+    warnings: list[dict[str, Any]] = Field(default_factory=list)
+    error: dict[str, Any] | None = None
     created_at: datetime = Field(default_factory=utc_now)
 
     check_ids = field_validator("analysis_id", "image_id", "examination_id")(_check_id)
     check_times = field_validator("created_at")(_check_time)
 
     @model_validator(mode="after")
-    def _status_consistency(self) -> "AnalysisRecord":
+    def _status_consistency(self) -> AnalysisRecord:
         if self.status == "COMPLETED":
             if self.measurement is None or self.model_version is None:
                 raise ValueError("COMPLETED analyses need a measurement and model_version")
@@ -198,12 +198,12 @@ class AnalysisRecord(_Record):
         return self
 
     @property
-    def measurement_basis(self) -> Optional[str]:
+    def measurement_basis(self) -> str | None:
         return (self.measurement or {}).get("measurement_basis")
 
 
-def image_record_from_outcome(outcome: Any, examination_id: Optional[str], original_filename: Optional[str] = None,
-                              storage_key: Optional[str] = None, image_id: Optional[str] = None) -> ImageRecord:
+def image_record_from_outcome(outcome: Any, examination_id: str | None, original_filename: str | None = None,
+                              storage_key: str | None = None, image_id: str | None = None) -> ImageRecord:
     decoded = outcome.decoded
     return ImageRecord.create(image_id=image_id or new_id("img"), examination_id=examination_id,
                               sha256=decoded.sha256, original_filename=original_filename,
@@ -211,10 +211,10 @@ def image_record_from_outcome(outcome: Any, examination_id: Optional[str], origi
                               storage_key=storage_key)
 
 
-def analysis_record_from_outcome(outcome: Any, image: ImageRecord, analysis_id: Optional[str] = None) -> AnalysisRecord:
+def analysis_record_from_outcome(outcome: Any, image: ImageRecord, analysis_id: str | None = None) -> AnalysisRecord:
     """Map an ``AnalysisOutcome`` (src.inference.pipeline) to a record."""
 
-    data: Dict[str, Any] = {
+    data: dict[str, Any] = {
         "analysis_id": analysis_id or new_id("ana"),
         "image_id": image.image_id,
         "examination_id": image.examination_id,

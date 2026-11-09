@@ -64,11 +64,10 @@ AGGREGATION METHOD (REQ-P02-S05-006, REQ-SPEC-02-03-006):
 Coding Style: Beginner-Understandable Python
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import torch
-
 
 # ============================================================
 # PER-SAMPLE METRIC COMPUTATION
@@ -78,7 +77,7 @@ def compute_binary_segmentation_metrics(
     predicted_mask: np.ndarray,
     ground_truth_mask: np.ndarray,
     epsilon: float = 1e-7,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """
     Compute Dice, IoU, Precision, and Recall for a single binary mask pair.
 
@@ -186,8 +185,8 @@ def compute_binary_segmentation_metrics(
 # ============================================================
 
 def aggregate_metrics(
-    per_sample_results: List[Dict[str, Any]],
-) -> Dict[str, float]:
+    per_sample_results: list[dict[str, Any]],
+) -> dict[str, float]:
     """
     Compute macro-average of metrics across all samples.
 
@@ -220,7 +219,7 @@ def aggregate_metrics(
     precision_scores = [result["precision"] for result in per_sample_results]
     recall_scores = [result["recall"] for result in per_sample_results]
 
-    aggregate = {
+    aggregate: dict[str, Any] = {
         "mean_dice": float(np.mean(dice_scores)),
         "mean_iou": float(np.mean(iou_scores)),
         "mean_precision": float(np.mean(precision_scores)),
@@ -246,7 +245,7 @@ def aggregate_metrics(
     return aggregate
 
 
-def compute_pooled_metrics(per_sample_results: List[Dict[str, Any]]) -> Dict[str, float]:
+def compute_pooled_metrics(per_sample_results: list[dict[str, Any]]) -> dict[str, float]:
     """Dataset-level (micro / pooled) Dice and IoU.
 
     TP, FP and FN are summed over all images before the ratio is taken:
@@ -270,7 +269,7 @@ def compute_pooled_metrics(per_sample_results: List[Dict[str, Any]]) -> Dict[str
     }
 
 
-def compute_nonempty_subset_metrics(per_sample_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+def compute_nonempty_subset_metrics(per_sample_results: list[dict[str, Any]]) -> dict[str, Any]:
     """Macro metrics on images whose ground truth contains wound pixels.
 
     Empty/empty images score Dice 1.0 by convention and can inflate the macro
@@ -279,7 +278,7 @@ def compute_nonempty_subset_metrics(per_sample_results: List[Dict[str, Any]]) ->
     """
     nonempty = [result for result in per_sample_results if result["wound_area_ratio_ground_truth"] > 0]
     empty = [result for result in per_sample_results if result["wound_area_ratio_ground_truth"] == 0]
-    metrics: Dict[str, Any] = {
+    metrics: dict[str, Any] = {
         "nonempty_num_samples": len(nonempty),
         "empty_num_samples": len(empty),
     }
@@ -299,7 +298,7 @@ def compute_hd95(
     predicted_mask: np.ndarray,
     ground_truth_mask: np.ndarray,
     pixel_spacing: float = 1.0,
-) -> Optional[float]:
+) -> float | None:
     """95th-percentile symmetric Hausdorff distance between mask boundaries.
 
     Distances are in pixels multiplied by ``pixel_spacing`` (pass the
@@ -341,10 +340,10 @@ def compute_hd95(
 def evaluate_batch(
     predictions_batch: torch.Tensor,
     targets_batch: torch.Tensor,
-    sample_ids: List[str],
+    sample_ids: list[str],
     prediction_threshold: float = 0.5,
     include_hd95: bool = False,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Evaluate a batch of predictions and targets.
 
@@ -428,14 +427,14 @@ class EpochMetricAccumulator:
     def __init__(self):
         self.total_loss = 0.0
         self.total_samples = 0
-        self.all_sample_metrics: List[Dict[str, Any]] = []
+        self.all_sample_metrics: list[dict[str, Any]] = []
 
     def update_loss(self, loss_value: float, batch_size: int) -> None:
         """Add loss from one batch."""
         self.total_loss += loss_value * batch_size
         self.total_samples += batch_size
 
-    def update_sample_metrics(self, batch_sample_results: List[Dict[str, Any]]) -> None:
+    def update_sample_metrics(self, batch_sample_results: list[dict[str, Any]]) -> None:
         """Add per-sample metrics from one batch."""
         self.all_sample_metrics.extend(batch_sample_results)
 
@@ -445,7 +444,7 @@ class EpochMetricAccumulator:
             return 0.0
         return self.total_loss / self.total_samples
 
-    def get_aggregate_metrics(self) -> Dict[str, float]:
+    def get_aggregate_metrics(self) -> dict[str, float]:
         """Return macro-averaged metrics over all samples seen."""
         return aggregate_metrics(self.all_sample_metrics)
 

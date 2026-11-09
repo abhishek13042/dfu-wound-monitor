@@ -11,7 +11,7 @@ from PIL import Image
 
 from src.inference.errors import InputError
 from src.inference.pipeline import COMPLETED, QUALITY_REJECTED, AnalysisPipeline
-from src.measurement.engine import Calibration, PHYSICALLY_CALIBRATED, PIXEL_BASED
+from src.measurement.engine import PHYSICALLY_CALIBRATED, PIXEL_BASED, Calibration
 
 
 class SpyEngine:

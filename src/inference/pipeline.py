@@ -1,4 +1,4 @@
-"""Analysis pipeline: decode once -> quality gate -> segmentation -> measurement.
+"""Analysis pipeline: decode once -> quality gate -> marker scale -> segmentation -> measurement.
 
 A rejected image never reaches the model (REQ-P03-S02-003).  Undecodable or
 disallowed input raises a typed ``InputError`` so callers can tell invalid
@@ -9,10 +9,12 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from src.inference.engine import InferenceEngine, InferenceRequest, InferenceResult
+from src.measurement.calibration import resolve_calibration
 from src.measurement.engine import Calibration, MeasurementConfig, MeasurementResult, measure
+from src.measurement.marker import MarkerConfig, detect_marker
 from src.preprocessing.decode import DecodedImage, ImageSource
 from src.quality.gate import QualityGate, QualityResult
 
@@ -25,11 +27,11 @@ class AnalysisOutcome:
     status: str                                   # COMPLETED | QUALITY_REJECTED
     decoded: DecodedImage
     quality: QualityResult
-    inference: Optional[InferenceResult] = None
-    measurement: Optional[MeasurementResult] = None
-    warnings: List[Dict[str, Any]] = field(default_factory=list)
+    inference: InferenceResult | None = None
+    measurement: MeasurementResult | None = None
+    warnings: list[dict[str, Any]] = field(default_factory=list)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "request_id": self.request_id,
             "status": self.status,
@@ -43,23 +45,32 @@ class AnalysisOutcome:
 
 
 class AnalysisPipeline:
-    def __init__(self, engine: InferenceEngine, gate: Optional[QualityGate] = None,
-                 measurement_config: Optional[MeasurementConfig] = None) -> None:
+    def __init__(self, engine: InferenceEngine, gate: QualityGate | None = None,
+                 measurement_config: MeasurementConfig | None = None,
+                 marker_config: MarkerConfig | None = None) -> None:
         self.engine = engine
         self.gate = gate or QualityGate()
         self.measurement_config = measurement_config or MeasurementConfig.load()
+        self.marker_config = marker_config or MarkerConfig.load()
 
-    def analyze(self, image: Union[ImageSource, DecodedImage], *, calibration: Optional[Calibration] = None,
-                threshold: Optional[float] = None, request_id: Optional[str] = None) -> AnalysisOutcome:
+    def analyze(self, image: ImageSource | DecodedImage, *, calibration: Calibration | None = None,
+                threshold: float | None = None, request_id: str | None = None) -> AnalysisOutcome:
         request_id = request_id or uuid.uuid4().hex
         decoded = self.engine.decode(image)            # raises InputError subclasses
         quality = self.gate.evaluate(decoded)
         if not quality.accepted:
             return AnalysisOutcome(request_id, QUALITY_REJECTED, decoded, quality)
+        # REQ-P09-S01: a marker in the photo is measured in the same frame, so it wins over a typed-in scale.
+        reading = detect_marker(decoded.as_array(), self.marker_config) if self.marker_config.enabled else None
+        calibration, scale_warnings = resolve_calibration(calibration, reading,
+                                                          self.marker_config.conflict_tolerance_pct)
         inference = self.engine.predict(InferenceRequest(decoded, threshold=threshold, request_id=request_id))
         measurement = measure(inference.binary_mask, calibration=calibration,
                               probability_mask=inference.probability_mask, provenance=inference.provenance,
                               config=self.measurement_config)
+        measurement.warnings[:0] = scale_warnings
+        if reading is not None:
+            measurement.provenance["marker"] = reading.to_dict()
         warnings = list(inference.warnings) + [w for w in measurement.warnings
                                                if w["code"] not in {x["code"] for x in inference.warnings}]
         return AnalysisOutcome(request_id, COMPLETED, decoded, quality, inference, measurement, warnings)

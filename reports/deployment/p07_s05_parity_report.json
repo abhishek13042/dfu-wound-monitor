@@ -1,0 +1,77 @@
+{
+  "spec": "P07-S05",
+  "generated_at": "2026-10-30T14:18:55.352925+00:00",
+  "model_version": "spec-02-03-resnet34-unet-512-v1",
+  "python": "3.14.0",
+  "platform": "win32",
+  "compared_fields": [
+    "status",
+    "model_version",
+    "quality",
+    "measurement",
+    "inference",
+    "mask and probability artifact SHA-256"
+  ],
+  "images": [
+    {
+      "image_sha256": "649e69633c8b320967246efe9192344c0c1b54fcf6314e7170c9c8123a20a2f1",
+      "status": "COMPLETED",
+      "differing_fields": [],
+      "artifacts_compared": [
+        "MASK",
+        "PROBABILITY"
+      ],
+      "masks_identical": true
+    },
+    {
+      "image_sha256": "931ed0c0a37b1c6a182b84d4b4cd000b6515954b691d3597295ca2d76de90ec2",
+      "status": "COMPLETED",
+      "differing_fields": [],
+      "artifacts_compared": [
+        "MASK",
+        "PROBABILITY"
+      ],
+      "masks_identical": true
+    },
+    {
+      "image_sha256": "01134a3ef6aea50e6e3bc47e13f44acc1b114982a29a7a2b49965ca57ab80528",
+      "status": "COMPLETED",
+      "differing_fields": [],
+      "artifacts_compared": [
+        "MASK",
+        "PROBABILITY"
+      ],
+      "masks_identical": true
+    },
+    {
+      "image_sha256": "492e1f3b6bd8678429e1053cc05ea44633d881428aebfe1a25f3fcba1cdebb0c",
+      "status": "COMPLETED",
+      "differing_fields": [],
+      "artifacts_compared": [
+        "MASK",
+        "PROBABILITY"
+      ],
+      "masks_identical": true
+    },
+    {
+      "image_sha256": "fd8893d946f1c6ea5d83a6ed6bbda298dda1d66526c0b6fcf2428ea7e1aab771",
+      "status": "COMPLETED",
+      "differing_fields": [],
+      "artifacts_compared": [
+        "MASK",
+        "PROBABILITY"
+      ],
+      "masks_identical": true
+    }
+  ],
+  "killed_worker": {
+    "worker_killed": true,
+    "job_was_left_running": true,
+    "sweep_wait_was_skipped_by_backdating": true,
+    "final_status": "COMPLETED",
+    "attempts": 2,
+    "requeued": 1,
+    "results_stored": 1
+  },
+  "passed": true
+}

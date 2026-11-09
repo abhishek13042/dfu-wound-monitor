@@ -9,9 +9,9 @@ import platform
 import random
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -46,7 +46,7 @@ def set_random_seeds(seed: int, deterministic: bool = True) -> None:
 def select_device(preferred: str = "cuda", fallback: str = "cpu") -> torch.device:
     """Select the requested available device, otherwise use the configured fallback."""
 
-    def available_device(specification: str) -> Optional[torch.device]:
+    def available_device(specification: str) -> torch.device | None:
         try:
             candidate = torch.device(specification)
         except RuntimeError as error:
@@ -79,10 +79,10 @@ def select_device(preferred: str = "cuda", fallback: str = "cpu") -> torch.devic
     return fallback_device
 
 
-def collect_environment_metadata(device: torch.device) -> Dict[str, Any]:
+def collect_environment_metadata(device: torch.device) -> dict[str, Any]:
     """Collect factual runtime information for a training artifact."""
 
-    metadata: Dict[str, Any] = {
+    metadata: dict[str, Any] = {
         "python_version": sys.version,
         "platform": platform.platform(),
         "pytorch_version": torch.__version__,
@@ -121,7 +121,7 @@ def run_training_epoch(
     device: torch.device,
     epoch_number: int,
     prediction_threshold: float = 0.5,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Run one train epoch and return loss plus macro per-sample metrics."""
 
     model.train()
@@ -165,7 +165,7 @@ def run_validation_epoch(
     loss_fn: nn.Module,
     device: torch.device,
     prediction_threshold: float = 0.5,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Run deterministic validation without gradients or parameter updates."""
 
     model.eval()
@@ -200,13 +200,13 @@ def save_checkpoint(
     optimizer: torch.optim.Optimizer,
     epoch: int,
     val_dice: float,
-    config: Dict[str, Any],
+    config: dict[str, Any],
     checkpoint_path: str,
-    scheduler: Optional[torch.optim.lr_scheduler.LRScheduler] = None,
-    metadata: Optional[Dict[str, Any]] = None,
+    scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
+    metadata: dict[str, Any] | None = None,
     best_metric_name: str = "val_dice",
-    best_metric_value: Optional[float] = None,
-    data_loader: Optional[DataLoader] = None,
+    best_metric_value: float | None = None,
+    data_loader: DataLoader | None = None,
 ) -> None:
     """Save weights, optimizer/scheduler state, configuration, and provenance."""
 
@@ -244,11 +244,11 @@ def load_checkpoint(
     checkpoint_path: str,
     model: nn.Module,
     device: torch.device,
-    optimizer: Optional[torch.optim.Optimizer] = None,
-    scheduler: Optional[torch.optim.lr_scheduler.LRScheduler] = None,
-    data_loader: Optional[DataLoader] = None,
+    optimizer: torch.optim.Optimizer | None = None,
+    scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
+    data_loader: DataLoader | None = None,
     restore_rng: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Restore a checkpoint and optionally optimizer/scheduler state."""
 
     checkpoint_file = Path(checkpoint_path)
@@ -290,10 +290,10 @@ def load_checkpoint(
     }
 
 
-def _capture_rng_state() -> Dict[str, Any]:
+def _capture_rng_state() -> dict[str, Any]:
     """Capture all RNG streams used by the training process."""
 
-    state: Dict[str, Any] = {
+    state: dict[str, Any] = {
         "python": random.getstate(),
         "numpy": np.random.get_state(),
         "torch": torch.get_rng_state(),
@@ -303,7 +303,7 @@ def _capture_rng_state() -> Dict[str, Any]:
     return state
 
 
-def _restore_rng_state(state: Optional[Dict[str, Any]]) -> None:
+def _restore_rng_state(state: dict[str, Any] | None) -> None:
     """Restore RNG streams from a checkpoint when resuming training."""
 
     if not state:
@@ -316,15 +316,15 @@ def _restore_rng_state(state: Optional[Dict[str, Any]]) -> None:
 
 
 def _write_progress_log(
-    config: Dict[str, Any],
+    config: dict[str, Any],
     status: str,
-    epoch_logs: List[Dict[str, Any]],
+    epoch_logs: list[dict[str, Any]],
     checkpoint_path: str,
     latest_checkpoint_path: str,
-    best_epoch: Optional[int],
+    best_epoch: int | None,
     best_metric: float,
-    best_val_metrics: Optional[Dict[str, float]],
-    environment: Dict[str, Any],
+    best_val_metrics: dict[str, float] | None,
+    environment: dict[str, Any],
 ) -> None:
     """Persist an interruption-safe structured progress log when configured."""
 
@@ -360,8 +360,8 @@ def _write_progress_log(
 
 def _create_scheduler(
     optimizer: torch.optim.Optimizer,
-    scheduler_config: Dict[str, Any],
-) -> Optional[torch.optim.lr_scheduler.LRScheduler]:
+    scheduler_config: dict[str, Any],
+) -> torch.optim.lr_scheduler.LRScheduler | None:
     name = str(scheduler_config.get("name", "none")).lower()
     if name in {"", "none", "null"}:
         return None
@@ -387,9 +387,9 @@ def train_baseline_model(
     loss_fn: nn.Module,
     train_loader: DataLoader,
     val_loader: DataLoader,
-    config: Dict[str, Any],
+    config: dict[str, Any],
     device: torch.device,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Train using only train/validation loaders and select by validation Dice."""
 
     training_config = config.get("training", {})
@@ -435,10 +435,10 @@ def train_baseline_model(
         raise ValueError("Latest and best checkpoint paths must be different")
     environment = collect_environment_metadata(device)
     best_metric = -float("inf")
-    best_epoch: Optional[int] = None
-    best_val_metrics: Optional[Dict[str, float]] = None
+    best_epoch: int | None = None
+    best_val_metrics: dict[str, float] | None = None
     start_epoch = 1
-    started_utc = datetime.now(timezone.utc).isoformat()
+    started_utc = datetime.now(UTC).isoformat()
 
     resume_path = training_config.get("resume_checkpoint")
     if resume_path:
@@ -469,7 +469,7 @@ def train_baseline_model(
             "increase num_epochs before resuming"
         )
 
-    epoch_logs: List[Dict[str, Any]] = []
+    epoch_logs: list[dict[str, Any]] = []
     if resume_path:
         saved_epoch_logs = resume_metadata.get("metadata", {}).get("epoch_logs", [])
         if isinstance(saved_epoch_logs, list):

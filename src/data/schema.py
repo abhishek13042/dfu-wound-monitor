@@ -8,7 +8,7 @@ Coding Style: Beginner-Understandable Python
 """
 
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 
 @dataclass
@@ -22,27 +22,27 @@ class CanonicalSampleMetadata:
     dataset_version: str
     source_sample_id: str
     image_path: str
-    annotation_path: Optional[str]
+    annotation_path: str | None
     checksum_sha256: str
     width: int
     height: int
     channels: int
     annotation_type: str  # 'detection', 'wound_segmentation', 'tissue_segmentation', 'classification'
-    patient_id: Optional[str]  # None if unavailable
-    exam_id: Optional[str]     # None if unavailable
+    patient_id: str | None  # None if unavailable
+    exam_id: str | None     # None if unavailable
     original_label: str
     canonical_label: str
     metadata_status: str       # 'VERIFIED', 'INFERRED', 'UNKNOWN'
     validation_status: str     # 'VALID', 'INVALID', 'QUARANTINED'
-    annotation_checksum_sha256: Optional[str] = None
+    annotation_checksum_sha256: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert dataclass instance to standard dictionary."""
         return asdict(self)
 
 
 # Explicit Source -> Canonical Label Mapping Registry
-LABEL_MAPPING_REGISTRY: Dict[str, Dict[str, Dict[str, str]]] = {
+LABEL_MAPPING_REGISTRY: dict[str, dict[str, dict[str, str]]] = {
     "DFUC2020": {
         "wound": {
             "canonical_label": "wound",
@@ -140,7 +140,7 @@ LABEL_MAPPING_REGISTRY: Dict[str, Dict[str, Dict[str, str]]] = {
 def map_source_label_to_canonical(
     dataset_name: str,
     original_label: str
-) -> Tuple[str, str, str]:
+) -> tuple[str, str, str]:
     """
     Look up canonical label mapping for a source dataset and label.
 
@@ -170,17 +170,17 @@ def create_canonical_sample_metadata(
     dataset_version: str,
     source_sample_id: str,
     image_path: str,
-    annotation_path: Optional[str],
+    annotation_path: str | None,
     checksum_sha256: str,
     width: int,
     height: int,
     channels: int,
     annotation_type: str,
-    patient_id: Optional[str],
-    exam_id: Optional[str],
+    patient_id: str | None,
+    exam_id: str | None,
     original_label: str,
     validation_status: str,
-    annotation_checksum_sha256: Optional[str] = None,
+    annotation_checksum_sha256: str | None = None,
 ) -> CanonicalSampleMetadata:
     """
     Construct a validated CanonicalSampleMetadata instance.
