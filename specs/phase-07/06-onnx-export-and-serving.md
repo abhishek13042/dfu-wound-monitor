@@ -1,6 +1,6 @@
 # P07-S06 — ONNX Export and Serving Parity
 
-**Status:** `IN_PROGRESS`. Export, engine, parity and the latency and memory benchmarks are done, and PyTorch stays the default (decision 23). Every requirement has local evidence; it waits on a CI run.
+**Status:** `COMPLETED`. Export, engine, parity and the latency and memory benchmarks are done, and PyTorch stays the default (decision 23). The ONNX tests pass in CI (run 42626597989, 2026-11-09).
 
 ## 1. Objective
 
@@ -105,6 +105,7 @@ Export with a dynamic height and width, to match native-size inference. Run the 
   | Peak working set | 609 MB | 913 MB |
 
 - `tests/integration/test_p07_s06_onnx.py`: 10 tests.
+- 2026-11-09, GitHub Actions run 42626597989, `quality` job: the tiny-model export and round trip, interface parity and hash refusal tests ran with `onnxruntime` installed (not skipped); the suite reported 518 passed, 9 skipped.
 - 2026-11-01, `reports/final/p07_s06_image_size.json`, Docker in WSL Ubuntu 24.04: the serving image is 2.04 GB, 2.14 GB with `onnxruntime` added, and would be 0.91 GB without torch, which cannot serve yet. The ONNX file is not in the image, so the size does not depend on which export is used.
 
 ## 17. Reproducibility
