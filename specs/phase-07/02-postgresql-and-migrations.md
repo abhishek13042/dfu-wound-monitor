@@ -1,6 +1,6 @@
 # P07-S02 — PostgreSQL and Managed Migrations
 
-**Status:** `IN_PROGRESS`. Code complete and verified on a local PostgreSQL 16 server. The CI job has not run yet because nothing has been pushed.
+**Status:** `COMPLETED`. Verified on a local PostgreSQL 16 server and in the CI `postgres` job (run 42478962863, 2026-11-08).
 
 ## 1. Objective
 
@@ -98,7 +98,7 @@ SQLite is migrated when opened. PostgreSQL is only migrated by `scripts/deployme
 
 ## 16. Evidence
 
-- CI run with the PostgreSQL job
+- Recorded on 2026-11-08. [Actions run 42478962863](https://github.com/abhishek13042/dfu-wound-monitor/actions/runs/42478962863) on [PR #1](https://github.com/abhishek13042/dfu-wound-monitor/pull/1), commit `7b1d999`. The `postgres` job ran the full suite on PostgreSQL: 518 passed, 9 skipped.
 - Import report
 - Migration review notes
 
@@ -120,6 +120,6 @@ python -m pytest tests/storage tests/api -q
 |---|---|---|---|---|
 | `REQ-P07-S02-001` | `src/storage/repository.py` | `tests/storage/test_repository.py` | `test_api_layer_contains_no_sql`, 279 passed on PostgreSQL | COMPLETED |
 | `REQ-P07-S02-002` | `src/storage/migrations/` | `test_migration_round_trip`, `test_migrations_match_the_models` | Round trip passes on SQLite and PostgreSQL 16 | COMPLETED |
-| `REQ-P07-S02-003` | Parametrised test fixture | `DFU_TEST_DATABASE_URL`; CI `postgres` job | Local PostgreSQL 16: all passed. CI awaits a push | IN_PROGRESS |
+| `REQ-P07-S02-003` | Parametrised test fixture | `DFU_TEST_DATABASE_URL`; CI `postgres` job | Local PostgreSQL 16, and Actions run 42478962863: `postgres` job, 518 passed, 9 skipped | COMPLETED |
 | `REQ-P07-S02-004` | `scripts/deployment/import_sqlite.py` | `test_import_verifies_counts` | `reports/deployment/p07_s02_import_report.json` | COMPLETED |
 | `REQ-P07-S02-005` | `src/api/app.py` | `tests/api/`, `tests/storage/test_database_outage.py` | Smoke test 8/8 with the real model on PostgreSQL | COMPLETED |

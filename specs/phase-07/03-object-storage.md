@@ -1,6 +1,6 @@
 # P07-S03 — Object Storage and Pre-Signed Uploads
 
-**Status:** `IN_PROGRESS`. Code complete and verified on moto and on a local SeaweedFS 4.51 server in Docker. The planned real server was MinIO, whose image was withdrawn before the CI job ever ran, so no MinIO evidence exists. The SeaweedFS CI job has not run yet because nothing has been pushed, no hosted bucket has been tested, and bucket CORS from a real browser waits for P08-S02.
+**Status:** `IN_PROGRESS`. Code complete and verified on moto and on a local SeaweedFS 4.51 server in Docker. The planned real server was MinIO, whose image was withdrawn before the CI job ever ran, so no MinIO evidence exists. The SeaweedFS CI job passes (run 42478962863, 2026-11-08). No hosted bucket has been tested, and bucket CORS from a real browser waits for P08-S02.
 
 ## 1. Objective
 
@@ -91,7 +91,7 @@ Move images and artifacts to S3-compatible storage, so that any instance can rea
 
 ## 16. Evidence
 
-- CI run with SeaweedFS (not yet run)
+- Recorded on 2026-11-08. [Actions run 42478962863](https://github.com/abhishek13042/dfu-wound-monitor/actions/runs/42478962863) on [PR #1](https://github.com/abhishek13042/dfu-wound-monitor/pull/1), commit `7b1d999`. `object-storage` job on SeaweedFS 4.51: 54 passed. The first CI runs got HTTP 500 on uploads: each test made a bucket and never removed it, so SeaweedFS ran out of volumes. The fixture now drops its bucket, and the job uses 64 MB volumes.
 - `reports/deployment/p07_s03_seaweedfs_tests.txt`: local run on the pinned CI image
 - Migration report with hash verification
 
@@ -112,7 +112,7 @@ python scripts/deployment/migrate_blobs.py --verify
 
 | Requirement | Implementation | Test | Evidence | Status |
 |---|---|---|---|---|
-| `REQ-P07-S03-001` | `src/storage/blobs.py` | `tests/storage/test_blob_contract.py` | Contract tests pass on local disk, moto and local SeaweedFS 4.51: `reports/deployment/p07_s03_seaweedfs_tests.txt`. SeaweedFS in CI awaits a push | IN_PROGRESS |
+| `REQ-P07-S03-001` | `src/storage/blobs.py` | `tests/storage/test_blob_contract.py` | Local disk, moto and SeaweedFS 4.51: `reports/deployment/p07_s03_seaweedfs_tests.txt`, and Actions run 42478962863: `object-storage` job on SeaweedFS 4.51, 54 passed | COMPLETED |
 | `REQ-P07-S03-002` | `src/storage/blobs.py` | `test_corrupt_blob_detected` | Test run | COMPLETED |
 | `REQ-P07-S03-003` | `src/api/uploads.py` | `test_upload_url_limits`, `test_store_refuses_a_body_longer_than_signed` | Test run. The store's refusal of a longer body is shown on SeaweedFS only, because moto accepts it | COMPLETED |
 | `REQ-P07-S03-004` | `src/api/uploads.py` | `test_rejects_disguised_file` | Test run | COMPLETED |

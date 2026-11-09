@@ -1,6 +1,6 @@
 # P07-S01 — Public Demo and Continuous Integration
 
-**Status:** `IN_PROGRESS`. The workflow and every local check are done. Green CI runs need a push, and the Space needs the owner's `hf auth login` and approval.
+**Status:** `IN_PROGRESS`. CI runs on GitHub Actions, and REQ-001, 002, 003 and 005 are `COMPLETED` (run 42478962863, 2026-11-08). REQ-004, the published Space, is `BLOCKED` on the owner's `hf auth login` and approval.
 
 ## 1. Objective
 
@@ -95,7 +95,11 @@ CI uses one workflow with three jobs: `quality`, `install` (matrix) and `docker`
 
 ## 16. Evidence
 
-- Actions run URLs
+Recorded on 2026-11-08. [Actions run 42478962863](https://github.com/abhishek13042/dfu-wound-monitor/actions/runs/42478962863) on [PR #1](https://github.com/abhishek13042/dfu-wound-monitor/pull/1), commit `7b1d999`.
+
+- `quality`, `install` (ubuntu and windows) and `docker` passed. The container refuses a checkpoint with the wrong hash.
+- Earlier runs on the PR found and fixed two CI faults: OpenCV missing from `requirements.txt`, and a Trivy action tag that no longer resolved, now pinned to a commit.
+- Still missing: the Space smoke test and screenshot (REQ-004, `BLOCKED`).
 - `reports/final/p07_s01_space_smoke.json`
 - Screenshot of the running Space
 
@@ -115,8 +119,8 @@ python scripts/deployment/smoke_test.py --url https://<user>-dfu-woundmonitor.hf
 
 | Requirement | Implementation | Test | Evidence | Status |
 |---|---|---|---|---|
-| `REQ-P07-S01-001` | `.github/workflows/ci.yml` | Workflow run on a pull request | Workflow written; ruff, mypy and pytest pass locally; no Actions run yet | IN_PROGRESS |
-| `REQ-P07-S01-002` | `.github/workflows/ci.yml` install job | Matrix job | Windows, Python 3.12, empty venv: 263 passed, 2 skipped on 2026-10-30; Linux needs the Actions run | IN_PROGRESS |
-| `REQ-P07-S01-003` | `.github/workflows/ci.yml` docker job | Container start check | Written; Docker is not installed locally, so the image build is unproven | IN_PROGRESS |
+| `REQ-P07-S01-001` | `.github/workflows/ci.yml` | Workflow run on a pull request | Actions run 42478962863 on PR #1 (commit `7b1d999`): `quality` job, ruff, mypy and pytest 518 passed, 9 skipped. The `security` job in the same workflow belongs to REQ-P10-S03-006 | COMPLETED |
+| `REQ-P07-S01-002` | `.github/workflows/ci.yml` install job | Matrix job | Actions run 42478962863: `install` on ubuntu-latest (518 passed, 9 skipped) and windows-latest both passed from an empty environment | COMPLETED |
+| `REQ-P07-S01-003` | `.github/workflows/ci.yml` docker job | Container start check | Actions run 42478962863: `docker` job built the API and worker images and the container answered liveness | COMPLETED |
 | `REQ-P07-S01-004` | Published Space | `smoke_test.py --url <space>` | Waiting for `hf auth login` and approval to publish | BLOCKED |
-| `REQ-P07-S01-005` | `scripts/deployment/fetch_checkpoint.py`, `scripts/deployment/check_refuses_bad_model.py` | Container test with a wrong hash | Running service with a tampered checkpoint gave 503 on readiness and analysis, CHECKPOINT_CHECKSUM_MISMATCH; container run needs the docker job | IN_PROGRESS |
+| `REQ-P07-S01-005` | `scripts/deployment/fetch_checkpoint.py`, `scripts/deployment/check_refuses_bad_model.py` | Container test with a wrong hash | Actions run 42478962863: `docker` job, a container and a worker given a checkpoint with the wrong hash both refused it (readiness and analysis 503, CHECKPOINT_CHECKSUM_MISMATCH) | COMPLETED |

@@ -353,17 +353,17 @@ These requirements are specified and not implemented. The paths are planned loca
 
 | Requirement | Planned implementation | Planned test | Planned evidence | Status |
 |---|---|---|---|---|
-| REQ-P07-S01-001 | `.github/workflows/ci.yml` | Workflow run on a pull request | Workflow written; ruff, mypy and pytest pass locally; no Actions run yet | IN_PROGRESS |
-| REQ-P07-S01-002 | `.github/workflows/ci.yml` install job | Matrix job | Windows, Python 3.12, empty venv: 263 passed, 2 skipped on 2026-10-30; Linux needs the Actions run | IN_PROGRESS |
-| REQ-P07-S01-003 | `.github/workflows/ci.yml` docker job | Container start check | Written; Docker is not installed locally, so the image build is unproven | IN_PROGRESS |
+| REQ-P07-S01-001 | `.github/workflows/ci.yml` | Workflow run on a pull request | Actions run 42478962863 on PR #1 (commit `7b1d999`): `quality` job, ruff, mypy and pytest 518 passed, 9 skipped. The `security` job in the same workflow belongs to REQ-P10-S03-006 | COMPLETED |
+| REQ-P07-S01-002 | `.github/workflows/ci.yml` install job | Matrix job | Actions run 42478962863: `install` on ubuntu-latest (518 passed, 9 skipped) and windows-latest both passed from an empty environment | COMPLETED |
+| REQ-P07-S01-003 | `.github/workflows/ci.yml` docker job | Container start check | Actions run 42478962863: `docker` job built the API and worker images and the container answered liveness | COMPLETED |
 | REQ-P07-S01-004 | Published Space | `smoke_test.py --url <space>` | Waiting for `hf auth login` and approval to publish | BLOCKED |
-| REQ-P07-S01-005 | `scripts/deployment/fetch_checkpoint.py`, `scripts/deployment/check_refuses_bad_model.py` | Container test with a wrong hash | Running service with a tampered checkpoint gave 503 on readiness and analysis, CHECKPOINT_CHECKSUM_MISMATCH; container run needs the docker job | IN_PROGRESS |
+| REQ-P07-S01-005 | `scripts/deployment/fetch_checkpoint.py`, `scripts/deployment/check_refuses_bad_model.py` | Container test with a wrong hash | Actions run 42478962863: `docker` job, a container and a worker given a checkpoint with the wrong hash both refused it (readiness and analysis 503, CHECKPOINT_CHECKSUM_MISMATCH) | COMPLETED |
 | REQ-P07-S02-001 | `src/storage/repository.py` | `tests/storage/test_repository.py` | `test_api_layer_contains_no_sql`, 279 passed on PostgreSQL | COMPLETED |
 | REQ-P07-S02-002 | `src/storage/migrations/` | `test_migration_round_trip`, `test_migrations_match_the_models` | Round trip passes on SQLite and PostgreSQL 16 | COMPLETED |
-| REQ-P07-S02-003 | Parametrised test fixture | `DFU_TEST_DATABASE_URL`; CI `postgres` job | Local PostgreSQL 16: all passed. CI awaits a push | IN_PROGRESS |
+| REQ-P07-S02-003 | Parametrised test fixture | `DFU_TEST_DATABASE_URL`; CI `postgres` job | Local PostgreSQL 16, and Actions run 42478962863: `postgres` job, 518 passed, 9 skipped | COMPLETED |
 | REQ-P07-S02-004 | `scripts/deployment/import_sqlite.py` | `test_import_verifies_counts` | `reports/deployment/p07_s02_import_report.json` | COMPLETED |
 | REQ-P07-S02-005 | `src/api/app.py` | `tests/api/`, `tests/storage/test_database_outage.py` | Smoke test 8/8 with the real model on PostgreSQL | COMPLETED |
-| REQ-P07-S03-001 | `src/storage/blobs.py` | `tests/storage/test_blob_contract.py` | Contract tests pass on local disk, moto and local SeaweedFS 4.51: `reports/deployment/p07_s03_seaweedfs_tests.txt`. SeaweedFS in CI awaits a push | IN_PROGRESS |
+| REQ-P07-S03-001 | `src/storage/blobs.py` | `tests/storage/test_blob_contract.py` | Local disk, moto and SeaweedFS 4.51: `reports/deployment/p07_s03_seaweedfs_tests.txt`, and Actions run 42478962863: `object-storage` job on SeaweedFS 4.51, 54 passed | COMPLETED |
 | REQ-P07-S03-002 | `src/storage/blobs.py` | `test_corrupt_blob_detected` | Test run | COMPLETED |
 | REQ-P07-S03-003 | `src/api/uploads.py` | `test_upload_url_limits`, `test_store_refuses_a_body_longer_than_signed` | Test run. The store's refusal of a longer body is shown on SeaweedFS only, because moto accepts it | COMPLETED |
 | REQ-P07-S03-004 | `src/api/uploads.py` | `test_rejects_disguised_file` | Test run | COMPLETED |
@@ -372,7 +372,7 @@ These requirements are specified and not implemented. The paths are planned loca
 | REQ-P07-S04-002 | Repository owner filter | `test_cross_user_isolation`, for every route | Test run | COMPLETED |
 | REQ-P07-S04-003 | `src/api/auth.py` | `test_rejects_bad_tokens` | `reports/deployment/p07_s04_security_review.md` | COMPLETED |
 | REQ-P07-S04-004 | `src/api/account.py` | `test_account_deletion_is_complete` | Test run | COMPLETED |
-| REQ-P07-S04-005 | Alembic revision | `test_owner_migration` | Passes locally on SQLite and PostgreSQL 16. CI log awaits a push | IN_PROGRESS |
+| REQ-P07-S04-005 | Alembic revision | `test_owner_migration` | Passes on SQLite and PostgreSQL 16 locally, and in Actions run 42478962863: `postgres` job | COMPLETED |
 | REQ-P07-S05-001 | `src/api/analyses_v2.py` | `test_submit_does_not_run_model` | Test run, with the queue stubbed. Real Redis submits are covered by `tests/worker/test_redis.py` | COMPLETED |
 | REQ-P07-S05-002 | `src/worker/state.py` | `test_state_machine`, `test_a_job_only_moves_from_the_state_it_is_in` | Test run | COMPLETED |
 | REQ-P07-S05-003 | `src/worker/tasks.py` | `test_redelivery_is_idempotent`, `test_only_one_worker_can_claim_a_job`, `test_two_workers_finish_a_burst_with_no_duplicates_or_losses` | Test run | COMPLETED |
@@ -384,7 +384,7 @@ These requirements are specified and not implemented. The paths are planned loca
 | REQ-P07-S06-003 | `scripts/evaluation/run_onnx_parity.py` | Parity run | `reports/final/p07_s06_onnx_parity.json` | COMPLETED |
 | REQ-P07-S06-004 | `scripts/evaluation/run_phase_06_benchmark.py` | Benchmark run | `reports/final/p07_s06_onnx_benchmark.json`, `reports/final/p07_s06_image_size.json` | COMPLETED |
 | REQ-P07-S06-005 | `src/inference/onnx_engine.py` | `test_engine_choice_defaults_to_pytorch` | `docs/architecture/decisions.md`, decision 23 | COMPLETED |
-| REQ-P08-S01-001 | `web/lib/api/`, `web/scripts/export_openapi.py` | `npm run api:check` in the CI `web` job | Local exit 0; no CI log yet | IN_PROGRESS |
+| REQ-P08-S01-001 | `web/lib/api/`, `web/scripts/export_openapi.py` | `npm run api:check` in the CI `web` job | Local exit 0, and Actions run 42478962863: `web` job ran `npm run api:check` against the committed `openapi.json` and `schema.d.ts` | COMPLETED |
 | REQ-P08-S01-002 | `web/components/MedicalNotice.tsx` in both layouts | `e2e/pages.spec.ts`, 20 routes at two widths | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
 | REQ-P08-S01-003 | `web/middleware.ts` | `middleware.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
 | REQ-P08-S01-004 | `web/lib/errors.ts`, `web/components/ErrorPanel.tsx` | `lib/errors.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
@@ -427,7 +427,7 @@ These requirements are specified and not implemented. The paths are planned loca
 | REQ-P10-S01-001 | `src/observability/context.py`, `src/observability/http.py`, `src/worker/tasks.py` | `test_the_id_follows_the_job_into_the_worker_and_the_result` | Test run 2026-11-04 | COMPLETED |
 | REQ-P10-S01-002 | `src/observability/metrics.py` | `test_metrics_endpoint_reports_the_required_series` | `grafana-dashboard.json` | COMPLETED |
 | REQ-P10-S01-003 | `src/observability/logs.py`, `src/observability/errors.py` | `test_scrub_removes_planted_secrets` | Test run 2026-11-04 | COMPLETED |
-| REQ-P10-S01-004 | `docker/production/observability/alerts.yml` | `alerts_test.yml` (promtool in CI) | CI job pending | IN_PROGRESS |
+| REQ-P10-S01-004 | `docker/production/observability/alerts.yml` | `alerts_test.yml` (promtool in CI) | Actions run 42478962863: `observability` job, `promtool test rules` SUCCESS (4 rules) | COMPLETED |
 | REQ-P10-S02-001 | `tests/load/scenarios.py`, `tests/load/locustfile.py` | `tests/load/test_scenarios.py`; staging Locust run `BLOCKED` | `reports/final/p10_s02_load.json` | IN_PROGRESS |
 | REQ-P10-S02-002 | `scripts/evaluation/run_load_baseline.py` | Baseline run 2026-11-05 | `reports/final/p10_s02_load.json` | COMPLETED |
 | REQ-P10-S02-003 | `docs/deployment/SLO.md` | Written after the baseline | SLO document (provisional) | COMPLETED |
@@ -438,7 +438,7 @@ These requirements are specified and not implemented. The paths are planned loca
 | REQ-P10-S03-003 | `src/api/consent.py`, `web/components/UploadForm.tsx` | `test_upload_needs_consent_first` | Test run 2026-11-05 | COMPLETED |
 | REQ-P10-S03-004 | `src/api/limits.py` | `tests/security/test_p10_s03_access.py` | Test run 2026-11-05 | COMPLETED |
 | REQ-P10-S03-005 | `docs/deployment/THREAT_MODEL.md` | Document review | Threat model | COMPLETED |
-| REQ-P10-S03-006 | `.github/workflows/ci.yml` | CI job | `reports/final/p10_s03_npm_audit.json` | BLOCKED |
+| REQ-P10-S03-006 | `.github/workflows/ci.yml` | CI job | Actions run 42478962863: the job runs. `pip-audit` finds 81 advisories in 3 pinned packages (Pillow 12.0.0, needs 13.0.0; pytest 8.3.5, needs 9.0.3; setuptools 81.0.0, needs 84.1.0), so `npm audit` and Trivy are not reached | BLOCKED: dependency upgrades need approval; critical `next` advisory open |
 | REQ-P10-S04-001 | `src/mlops/registry.py`, `configs/models/registry.json` | `test_registry_requires_fields` | Test run 2026-11-05 | COMPLETED |
 | REQ-P10-S04-002 | `src/mlops/gates.py`, `scripts/deployment/promote_model.py` | `test_gate_blocks_regression` | ONNX gate run 2026-11-05 (refused) | COMPLETED |
 | REQ-P10-S04-003 | `scripts/deployment/promote_model.py` | `test_rollback_drill` | Drill in test run; staging drill `BLOCKED` | COMPLETED |

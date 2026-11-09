@@ -1,6 +1,6 @@
 # P08-S01 — Next.js Frontend Foundation
 
-**Status:** `IN_PROGRESS`. Code and local tests are done and pass. The CI job has not run because nothing is pushed, and the client-freshness check only bites once `openapi.json` and `lib/api/schema.d.ts` are committed.
+**Status:** `COMPLETED`. Code and tests pass locally and in the CI `web` job (run 42478962863, 2026-11-08), with `openapi.json` and `lib/api/schema.d.ts` committed so the freshness check applies.
 
 ## 1. Objective
 
@@ -92,6 +92,7 @@ App Router with server components for public pages and client components for int
 
 ## 16. Evidence
 
+- Recorded on 2026-11-08. [Actions run 42478962863](https://github.com/abhishek13042/dfu-wound-monitor/actions/runs/42478962863) on [PR #1](https://github.com/abhishek13042/dfu-wound-monitor/pull/1), commit `7b1d999`. The `web` job ran `npm run api:check`, the unit tests (25 passed) and the Playwright `pages` project (51 passed).
 - `reports/frontend/p08_s01_s03_verification.md`
 - Playwright output, `npx playwright test --project=pages`: 43 passed
 - No preview deployment: deployment belongs to the owner
@@ -111,7 +112,7 @@ cd web && npm ci && npx tsc --noEmit && npm test && npm run api:check && npx pla
 
 | Requirement | Implementation | Test | Evidence | Status |
 |---|---|---|---|---|
-| `REQ-P08-S01-001` | `web/lib/api/`, `web/scripts/export_openapi.py` | `npm run api:check` in the CI `web` job | Local exit 0; no CI log yet | IN_PROGRESS |
+| `REQ-P08-S01-001` | `web/lib/api/`, `web/scripts/export_openapi.py` | `npm run api:check` in the CI `web` job | Local exit 0, and Actions run 42478962863: `web` job ran `npm run api:check` against the committed `openapi.json` and `schema.d.ts` | COMPLETED |
 | `REQ-P08-S01-002` | `web/components/MedicalNotice.tsx` in both layouts | `e2e/pages.spec.ts`, 20 routes at two widths | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
 | `REQ-P08-S01-003` | `web/middleware.ts` | `middleware.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |
 | `REQ-P08-S01-004` | `web/lib/errors.ts`, `web/components/ErrorPanel.tsx` | `lib/errors.test.ts` | `reports/frontend/p08_s01_s03_verification.md` | COMPLETED |

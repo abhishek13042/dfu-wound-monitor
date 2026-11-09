@@ -1,6 +1,6 @@
 # P10-S01 — Observability
 
-**Status:** `IN_PROGRESS`. Request IDs, scrubbed JSON logs, `dfu_` metrics, alert rules, a dashboard and the runbook are built, and 29 local tests pass. Still to come: the `observability` CI job that runs `promtool test rules` has not run, because it needs a push and Docker. Sentry and Grafana Cloud are `BLOCKED` on accounts the deployer owns, and frontend Sentry is not wired.
+**Status:** `IN_PROGRESS`. Request IDs, scrubbed JSON logs, `dfu_` metrics, alert rules, a dashboard and the runbook are built, and 29 local tests pass. The `observability` CI job passes (run 42478962863, 2026-11-08). Sentry and Grafana Cloud are `BLOCKED` on accounts the deployer owns, and frontend Sentry is not wired.
 
 ## 1. Objective
 
@@ -94,7 +94,8 @@ Middleware sets a context ID, which passes in job metadata. Metric labels stay l
   - the queue being down, or a metric that raises, does not fail a request
 - Worker, API and integration suites after the change: 173 passed.
 - Dashboard export: `docker/production/observability/grafana-dashboard.json`.
-- Fault-injection record for alerts: `docker/production/observability/alerts_test.yml`, a `promtool` test in which each alert fires on an injected fault and stays quiet otherwise. **Pending:** the `observability` CI job has not run yet.
+- Fault-injection record for alerts: `docker/production/observability/alerts_test.yml`, a `promtool` test in which each alert fires on an injected fault and stays quiet otherwise.
+- Recorded on 2026-11-08. [Actions run 42478962863](https://github.com/abhishek13042/dfu-wound-monitor/actions/runs/42478962863) on [PR #1](https://github.com/abhishek13042/dfu-wound-monitor/pull/1), commit `7b1d999`. The `observability` job ran `promtool test rules`: SUCCESS.
 
 ## 17. Reproducibility
 
@@ -126,4 +127,4 @@ Runbook: `docs/runbooks/observability.md`.
 | `REQ-P10-S01-001` | `src/observability/context.py`, `src/observability/http.py`, `src/api/errors.py`, `src/api/analyses_v2.py`, `src/worker/tasks.py` | `test_the_id_follows_the_job_into_the_worker_and_the_result`, `test_error_body_names_the_same_id_as_the_header` | Test run 2026-11-04 | COMPLETED |
 | `REQ-P10-S01-002` | `src/observability/metrics.py`, `/metrics` in `src/api/app.py` | `test_metrics_endpoint_reports_the_required_series`, `test_quality_rejection_is_an_outcome_not_an_error` | `grafana-dashboard.json`, test run | COMPLETED |
 | `REQ-P10-S01-003` | `src/observability/logs.py`, `src/observability/errors.py` | `test_scrub_removes_planted_secrets`, `test_error_events_are_scrubbed_before_sending` | Test run 2026-11-04 | COMPLETED |
-| `REQ-P10-S01-004` | `docker/production/observability/alerts.yml` | `alerts_test.yml` (promtool, CI), `test_every_alert_has_a_firing_promtool_case` | CI `observability` job (pending) | IN_PROGRESS |
+| `REQ-P10-S01-004` | `docker/production/observability/alerts.yml` | `alerts_test.yml` (promtool, CI), `test_every_alert_has_a_firing_promtool_case` | Actions run 42478962863: `observability` job, `promtool test rules` SUCCESS (4 rules) | COMPLETED |

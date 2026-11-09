@@ -1,6 +1,6 @@
 # P10-S03 — Security and Privacy Controls
 
-**Status:** `IN_PROGRESS`. Retention with a per-case keep choice, metadata stripping, recorded consent, per-user and per-address rate limits, strict headers, CORS and the threat model are built, with 26 local tests, and the web app shows the consent step, the keep control and a privacy page. REQ-P10-S03-006 is `BLOCKED`: the `security` CI job exists but has not run, `pip-audit` and Trivy are not installed here, and `npm audit` already reports one critical advisory in `next@15.5.9` that would fail the job until `next` is upgraded.
+**Status:** `IN_PROGRESS`. Retention with a per-case keep choice, metadata stripping, recorded consent, per-user and per-address rate limits, strict headers, CORS and the threat model are built, with 26 local tests, and the web app shows the consent step, the keep control and a privacy page. REQ-P10-S03-006 is `BLOCKED`: the `security` CI job runs (run 42478962863, 2026-11-08), and `pip-audit` fails it with 81 advisories in Pillow 12.0.0, pytest 8.3.5 and setuptools 81.0.0. Clearing them needs Pillow 13.0.0, pytest 9.0.3 and setuptools 84.1.0. `npm audit` also reports a critical advisory in `next@15.5.9`. Each upgrade needs the owner's approval.
 
 ## 1. Objective
 
@@ -144,4 +144,4 @@ Retention runs in the worker's sweep (`src/worker/tasks.py`, `retain`), so it ne
 | `REQ-P10-S03-003` | `src/api/consent.py`, migration `0005_retention_and_consent`, `web/components/UploadForm.tsx` | `test_upload_needs_consent_first`, `test_an_old_consent_version_is_refused` | Test run 2026-11-05 | COMPLETED |
 | `REQ-P10-S03-004` | `src/api/limits.py` | `test_address_limit_answers_429_with_retry_after`, `test_user_limit_counts_each_user_apart` | Test run 2026-11-05 | COMPLETED |
 | `REQ-P10-S03-005` | `docs/deployment/THREAT_MODEL.md` | Document review | Threat model | COMPLETED |
-| `REQ-P10-S03-006` | `security` job in `.github/workflows/ci.yml` | CI job | `reports/final/p10_s03_npm_audit.json` | BLOCKED: job not run; `pip-audit` and Trivy not installed; critical `next` advisory open |
+| `REQ-P10-S03-006` | `security` job in `.github/workflows/ci.yml` | CI job | Actions run 42478962863: the job runs. `pip-audit` finds 81 advisories in 3 pinned packages (Pillow 12.0.0, needs 13.0.0; pytest 8.3.5, needs 9.0.3; setuptools 81.0.0, needs 84.1.0), so `npm audit` and Trivy are not reached | BLOCKED: dependency upgrades need approval; critical `next` advisory open |

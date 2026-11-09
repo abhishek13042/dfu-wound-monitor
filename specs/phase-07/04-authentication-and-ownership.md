@@ -1,6 +1,6 @@
 # P07-S04 — Authentication and Data Ownership
 
-**Status:** `IN_PROGRESS`. Code and tests are done, and the suite passes on SQLite and PostgreSQL. REQ-P07-S04-005 waits for its CI log, and a real provider has not been tried. Anonymous sample images move to P08-S02, because samples must be synthetic or licensed.
+**Status:** `COMPLETED`. Every requirement and acceptance criterion is met on SQLite and PostgreSQL, locally and in CI (run 42478962863, 2026-11-08). A live provider tenant has not been tried; that is the owner's deployment step (see §18). Anonymous sample images move to P08-S02, because samples must be synthetic or licensed.
 
 ## 1. Objective
 
@@ -90,6 +90,7 @@ A FastAPI dependency verifies the token and loads or creates the `users` row. JW
 
 ## 16. Evidence
 
+- Recorded on 2026-11-08. [Actions run 42478962863](https://github.com/abhishek13042/dfu-wound-monitor/actions/runs/42478962863) on [PR #1](https://github.com/abhishek13042/dfu-wound-monitor/pull/1), commit `7b1d999`. `test_owner_migration` and the isolation tests ran in the `postgres` and `quality` jobs.
 - Test report
 - Security review note
 
@@ -102,6 +103,7 @@ python -m pytest tests/api/test_auth.py -q
 ## 18. Risks / Limitations
 
 - A provider outage blocks sign-in.
+- Tested against a fake OIDC provider that signs real RS256 tokens, not a live Clerk tenant. Creating the tenant and its keys is the owner's deployment step.
 - Free-tier user limits may change.
 
 ## 19. Traceability
@@ -112,4 +114,4 @@ python -m pytest tests/api/test_auth.py -q
 | `REQ-P07-S04-002` | Repository owner filter | `test_cross_user_isolation`, for every route | Test run | COMPLETED |
 | `REQ-P07-S04-003` | `src/api/auth.py` | `test_rejects_bad_tokens` | `reports/deployment/p07_s04_security_review.md` | COMPLETED |
 | `REQ-P07-S04-004` | `src/api/account.py` | `test_account_deletion_is_complete` | Test run | COMPLETED |
-| `REQ-P07-S04-005` | Alembic revision | `test_owner_migration` | Passes locally on SQLite and PostgreSQL 16. CI log awaits a push | IN_PROGRESS |
+| `REQ-P07-S04-005` | Alembic revision | `test_owner_migration` | Passes on SQLite and PostgreSQL 16 locally, and in Actions run 42478962863: `postgres` job | COMPLETED |

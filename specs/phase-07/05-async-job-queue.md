@@ -1,6 +1,6 @@
 # P07-S05 — Asynchronous Inference Queue and Workers
 
-**Status:** `IN_PROGRESS`. Code, tests and the real-model parity report are done. The CI Redis job and the worker Docker image have not run, because they need a push and Docker.
+**Status:** `COMPLETED`. Code, tests and the real-model parity report are done, and CI proves both on real infrastructure (run 42478962863, 2026-11-08): the `redis` job and the worker image in the `docker` job.
 
 ## 1. Objective
 
@@ -103,6 +103,7 @@ As built:
 
 ## 16. Evidence
 
+- Recorded on 2026-11-08. [Actions run 42478962863](https://github.com/abhishek13042/dfu-wound-monitor/actions/runs/42478962863): the `redis` job ran the worker suite against a real Redis (56 passed), including two workers finishing a burst with no duplicates or losses. The `docker` job built the worker image, and a worker given the wrong checkpoint refused it.
 - Integration test log
 - Parity report
 
