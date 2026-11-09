@@ -40,7 +40,9 @@ With the checkpoint mounted, the fetch step finds and verifies it, so no downloa
    hf upload <user>/dfu-resnet34-unet models/checkpoints/spec-02-03/resnet34_unet_512_best.pth resnet34_unet_512_best.pth
    hf upload <user>/dfu-resnet34-unet docs/deployment/MODEL_CARD.md README.md
    ```
-3. **Docker Space.** Create it:
+3. **Docker Space.** Since 2026, hosting a Docker or Gradio Space on free CPU needs a Hugging Face PRO
+   subscription; without it, creating the Space returns HTTP 402. The model repo above is already public at
+   `abhishek1402/dfu-resnet34-unet` (revision `870ad3b`). Create the Space:
    ```bash
    hf repo create <user>/dfu-woundmonitor --repo-type space --space-sdk docker
    ```

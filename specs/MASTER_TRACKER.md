@@ -5,13 +5,13 @@
 **Phase:** Phases 07–10 in progress. All specifications are built; most wait on outside inputs (see Next)  
 **Overall Status:** Phases 00–06 COMPLETED. Model: held-out pooled Dice 0.922, macro 0.841 (independently verified). Service, dashboard, validation, benchmark and release are in `reports/final/` and `docs/release/RELEASE.md`. One partial item: REQ-P06-S03-001 fresh-machine install was not exercised.  
 **Release:** v1.0.0 on `main` (see `CHANGELOG.md`). Check at release 2026-10-29: 265 tests passed, smoke test 8/8. Latest local check 2026-10-30: 395 passed on SQLite, and 171 passed on PostgreSQL 16 (`tests/storage`, `tests/api`, `tests/worker`).  
-**Deployment:** Docker image and Hugging Face Space bundle are built (`docs/deployment/HUGGINGFACE.md`); the Space is not yet published.  
+**Deployment:** Docker image and Hugging Face Space bundle are built (`docs/deployment/HUGGINGFACE.md`); the model weights are public on Hugging Face; the Space needs a PRO subscription.  
 **Phase 07 (2026-11-08):** CI runs on GitHub Actions ([PR #1](https://github.com/abhishek13042/dfu-wound-monitor/pull/1)), and 9 of its 10 jobs pass. P07-S02, P07-S04 and P07-S05 are `COMPLETED`. P07-S01 waits on the published Space, P07-S03 on a hosted bucket and browser CORS, and P07-S06 on a GPU parity run.  
 **Phase 08 design:** P08-S04 is `IN_PROGRESS`. Every page is built in `web/` against a labelled mock layer. Detection is clean, the audit's P1 and P2 findings are fixed, the finish review returned ship, and `DESIGN.md` is recorded from the build. It waits on the user's approval of the direction now that P08-S01 to S03 connect the pages to `/api/v2`.  
 **Phase 08 build:** P08-S01 is `COMPLETED`; the CI `web` job passes. P08-S02 and P08-S03 are `IN_PROGRESS`: their end-to-end test passed against a local API, worker and OIDC provider (`reports/frontend/p08_s01_s03_verification.md`) but is not in CI, and they wait on a hosted bucket and a staging deployment.  
 **Phase 09 (2026-11-05):** P09-S02 and P09-S03 are `COMPLETED`. P09-S01 is `IN_PROGRESS`; millimetre accuracy on real marker photos is `BLOCKED`. P09-S04 is `IN_PROGRESS`: the annotation hypothesis was tested and is partly supported (`reports/experiments/p09_s04_report.md`); retraining is `BLOCKED` on a new external set and GPU time.
 **Phase 10 (2026-11-05):** P10-S01 to P10-S04 are `IN_PROGRESS`. Logs, metrics, a single-machine load baseline with provisional SLOs (`docs/deployment/SLO.md`), privacy controls, the model registry and drift checks are built and tested locally. Staging runs, dependency and image scans, and dashboards on a hosted stack are `BLOCKED`.
-**Next:** outside inputs, not code. A staging deployment with a hosted bucket, Redis and separate workers; the published Space; Kaggle GPU time; real marker photos and clinician review; P08-S04 design approval.
+**Next:** outside inputs, not code. A staging deployment with a hosted bucket, Redis and separate workers; a Hugging Face PRO subscription for the Docker Space; Kaggle GPU time; real marker photos and clinician review; P08-S04 design approval.
 
 ---
 

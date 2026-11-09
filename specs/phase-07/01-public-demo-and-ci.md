@@ -1,6 +1,6 @@
 # P07-S01 — Public Demo and Continuous Integration
 
-**Status:** `IN_PROGRESS`. CI runs on GitHub Actions, and REQ-001, 002, 003 and 005 are `COMPLETED` (run 42478962863, 2026-11-08). REQ-004, the published Space, is `BLOCKED` on the owner's `hf auth login` and approval.
+**Status:** `IN_PROGRESS`. CI runs on GitHub Actions, and REQ-001, 002, 003 and 005 are `COMPLETED` (run 42478962863, 2026-11-08). REQ-004 is `BLOCKED`: the weights are public at [abhishek1402/dfu-resnet34-unet](https://huggingface.co/abhishek1402/dfu-resnet34-unet) (2026-11-09), but Hugging Face refused to create the Docker Space (HTTP 402) because Docker Spaces on free CPU now need a PRO subscription.
 
 ## 1. Objective
 
@@ -99,7 +99,8 @@ Recorded on 2026-11-08. [Actions run 42478962863](https://github.com/abhishek130
 
 - `quality`, `install` (ubuntu and windows) and `docker` passed. The container refuses a checkpoint with the wrong hash.
 - Earlier runs on the PR found and fixed two CI faults: OpenCV missing from `requirements.txt`, and a Trivy action tag that no longer resolved, now pinned to a commit.
-- Still missing: the Space smoke test and screenshot (REQ-004, `BLOCKED`).
+- 2026-11-09: the checkpoint and model card are public at [abhishek1402/dfu-resnet34-unet](https://huggingface.co/abhishek1402/dfu-resnet34-unet), revision `870ad3b`. Creating `abhishek1402/dfu-woundmonitor` as a Docker Space returned HTTP 402: Hugging Face now requires PRO for Docker and Gradio Spaces on free CPU. `dist/hf_space/` is built (118 files) and ready to push once the Space exists.
+- Still missing: the Space smoke test and screenshot (REQ-004, `BLOCKED` on the subscription).
 - `reports/final/p07_s01_space_smoke.json`
 - Screenshot of the running Space
 
@@ -122,5 +123,5 @@ python scripts/deployment/smoke_test.py --url https://<user>-dfu-woundmonitor.hf
 | `REQ-P07-S01-001` | `.github/workflows/ci.yml` | Workflow run on a pull request | Actions run 42478962863 on PR #1 (commit `7b1d999`): `quality` job, ruff, mypy and pytest 518 passed, 9 skipped. The `security` job in the same workflow belongs to REQ-P10-S03-006 | COMPLETED |
 | `REQ-P07-S01-002` | `.github/workflows/ci.yml` install job | Matrix job | Actions run 42478962863: `install` on ubuntu-latest (518 passed, 9 skipped) and windows-latest both passed from an empty environment | COMPLETED |
 | `REQ-P07-S01-003` | `.github/workflows/ci.yml` docker job | Container start check | Actions run 42478962863: `docker` job built the API and worker images and the container answered liveness | COMPLETED |
-| `REQ-P07-S01-004` | Published Space | `smoke_test.py --url <space>` | Waiting for `hf auth login` and approval to publish | BLOCKED |
+| `REQ-P07-S01-004` | Published Space | `smoke_test.py --url <space>` | Model repo published 2026-11-09 (public, revision `870ad3b`, checkpoint 293,565,633 bytes). Creating the Docker Space returned HTTP 402: Docker Spaces on free CPU need a Hugging Face PRO subscription | BLOCKED: Docker Space needs a PRO subscription |
 | `REQ-P07-S01-005` | `scripts/deployment/fetch_checkpoint.py`, `scripts/deployment/check_refuses_bad_model.py` | Container test with a wrong hash | Actions run 42478962863: `docker` job, a container and a worker given a checkpoint with the wrong hash both refused it (readiness and analysis 503, CHECKPOINT_CHECKSUM_MISMATCH) | COMPLETED |
