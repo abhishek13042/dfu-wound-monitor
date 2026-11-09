@@ -438,7 +438,7 @@ These requirements are specified and not implemented. The paths are planned loca
 | REQ-P10-S03-003 | `src/api/consent.py`, `web/components/UploadForm.tsx` | `test_upload_needs_consent_first` | Test run 2026-11-05 | COMPLETED |
 | REQ-P10-S03-004 | `src/api/limits.py` | `tests/security/test_p10_s03_access.py` | Test run 2026-11-05 | COMPLETED |
 | REQ-P10-S03-005 | `docs/deployment/THREAT_MODEL.md` | Document review | Threat model | COMPLETED |
-| REQ-P10-S03-006 | `.github/workflows/ci.yml` | CI job | Actions run 42478962863: the job runs. `pip-audit` finds 81 advisories in 3 pinned packages (Pillow 12.0.0, needs 13.0.0; pytest 8.3.5, needs 9.0.3; setuptools 81.0.0, needs 84.1.0), so `npm audit` and Trivy are not reached | BLOCKED: dependency upgrades need approval; critical `next` advisory open |
+| REQ-P10-S03-006 | `.github/workflows/ci.yml` | CI job | Actions run 42579066019 (commit `49ca385`): `security` job passes. `pip-audit` finds no known vulnerabilities after Pillow 13.0.0, pytest 9.0.3 and setuptools 84.1.0; `npm audit --audit-level=critical` passes after `next` 15.5.29 (2 high, 5 moderate, 2 low remain); Trivy finds no fixable critical finding in the image | COMPLETED |
 | REQ-P10-S04-001 | `src/mlops/registry.py`, `configs/models/registry.json` | `test_registry_requires_fields` | Test run 2026-11-05 | COMPLETED |
 | REQ-P10-S04-002 | `src/mlops/gates.py`, `scripts/deployment/promote_model.py` | `test_gate_blocks_regression` | ONNX gate run 2026-11-05 (refused) | COMPLETED |
 | REQ-P10-S04-003 | `scripts/deployment/promote_model.py` | `test_rollback_drill` | Drill in test run; staging drill `BLOCKED` | COMPLETED |

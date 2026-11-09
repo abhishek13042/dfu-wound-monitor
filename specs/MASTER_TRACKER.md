@@ -11,7 +11,7 @@
 **Phase 08 build:** P08-S01 is `COMPLETED`; the CI `web` job passes. P08-S02 and P08-S03 are `IN_PROGRESS`: their end-to-end test passed against a local API, worker and OIDC provider (`reports/frontend/p08_s01_s03_verification.md`) but is not in CI, and they wait on a hosted bucket and a staging deployment.  
 **Phase 09 (2026-11-05):** P09-S02 and P09-S03 are `COMPLETED`. P09-S01 is `IN_PROGRESS`; millimetre accuracy on real marker photos is `BLOCKED`. P09-S04 is `IN_PROGRESS`: the annotation hypothesis was tested and is partly supported (`reports/experiments/p09_s04_report.md`); retraining is `BLOCKED` on a new external set and GPU time.
 **Phase 10 (2026-11-05):** P10-S01 to P10-S04 are `IN_PROGRESS`. Logs, metrics, a single-machine load baseline with provisional SLOs (`docs/deployment/SLO.md`), privacy controls, the model registry and drift checks are built and tested locally. Staging runs, dependency and image scans, and dashboards on a hosted stack are `BLOCKED`.
-**Next:** outside inputs, not code. Approval to upgrade Pillow, pytest, setuptools and `next` so the `security` job passes; a staging deployment with a hosted bucket, Redis and separate workers; the published Space; Kaggle GPU time; real marker photos and clinician review; P08-S04 design approval.
+**Next:** outside inputs, not code. A staging deployment with a hosted bucket, Redis and separate workers; the published Space; Kaggle GPU time; real marker photos and clinician review; P08-S04 design approval.
 
 ---
 
@@ -29,7 +29,7 @@
 | phase-07 | Production Backend | 6 | 3 | IN_PROGRESS |
 | phase-08 | Web Frontend | 4 | 1 | IN_PROGRESS |
 | phase-09 | Computer Vision Features | 4 | 2 | IN_PROGRESS |
-| phase-10 | Production Readiness | 4 | 0 | IN_PROGRESS |
+| phase-10 | Production Readiness | 4 | 1 | IN_PROGRESS |
 
 The retired legacy numbering (old phases 03–12) was mapped into phases 03–06. The current phases 07–10 are new work and are unrelated to those legacy numbers.
 
@@ -99,7 +99,7 @@ from `specs/SPEC_TEMPLATE.md` before implementation begins.
 | P09-S04 | Test the annotation-protocol hypothesis, then improve generalisation | IN_PROGRESS | SPEC-02-03, P06-S01 | `specs/phase-09/04-generalisation-study.md` |
 | P10-S01 | Structured logs, metrics, error tracking, dashboards | IN_PROGRESS | P07-S05 | `specs/phase-10/01-observability.md` |
 | P10-S02 | Locust load tests, stated SLOs, capacity plan | IN_PROGRESS | P10-S01, P07-S06 | `specs/phase-10/02-load-testing-and-slos.md` |
-| P10-S03 | Retention, EXIF stripping, consent, rate limits, threat review | IN_PROGRESS (REQ-006 BLOCKED: pip-audit finds 81 advisories in 3 pins; critical `next` advisory; upgrades need approval) | P07-S03, P07-S04, P08-S02 | `specs/phase-10/03-security-and-privacy.md` |
+| P10-S03 | Retention, EXIF stripping, consent, rate limits, threat review | COMPLETED | P07-S03, P07-S04, P08-S02 | `specs/phase-10/03-security-and-privacy.md` |
 | P10-S04 | Model registry, promotion, rollback, input drift | IN_PROGRESS | P07-S06, P09-S03, P10-S01 | `specs/phase-10/04-mlops-and-drift.md` |
 
 The former phase-03 through phase-12 entries are retained only as historical

@@ -1,6 +1,6 @@
 # P10-S03 — Security and Privacy Controls
 
-**Status:** `IN_PROGRESS`. Retention with a per-case keep choice, metadata stripping, recorded consent, per-user and per-address rate limits, strict headers, CORS and the threat model are built, with 26 local tests, and the web app shows the consent step, the keep control and a privacy page. REQ-P10-S03-006 is `BLOCKED`: the `security` CI job runs (run 42478962863, 2026-11-08), and `pip-audit` fails it with 81 advisories in Pillow 12.0.0, pytest 8.3.5 and setuptools 81.0.0. Clearing them needs Pillow 13.0.0, pytest 9.0.3 and setuptools 84.1.0. `npm audit` also reports a critical advisory in `next@15.5.9`. Each upgrade needs the owner's approval.
+**Status:** `COMPLETED`. Retention with a per-case keep choice, metadata stripping, recorded consent, per-user and per-address rate limits, strict headers, CORS and the threat model are built, with 26 local tests, and the web app shows the consent step, the keep control and a privacy page. The `security` CI job passes (Actions run 42579066019, 2026-11-09) after the owner approved upgrading Pillow, pytest, setuptools and `next`.
 
 ## 1. Objective
 
@@ -110,8 +110,15 @@ Recorded on 2026-11-05.
     429 with `Retry-After`, bounded limiter memory, strict headers, CORS.
 - `docs/deployment/THREAT_MODEL.md`: 32 risks across upload, storage, auth, queue and supply chain, each addressed or
   accepted with its evidence.
-- `reports/final/p10_s03_npm_audit.json`: 9 advisories (1 critical, 2 high, 4 moderate, 2 low). The critical one is in
-  `next@15.5.9` and has a fix in a later 15.x release.
+- [Actions run 42579066019](https://github.com/abhishek13042/dfu-wound-monitor/actions/runs/42579066019) on [PR #1](https://github.com/abhishek13042/dfu-wound-monitor/pull/1), commit `49ca385`, recorded on 2026-11-09: the `security` job passes.
+  - `pip-audit -r requirements.txt`: no known vulnerabilities. Run 42478962863 had found 81 in Pillow 12.0.0,
+    pytest 8.3.5 and setuptools 81.0.0; they are now pinned at 13.0.0, 9.0.3 and 84.1.0.
+  - `npm audit --audit-level=critical`: passes. `next` is now 15.5.29. 9 advisories below critical remain
+    (2 high, 5 moderate, 2 low), in `sharp` and `postcss` nested under `next` and in packages pulled in by
+    `shadcn`: `reports/final/p10_s03_npm_audit.json`.
+  - Trivy on the API image, critical and fixable only: 0 findings (Debian 13.7 base and Python packages):
+    `reports/final/p10_s03_trivy.txt`.
+  - Pillow 13 needed one typing change: `load_binary_mask` passes `resize` an explicit `(width, height)`.
 - Web: `tsc`, 25 unit tests, the wording check and the 45-test Playwright pages suite (axe at 1280 and 375 px, now with
   `/privacy`) pass. `npx impeccable detect` is clean on `/privacy`, `/analyse`, `/cases/c-0007` and `/account`.
 
@@ -119,14 +126,18 @@ Recorded on 2026-11-05.
 
 ```bash
 python -m pytest tests/security -q
-npm --prefix web audit --audit-level=critical          # fails today on next@15.5.9
-pip-audit -r requirements.txt                          # not installed locally
-trivy image --severity CRITICAL --ignore-unfixed dfu-api   # not installed locally
+npm --prefix web audit --audit-level=critical          # passes; 2 high, 5 moderate, 2 low remain
+pip-audit -r requirements.txt                          # run in CI; not installed locally
+trivy image --severity CRITICAL --ignore-unfixed dfu-api   # run in CI; not installed locally
 ```
 
 Retention runs in the worker's sweep (`src/worker/tasks.py`, `retain`), so it needs no separate scheduler.
 
 ## 18. Risks / Limitations
+
+- The job fails only on critical npm and image findings. Two high-severity npm advisories (in `sharp` and `postcss`
+  under `next`) stay open until `next` ships with patched copies; they are build-time image and CSS tooling, not
+  request handling.
 
 - Automatic deletion conflicts with longitudinal use, so keeping data needs an explicit choice. Compliance is not claimed.
 - Rate limits are counted per replica, so N replicas allow N times the limit. A shared Redis counter is the fix if
@@ -144,4 +155,4 @@ Retention runs in the worker's sweep (`src/worker/tasks.py`, `retain`), so it ne
 | `REQ-P10-S03-003` | `src/api/consent.py`, migration `0005_retention_and_consent`, `web/components/UploadForm.tsx` | `test_upload_needs_consent_first`, `test_an_old_consent_version_is_refused` | Test run 2026-11-05 | COMPLETED |
 | `REQ-P10-S03-004` | `src/api/limits.py` | `test_address_limit_answers_429_with_retry_after`, `test_user_limit_counts_each_user_apart` | Test run 2026-11-05 | COMPLETED |
 | `REQ-P10-S03-005` | `docs/deployment/THREAT_MODEL.md` | Document review | Threat model | COMPLETED |
-| `REQ-P10-S03-006` | `security` job in `.github/workflows/ci.yml` | CI job | Actions run 42478962863: the job runs. `pip-audit` finds 81 advisories in 3 pinned packages (Pillow 12.0.0, needs 13.0.0; pytest 8.3.5, needs 9.0.3; setuptools 81.0.0, needs 84.1.0), so `npm audit` and Trivy are not reached | BLOCKED: dependency upgrades need approval; critical `next` advisory open |
+| `REQ-P10-S03-006` | `security` job in `.github/workflows/ci.yml` | CI job | Actions run 42579066019 (commit `49ca385`): `security` job passes. `pip-audit` finds no known vulnerabilities after Pillow 13.0.0, pytest 9.0.3 and setuptools 84.1.0; `npm audit --audit-level=critical` passes after `next` 15.5.29 (2 high, 5 moderate, 2 low remain); Trivy finds no fixable critical finding in the image | COMPLETED |

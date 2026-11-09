@@ -76,7 +76,7 @@ identity provider ──JWKS──► API
 
 | # | Threat | Decision | Control | Evidence |
 |---|---|---|---|---|
-| D1 | A vulnerable Python or npm dependency | Addressed when CI runs | The `security` CI job runs `pip-audit` and `npm audit --audit-level=critical`, and fails on critical findings | `.github/workflows/ci.yml` |
+| D1 | A vulnerable Python or npm dependency | Addressed | The `security` CI job runs `pip-audit` and `npm audit --audit-level=critical`, and fails on critical findings; it passes in Actions run 42579066019 | `.github/workflows/ci.yml` |
 | D2 | A vulnerable OS package in the image | Addressed when CI runs | Trivy scans the built image and fails on critical findings | same file |
 | D3 | A swapped model checkpoint | Addressed | The inference config pins the checkpoint's SHA-256, and the service refuses to serve a mismatch | `scripts/deployment/check_refuses_bad_model.py` |
 
